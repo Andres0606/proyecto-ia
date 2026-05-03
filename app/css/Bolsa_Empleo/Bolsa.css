@@ -5,15 +5,15 @@
    ═══════════════════════════════════════════════════════ */
 
 /* ─────────────────────────────────────────────────────
-   RESET SCOPED
+   RESET SCOPED — solo las secciones propias, no el Header
    ───────────────────────────────────────────────────── */
-.be-page * {
+.be-hero *,
+.be-searchbar *,
+.be-alert *,
+.be-layout *,
+.be-pagination * {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
-.be-page button { cursor: pointer; font-family: inherit; }
-.be-page input  { font-family: inherit; }
 
 /* ─────────────────────────────────────────────────────
    HERO — colores hardcodeados, sin vars
