@@ -9,7 +9,7 @@ type RolType = "egresado" | "externo" | "empresa" | null;
 const ROLES = [
   {
     id: "egresado" as RolType,
-    icon: "🎓",
+    icon: "E",
     iconClass: "auth-role-card__icon--egresado",
     title: "Egresado UCC",
     desc: "Graduado de la Universidad Cooperativa de Colombia.",
@@ -17,7 +17,7 @@ const ROLES = [
   },
   {
     id: "externo" as RolType,
-    icon: "👤",
+    icon: "U",
     iconClass: "auth-role-card__icon--externo",
     title: "Usuario externo",
     desc: "Profesional de otra universidad o institución.",
@@ -25,7 +25,7 @@ const ROLES = [
   },
   {
     id: "empresa" as RolType,
-    icon: "🏢",
+    icon: "Emp",
     iconClass: "auth-role-card__icon--empresa",
     title: "Empresa",
     desc: "Publica vacantes y encuentra talento UCC.",
@@ -276,7 +276,7 @@ function StepDatosPersonales({
               onClick={() => setShowPw(!showPw)}
               aria-label={showPw ? "Ocultar" : "Mostrar"}
             >
-              {showPw ? "🙈" : "👁️"}
+              {showPw ? "Ocultar" : "Mostrar"}
             </button>
           </div>
         </div>

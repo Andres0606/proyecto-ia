@@ -65,7 +65,7 @@ export default function LoginPage() {
                 onClick={() => setShowPw(!showPw)}
                 aria-label={showPw ? "Ocultar contraseña" : "Mostrar contraseña"}
               >
-                {showPw ? "🙈" : "👁️"}
+                {showPw ? "Ocultar" : "Mostrar"}
               </button>
             </div>
           </div>
