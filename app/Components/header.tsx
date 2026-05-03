@@ -128,7 +128,7 @@ export default function Header() {
           </a>
         </div>
 
-        {/* Hamburger */}
+        {/* Hamburgereeeee */}
         <button
           className={`header__hamburger ${menuOpen ? "header__hamburger--open" : ""}`}
           onClick={() => setMenuOpen(!menuOpen)}
