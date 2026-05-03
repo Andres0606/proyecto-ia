@@ -20,7 +20,7 @@ const FEATURES = [
   {
     icon: "📊",
     title: "Índice de estabilidad laboral",
-    desc: "Conoce tu nivel de empleabilidad y compáralo con egresados de tu carrera.",
+    desc: "Diagnostica tu nivel de estabilidad laboral.",
   },
   {
     icon: "📄",
@@ -219,7 +219,6 @@ function Hero() {
         </div>
         <div className="hero__trust">
           <span>✓ Gratuito para egresados</span>
-          <span>✓ Sin spam</span>
           <span>✓ Datos protegidos</span>
         </div>
       </div>
@@ -370,9 +369,8 @@ function EstabilidadSection() {
             colombiano.
           </p>
           <ul className="estabilidad__lista">
-            <li>✓ Compara tu perfil con egresados de tu misma carrera</li>
             <li>✓ Identifica brechas de habilidades</li>
-            <li>✓ Recibe recomendaciones personalizadas</li>
+            <li>✓ Recibe recomendaciones de empleabilidad</li>
             <li>✓ Actualización mensual del índice</li>
           </ul>
           <a href="#registro" className="btn btn--red btn--lg">
