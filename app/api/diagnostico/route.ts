@@ -8,13 +8,29 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
+    const mappedBody = {
+      "Programa academico del que es egresado": body.Programa,
+      "Genero": body.Genero,
+      "Edad_Codificada": body.Edad,
+      "Estrato": body.Estrato,
+      "Estado civil": body.EstadoCivil,
+      "Numero de hijos": body.Hijos,
+      "Nivel de formacion actual": body.Formacion,
+      "Tiene Emprendimiento": body.Emprendimiento,
+      "Tipo de organizacion donde labora": body.TipoOrg,
+      "Area en la cual se desempena": body.Area,
+      "Tamano Organizacion": body.Tamano,
+      "Sector economico pertenece empresa": body.Sector,
+      "Ingreso Mensual": body.Ingreso
+    };
+
     const flaskRes = await fetch(`${FLASK_URL}/predict`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(mappedBody),
     });
 
     if (!flaskRes.ok) {
