@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import Header from "../Components/header";
 import Footer from "../Components/footer";
-import "../css/Bolsa/bolsa.css";
+import "../css/Bolsa_Empleo/Bolsa.css";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 interface Job {
