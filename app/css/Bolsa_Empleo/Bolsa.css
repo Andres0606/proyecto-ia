@@ -1,8 +1,9 @@
 /* ═══════════════════════════════════════════════════════
    bolsa.css  —  Bolsa de Empleo · Portal Egresado UCC
+   Fuente: "Inter", "Segoe UI" — igual que inicio.css
    ═══════════════════════════════════════════════════════ */
 
-/* ── Variables ────────────────────────────────────────── */
+/* ── Variables (mismas que inicio.css) ───────────────── */
 :root {
   --red:        #c8102e;
   --red-dark:   #a50d25;
@@ -20,18 +21,21 @@
   --text-mid:   #334155;
   --green:      #0f6e56;
   --green-light:#e1f5ee;
-  --teal:       #1d9e75;
-  --amber:      #b45309;
-  --amber-light:#fef3c7;
   --border:     rgba(255,255,255,0.08);
   --border-dark:#e2e8f0;
 }
 
 /* ══════════════════════════════════════════════════════
-   HERO — dark navy con acento rojo
+   HERO — dark navy igual al inicio
    ══════════════════════════════════════════════════════ */
 .bolsa-hero {
-  background: linear-gradient(150deg, var(--navy) 0%, var(--navy-mid) 55%, var(--blue) 100%);
+  font-family: "Inter", "Segoe UI", sans-serif;
+  background: linear-gradient(
+    155deg,
+    var(--navy) 0%,
+    var(--navy-mid) 50%,
+    var(--blue) 100%
+  );
   padding: 5rem 2rem 4rem;
   position: relative;
   overflow: hidden;
@@ -41,9 +45,9 @@
 .bolsa-hero::before {
   content: '';
   position: absolute;
-  width: 700px; height: 700px;
-  background: radial-gradient(circle, rgba(200,16,46,0.13) 0%, transparent 65%);
-  top: -200px; left: -100px;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(200,16,46,0.14) 0%, transparent 65%);
+  top: -180px; left: -80px;
   pointer-events: none;
 }
 
@@ -51,13 +55,13 @@
   content: '';
   position: absolute;
   width: 400px; height: 400px;
-  background: radial-gradient(circle, rgba(26,58,124,0.3) 0%, transparent 65%);
+  background: radial-gradient(circle, rgba(26,58,124,0.25) 0%, transparent 65%);
   bottom: -80px; right: -60px;
   pointer-events: none;
 }
 
 .bolsa-hero__inner {
-  max-width: 900px;
+  max-width: 1160px;
   margin: 0 auto;
   position: relative;
   z-index: 2;
@@ -65,14 +69,18 @@
 
 .bolsa-hero__eyebrow {
   display: inline-block;
-  font-size: 11px; font-weight: 700;
-  letter-spacing: 1.8px; text-transform: uppercase;
-  color: rgba(255,255,255,0.4);
+  font-family: "Inter", "Segoe UI", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.38);
   margin-bottom: 14px;
 }
 
 .bolsa-hero__title {
-  font-size: clamp(2.4rem, 5vw, 3.6rem);
+  font-family: "Inter", "Segoe UI", sans-serif;
+  font-size: clamp(2.4rem, 5vw, 3.5rem);
   font-weight: 800;
   line-height: 1.08;
   letter-spacing: -1.5px;
@@ -86,22 +94,24 @@
 }
 
 .bolsa-hero__sub {
+  font-family: "Inter", "Segoe UI", sans-serif;
   font-size: 1.05rem;
   color: rgba(255,255,255,0.55);
   max-width: 520px;
-  line-height: 1.7;
+  line-height: 1.75;
   margin-bottom: 2.5rem;
 }
 
 .bolsa-hero__kpis {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 2.5rem;
   flex-wrap: wrap;
 }
 
 .bolsa-hero__kpi-val {
   display: block;
+  font-family: "Inter", "Segoe UI", sans-serif;
   font-size: 2rem;
   font-weight: 800;
   color: var(--white);
@@ -110,49 +120,52 @@
 
 .bolsa-hero__kpi-lbl {
   display: block;
+  font-family: "Inter", "Segoe UI", sans-serif;
   font-size: 12px;
+  font-weight: 400;
   color: rgba(255,255,255,0.4);
-  margin-top: 4px;
+  margin-top: 5px;
 }
 
 .bolsa-hero__kpi-sep {
   width: 1px;
   height: 40px;
   background: rgba(255,255,255,0.12);
+  flex-shrink: 0;
 }
 
 /* ══════════════════════════════════════════════════════
    SEARCH BAR — blanco limpio
    ══════════════════════════════════════════════════════ */
 .bolsa-searchbar {
+  font-family: "Inter", "Segoe UI", sans-serif;
   background: var(--white);
   border-bottom: 1px solid var(--border-dark);
-  padding: 1.1rem 2rem;
+  padding: 1.25rem 2rem;
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
 }
 
 .bolsa-searchbar__inner {
-  max-width: 900px;
+  max-width: 1160px;
   margin: 0 auto;
   display: flex;
   gap: 10px;
   align-items: center;
-  flex-wrap: wrap;
 }
 
 .bolsa-searchbar__input {
   flex: 1;
-  min-width: 180px;
+  min-width: 0;
   background: var(--gray-light);
   border: 1.5px solid var(--border-dark);
   border-radius: 10px;
-  padding: 10px 16px;
+  padding: 11px 18px;
   color: var(--text-dark);
   font-size: 14px;
-  font-family: inherit;
+  font-family: "Inter", "Segoe UI", sans-serif;
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
@@ -163,11 +176,12 @@
 
 .bolsa-searchbar__input:focus {
   border-color: var(--red);
-  box-shadow: 0 0 0 3px rgba(200,16,46,0.1);
+  background: var(--white);
+  box-shadow: 0 0 0 3px rgba(200,16,46,0.08);
 }
 
 .bolsa-searchbar__input--city {
-  max-width: 180px;
+  flex: 0 0 200px;
 }
 
 .bolsa-searchbar__btn {
@@ -175,13 +189,14 @@
   color: var(--white);
   border: none;
   border-radius: 10px;
-  padding: 10px 22px;
+  padding: 11px 28px;
   font-size: 14px;
   font-weight: 700;
-  font-family: inherit;
+  font-family: "Inter", "Segoe UI", sans-serif;
   cursor: pointer;
   transition: background 0.2s, transform 0.15s;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .bolsa-searchbar__btn:hover {
@@ -190,16 +205,17 @@
 }
 
 /* ══════════════════════════════════════════════════════
-   ALERTA BANNER — off-white cálido
+   ALERTA BANNER — ámbar cálido
    ══════════════════════════════════════════════════════ */
 .alerta-banner {
-  background: var(--off-white);
-  border-bottom: 1px solid var(--border-dark);
-  padding: 0.85rem 2rem;
+  font-family: "Inter", "Segoe UI", sans-serif;
+  background: #fffbeb;
+  border-bottom: 1px solid #fde68a;
+  padding: 0.9rem 2rem;
 }
 
 .alerta-banner__inner {
-  max-width: 900px;
+  max-width: 1160px;
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -208,56 +224,63 @@
 }
 
 .alerta-banner__icon {
-  font-size: 18px;
+  font-size: 16px;
   flex-shrink: 0;
 }
 
 .alerta-banner__text {
   flex: 1;
-  font-size: 13px;
-  color: var(--text-mid);
+  font-family: "Inter", "Segoe UI", sans-serif;
+  font-size: 13.5px;
+  color: #78350f;
   line-height: 1.5;
 }
 
 .alerta-banner__text strong {
-  color: var(--text-dark);
+  color: #92400e;
+  font-weight: 700;
 }
 
 .alerta-banner__btn {
   background: transparent;
-  border: 1.5px solid var(--navy);
-  color: var(--navy);
+  border: 1.5px solid #92400e;
+  color: #92400e;
   border-radius: 50px;
-  padding: 6px 18px;
+  padding: 6px 20px;
   font-size: 13px;
   font-weight: 700;
-  font-family: inherit;
+  font-family: "Inter", "Segoe UI", sans-serif;
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.2s;
 }
 
 .alerta-banner__btn:hover {
-  background: var(--navy);
+  background: #92400e;
   color: var(--white);
 }
 
 /* ══════════════════════════════════════════════════════
-   LAYOUT — blanco con sidebar
+   LAYOUT PRINCIPAL
    ══════════════════════════════════════════════════════ */
 .bolsa-layout {
+  font-family: "Inter", "Segoe UI", sans-serif;
   background: var(--gray-light);
-  padding: 2rem;
-  display: grid;
-  grid-template-columns: 230px 1fr;
-  gap: 1.5rem;
+  min-height: 60vh;
+}
+
+.bolsa-layout__inner {
   max-width: 1160px;
   margin: 0 auto;
+  padding: 2rem;
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 1.5rem;
   align-items: start;
 }
 
 /* ══════════════════════════════════════════════════════
-   SIDEBAR FILTERS — tarjeta blanca
+   SIDEBAR FILTROS — tarjeta blanca
    ══════════════════════════════════════════════════════ */
 .bolsa-filters {
   background: var(--white);
@@ -265,7 +288,7 @@
   border-radius: 18px;
   padding: 1.4rem;
   position: sticky;
-  top: 78px;
+  top: 72px;
 }
 
 .bolsa-filters__header {
@@ -276,35 +299,33 @@
 }
 
 .bolsa-filters__title {
-  font-size: 13px;
+  font-family: "Inter", "Segoe UI", sans-serif;
+  font-size: 12px;
   font-weight: 800;
-  letter-spacing: 1px;
+  letter-spacing: 1.2px;
   text-transform: uppercase;
   color: var(--text-dark);
 }
 
 .bolsa-filters__clear {
+  font-family: "Inter", "Segoe UI", sans-serif;
   font-size: 12px;
+  font-weight: 600;
   color: var(--red);
   background: none;
   border: none;
   cursor: pointer;
-  font-family: inherit;
-  font-weight: 600;
   padding: 0;
   transition: color 0.2s;
 }
 
-.bolsa-filters__clear:hover {
-  color: var(--red-dark);
-}
+.bolsa-filters__clear:hover { color: var(--red-dark); }
 
-.filter-group {
-  margin-bottom: 1.2rem;
-}
+.filter-group { margin-bottom: 1.15rem; }
 
 .filter-group__label {
   display: block;
+  font-family: "Inter", "Segoe UI", sans-serif;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.8px;
@@ -326,6 +347,7 @@
 }
 
 .chip {
+  font-family: "Inter", "Segoe UI", sans-serif;
   padding: 5px 13px;
   border-radius: 50px;
   font-size: 12px;
@@ -334,8 +356,8 @@
   border: 1.5px solid var(--border-dark);
   background: var(--gray-light);
   color: var(--gray-dark);
-  font-family: inherit;
   transition: all 0.15s;
+  line-height: 1.4;
 }
 
 .chip:hover {
@@ -351,8 +373,10 @@
 }
 
 /* ══════════════════════════════════════════════════════
-   MAIN — listado de jobs
+   MAIN — barra + cards
    ══════════════════════════════════════════════════════ */
+.bolsa-main { min-width: 0; }
+
 .bolsa-main__bar {
   display: flex;
   justify-content: space-between;
@@ -363,66 +387,68 @@
 }
 
 .bolsa-main__count {
+  font-family: "Inter", "Segoe UI", sans-serif;
   font-size: 14px;
   color: var(--gray-dark);
 }
 
-.bolsa-main__count strong {
-  color: var(--text-dark);
-}
+.bolsa-main__count strong { color: var(--text-dark); }
 
 .bolsa-main__sort {
+  font-family: "Inter", "Segoe UI", sans-serif;
   background: var(--white);
   border: 1px solid var(--border-dark);
   border-radius: 8px;
-  padding: 6px 12px;
+  padding: 7px 12px;
   color: var(--text-mid);
   font-size: 13px;
-  font-family: inherit;
   cursor: pointer;
   outline: none;
 }
 
+/* ══════════════════════════════════════════════════════
+   JOB CARDS
+   ══════════════════════════════════════════════════════ */
 .bolsa-jobs {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
-/* ══════════════════════════════════════════════════════
-   JOB CARD — blanco con toque de color
-   ══════════════════════════════════════════════════════ */
 .job-card {
+  font-family: "Inter", "Segoe UI", sans-serif;
   background: var(--white);
   border: 1.5px solid var(--border-dark);
   border-radius: 18px;
-  padding: 1.5rem;
+  padding: 1.4rem 1.5rem;
   position: relative;
-  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
   overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.18s;
+  cursor: pointer;
 }
 
 .job-card:hover {
   border-color: var(--red);
-  box-shadow: 0 8px 32px rgba(200,16,46,0.08);
+  box-shadow: 0 8px 28px rgba(200,16,46,0.09);
   transform: translateY(-2px);
 }
 
 .job-card--featured {
   border-color: #fbbf24;
-  background: linear-gradient(135deg, #fffbeb 0%, var(--white) 60%);
+  background: linear-gradient(135deg, #fffdf5 0%, var(--white) 60%);
 }
 
 .job-card--featured:hover {
   border-color: #f59e0b;
-  box-shadow: 0 8px 32px rgba(251,191,36,0.15);
+  box-shadow: 0 8px 28px rgba(245,158,11,0.15);
 }
 
 .job-card__featured-badge {
   position: absolute;
   top: 0; right: 0;
   background: #f59e0b;
-  color: #fff;
+  color: var(--white);
+  font-family: "Inter", "Segoe UI", sans-serif;
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 1.2px;
@@ -434,34 +460,33 @@
   display: flex;
   gap: 14px;
   align-items: flex-start;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .job-card__logo {
-  width: 50px; height: 50px;
-  border-radius: 14px;
+  width: 48px; height: 48px;
+  border-radius: 12px;
   background: var(--navy);
   color: var(--white);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-family: "Inter", "Segoe UI", sans-serif;
+  font-size: 12px;
   font-weight: 800;
-  flex-shrink: 0;
   letter-spacing: 0.5px;
+  flex-shrink: 0;
 }
 
 .job-card--featured .job-card__logo {
   background: linear-gradient(135deg, var(--navy), var(--blue));
 }
 
-.job-card__heading {
-  flex: 1;
-  min-width: 0;
-}
+.job-card__heading { flex: 1; min-width: 0; }
 
 .job-card__role {
-  font-size: 1.05rem;
+  font-family: "Inter", "Segoe UI", sans-serif;
+  font-size: 1rem;
   font-weight: 800;
   color: var(--text-dark);
   line-height: 1.2;
@@ -469,19 +494,23 @@
 }
 
 .job-card__company {
+  font-family: "Inter", "Segoe UI", sans-serif;
   font-size: 13px;
+  font-weight: 400;
   color: var(--gray-dark);
 }
 
 .job-card__salary {
-  font-size: 14px;
+  font-family: "Inter", "Segoe UI", sans-serif;
+  font-size: 13px;
   font-weight: 700;
   color: var(--green);
-  white-space: nowrap;
   background: var(--green-light);
   padding: 4px 12px;
   border-radius: 50px;
+  white-space: nowrap;
   flex-shrink: 0;
+  line-height: 1.5;
 }
 
 /* Badges */
@@ -489,90 +518,68 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .badge {
-  padding: 4px 12px;
+  font-family: "Inter", "Segoe UI", sans-serif;
+  padding: 3px 11px;
   border-radius: 50px;
   font-size: 11px;
   font-weight: 700;
+  line-height: 1.6;
 }
 
-.badge--presencial {
-  background: #dbeafe;
-  color: #1e40af;
-}
+.badge--presencial { background: #dbeafe; color: #1e40af; }
+.badge--remoto     { background: #d1fae5; color: #065f46; }
+.badge--hibrido    { background: #ede9fe; color: #5b21b6; }
+.badge--area       { background: var(--gray-light); color: var(--navy); border: 1px solid var(--border-dark); }
+.badge--exp        { background: var(--red-light); color: var(--red-dark); }
+.badge--city       { background: transparent; color: var(--gray-dark); border: 1px solid var(--border-dark); }
 
-.badge--remoto {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.badge--hibrido {
-  background: #ede9fe;
-  color: #5b21b6;
-}
-
-.badge--area {
-  background: var(--gray-light);
-  color: var(--navy);
-  border: 1px solid var(--border-dark);
-}
-
-.badge--exp {
-  background: var(--red-light);
-  color: var(--red-dark);
-}
-
-.badge--city {
-  background: transparent;
-  color: var(--gray-dark);
-  border: 1px solid var(--border-dark);
-}
-
-/* Descripción */
 .job-card__desc {
+  font-family: "Inter", "Segoe UI", sans-serif;
   font-size: 13.5px;
+  font-weight: 400;
   color: var(--gray-dark);
   line-height: 1.7;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-/* Tags técnicos */
 .job-card__tags {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .tag {
+  font-family: "Inter", "Segoe UI", sans-serif;
   padding: 3px 10px;
   border-radius: 6px;
   font-size: 11px;
   font-weight: 600;
-  background: var(--off-white);
+  background: var(--gray-light);
   color: var(--text-mid);
-  border: 1px solid var(--gray-mid);
+  border: 1px solid var(--border-dark);
 }
 
-/* Footer de la card */
 .job-card__footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 14px;
-  border-top: 1px solid var(--border-dark);
+  padding-top: 12px;
+  border-top: 1px solid var(--gray-light);
   flex-wrap: wrap;
   gap: 10px;
 }
 
 .job-card__posted {
+  font-family: "Inter", "Segoe UI", sans-serif;
   font-size: 12px;
   color: var(--gray);
 }
@@ -585,7 +592,7 @@
   padding: 8px 22px;
   font-size: 13px;
   font-weight: 700;
-  font-family: inherit;
+  font-family: "Inter", "Segoe UI", sans-serif;
   cursor: pointer;
   transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
 }
@@ -593,7 +600,7 @@
 .job-card__apply:hover {
   background: var(--red-dark);
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(200,16,46,0.3);
+  box-shadow: 0 6px 18px rgba(200,16,46,0.28);
 }
 
 /* ══════════════════════════════════════════════════════
@@ -614,19 +621,21 @@
 }
 
 .bolsa-empty p {
+  font-family: "Inter", "Segoe UI", sans-serif;
   font-size: 15px;
   color: var(--gray-dark);
   margin-bottom: 1.5rem;
 }
 
 /* ══════════════════════════════════════════════════════
-   PAGINATION
+   PAGINACIÓN
    ══════════════════════════════════════════════════════ */
 .bolsa-pagination {
   display: flex;
   justify-content: center;
   gap: 8px;
   margin-top: 2rem;
+  padding-bottom: 2rem;
 }
 
 .page-btn {
@@ -636,7 +645,7 @@
   background: var(--white);
   color: var(--gray-dark);
   font-size: 14px;
-  font-family: inherit;
+  font-family: "Inter", "Segoe UI", sans-serif;
   cursor: pointer;
   transition: all 0.15s;
   display: flex;
@@ -644,10 +653,7 @@
   justify-content: center;
 }
 
-.page-btn:hover {
-  border-color: var(--navy);
-  color: var(--navy);
-}
+.page-btn:hover { border-color: var(--navy); color: var(--navy); }
 
 .page-btn--active {
   background: var(--navy);
@@ -658,59 +664,23 @@
 /* ══════════════════════════════════════════════════════
    RESPONSIVE
    ══════════════════════════════════════════════════════ */
-@media (max-width: 900px) {
-  .bolsa-layout {
+@media (max-width: 960px) {
+  .bolsa-layout__inner {
     grid-template-columns: 1fr;
     padding: 1.5rem;
   }
-
-  .bolsa-filters {
-    position: static;
-  }
+  .bolsa-filters { position: static; }
 }
 
 @media (max-width: 640px) {
-  .bolsa-hero {
-    padding: 3.5rem 1.5rem 3rem;
-  }
-
-  .bolsa-hero__title {
-    font-size: 2.2rem;
-    letter-spacing: -0.5px;
-  }
-
-  .bolsa-hero__kpis {
-    gap: 1.2rem;
-  }
-
-  .bolsa-hero__kpi-sep {
-    display: none;
-  }
-
-  .bolsa-searchbar {
-    padding: 0.9rem 1.5rem;
-  }
-
-  .bolsa-searchbar__inner {
-    flex-direction: column;
-  }
-
+  .bolsa-hero { padding: 3.5rem 1.5rem 3rem; }
+  .bolsa-hero__title { font-size: 2.1rem; letter-spacing: -0.5px; }
+  .bolsa-hero__kpi-sep { display: none; }
+  .bolsa-searchbar { padding: 1rem 1.5rem; }
+  .bolsa-searchbar__inner { flex-direction: column; }
   .bolsa-searchbar__input,
   .bolsa-searchbar__input--city,
-  .bolsa-searchbar__btn {
-    width: 100%;
-    max-width: 100%;
-  }
-
-  .job-card__top {
-    flex-wrap: wrap;
-  }
-
-  .job-card__salary {
-    margin-left: calc(50px + 14px);
-  }
-
-  .bolsa-layout {
-    padding: 1rem;
-  }
+  .bolsa-searchbar__btn { width: 100%; flex: unset; }
+  .bolsa-layout__inner { padding: 1rem; }
+  .job-card__top { flex-wrap: wrap; }
 }

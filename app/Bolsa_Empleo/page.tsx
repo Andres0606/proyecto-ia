@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import Header from "../Components/header";
 import Footer from "../Components/footer";
-import "../css/Bolsa_Empleo/Bolsa.css";
+import "../css/Bolsa/bolsa.css";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 interface Job {
@@ -68,7 +68,7 @@ const ALL_JOBS: Job[] = [
     city: "Cali",
     salaryMin: 3500000,
     salaryLabel: "$3.5M – $4.5M",
-    desc: "Firma boutique de derecho empresarial requiere abogado para apoyo en contratos mercantiles y consultoría a clientes corporativos.",
+    desc: "Firma boutique requiere abogado para apoyo en contratos mercantiles y consultoría a clientes corporativos.",
     posted: "Hace 3 días",
     featured: false,
     tags: ["Contratos", "Derecho mercantil"],
@@ -132,7 +132,7 @@ const ALL_JOBS: Job[] = [
     city: "Bogotá",
     salaryMin: 2800000,
     salaryLabel: "$2.8M – $3.5M",
-    desc: "Institución privada de alto rendimiento busca licenciado o profesional afín para enseñanza de matemáticas en bachillerato.",
+    desc: "Institución privada busca licenciado o profesional afín para enseñanza de matemáticas en bachillerato.",
     posted: "Hace 4 días",
     featured: false,
     tags: ["Pedagogía", "Cálculo"],
@@ -157,88 +157,33 @@ const ALL_JOBS: Job[] = [
 
 const AREAS = ["Todas", "Ingeniería", "Salud", "Derecho", "Administración", "Contaduría", "Educación"];
 const MODOS = ["Todas", "Presencial", "Remoto", "Híbrido"];
-const EXPS = ["Todas", "Sin exp.", "1-3 años", "3+ años"];
+const EXPS  = ["Todas", "Sin exp.", "1-3 años", "3+ años"];
 
-const MODE_COLOR: Record<string, string> = {
+const MODE_BADGE: Record<string, string> = {
   Presencial: "badge--presencial",
-  Remoto: "badge--remoto",
-  Híbrido: "badge--hibrido",
+  Remoto:     "badge--remoto",
+  Híbrido:    "badge--hibrido",
 };
 
-// ── Sub-componentes ───────────────────────────────────────────────────────────
-
-function HeroBolsa({ count }: { count: number }) {
+// ── Chip ──────────────────────────────────────────────────────────────────────
+function Chip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return (
-    <section className="bolsa-hero">
-      <div className="bolsa-hero__inner">
-        <span className="bolsa-hero__eyebrow">Portal del egresado · UCC</span>
-        <h1 className="bolsa-hero__title">
-          Bolsa de <em>empleo</em>
-        </h1>
-        <p className="bolsa-hero__sub">
-          Vacantes reales de empresas aliadas, filtradas por tu área, ciudad y experiencia.
-        </p>
-        <div className="bolsa-hero__kpis">
-          <div className="bolsa-hero__kpi">
-            <span className="bolsa-hero__kpi-val">{count}</span>
-            <span className="bolsa-hero__kpi-lbl">Vacantes activas</span>
-          </div>
-          <div className="bolsa-hero__kpi-sep" />
-          <div className="bolsa-hero__kpi">
-            <span className="bolsa-hero__kpi-val">87</span>
-            <span className="bolsa-hero__kpi-lbl">Empresas publicando</span>
-          </div>
-          <div className="bolsa-hero__kpi-sep" />
-          <div className="bolsa-hero__kpi">
-            <span className="bolsa-hero__kpi-val">34</span>
-            <span className="bolsa-hero__kpi-lbl">Nuevas esta semana</span>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function AlertaBanner() {
-  return (
-    <div className="alerta-banner">
-      <div className="alerta-banner__inner">
-        <span className="alerta-banner__icon">🔔</span>
-        <p className="alerta-banner__text">
-          <strong>Activa alertas de empleo</strong> — recibe un correo cuando publiquen
-          vacantes que encajan con tu perfil.
-        </p>
-        <button className="alerta-banner__btn">Activar alerta</button>
-      </div>
-    </div>
-  );
-}
-
-function Chip({
-  label,
-  active,
-  onClick,
-}: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button className={`chip ${active ? "chip--active" : ""}`} onClick={onClick}>
+    <button className={`chip${active ? " chip--active" : ""}`} onClick={onClick}>
       {label}
     </button>
   );
 }
 
+// ── Filtros ───────────────────────────────────────────────────────────────────
 function Filters({
   area, setArea,
   mode, setMode,
-  exp, setExp,
+  exp,  setExp,
   onClear,
 }: {
   area: string; setArea: (v: string) => void;
   mode: string; setMode: (v: string) => void;
-  exp: string; setExp: (v: string) => void;
+  exp:  string; setExp:  (v: string) => void;
   onClear: () => void;
 }) {
   return (
@@ -249,11 +194,9 @@ function Filters({
       </div>
 
       <div className="filter-group">
-        <span className="filter-group__label">Área profesional</span>
+        <span className="filter-group__label">Área</span>
         <div className="chip-row">
-          {AREAS.map((a) => (
-            <Chip key={a} label={a} active={area === a} onClick={() => setArea(a)} />
-          ))}
+          {AREAS.map((a) => <Chip key={a} label={a} active={area === a} onClick={() => setArea(a)} />)}
         </div>
       </div>
 
@@ -262,9 +205,7 @@ function Filters({
       <div className="filter-group">
         <span className="filter-group__label">Modalidad</span>
         <div className="chip-row">
-          {MODOS.map((m) => (
-            <Chip key={m} label={m} active={mode === m} onClick={() => setMode(m)} />
-          ))}
+          {MODOS.map((m) => <Chip key={m} label={m} active={mode === m} onClick={() => setMode(m)} />)}
         </div>
       </div>
 
@@ -273,18 +214,17 @@ function Filters({
       <div className="filter-group">
         <span className="filter-group__label">Experiencia</span>
         <div className="chip-row">
-          {EXPS.map((e) => (
-            <Chip key={e} label={e} active={exp === e} onClick={() => setExp(e)} />
-          ))}
+          {EXPS.map((e) => <Chip key={e} label={e} active={exp === e} onClick={() => setExp(e)} />)}
         </div>
       </div>
     </aside>
   );
 }
 
+// ── JobCard ───────────────────────────────────────────────────────────────────
 function JobCard({ job }: { job: Job }) {
   return (
-    <article className={`job-card ${job.featured ? "job-card--featured" : ""}`}>
+    <article className={`job-card${job.featured ? " job-card--featured" : ""}`}>
       {job.featured && <span className="job-card__featured-badge">DESTACADA</span>}
 
       <div className="job-card__top">
@@ -297,7 +237,7 @@ function JobCard({ job }: { job: Job }) {
       </div>
 
       <div className="job-card__badges">
-        <span className={`badge ${MODE_COLOR[job.mode]}`}>{job.mode}</span>
+        <span className={`badge ${MODE_BADGE[job.mode]}`}>{job.mode}</span>
         <span className="badge badge--area">{job.area}</span>
         <span className="badge badge--exp">{job.exp}</span>
         <span className="badge badge--city">📍 {job.city}</span>
@@ -306,9 +246,7 @@ function JobCard({ job }: { job: Job }) {
       <p className="job-card__desc">{job.desc}</p>
 
       <div className="job-card__tags">
-        {job.tags.map((t) => (
-          <span className="tag" key={t}>{t}</span>
-        ))}
+        {job.tags.map((t) => <span className="tag" key={t}>{t}</span>)}
       </div>
 
       <div className="job-card__footer">
@@ -322,11 +260,11 @@ function JobCard({ job }: { job: Job }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function BolsaPage() {
   const [search, setSearch] = useState("");
-  const [city, setCity] = useState("");
-  const [area, setArea] = useState("Todas");
-  const [mode, setMode] = useState("Todas");
-  const [exp, setExp] = useState("Todas");
-  const [sort, setSort] = useState("recent");
+  const [city,   setCity]   = useState("");
+  const [area,   setArea]   = useState("Todas");
+  const [mode,   setMode]   = useState("Todas");
+  const [exp,    setExp]    = useState("Todas");
+  const [sort,   setSort]   = useState("recent");
 
   const filtered = useMemo(() => {
     let list = ALL_JOBS.filter((j) => {
@@ -337,12 +275,12 @@ export default function BolsaPage() {
         (!c || j.city.toLowerCase().includes(c)) &&
         (area === "Todas" || j.area === area) &&
         (mode === "Todas" || j.mode === mode) &&
-        (exp === "Todas" || j.exp === exp)
+        (exp  === "Todas" || j.exp  === exp)
       );
     });
 
-    if (sort === "salary") list = [...list].sort((a, b) => b.salaryMin - a.salaryMin);
-    else if (sort === "relevance") list = [...list].sort((a, b) => Number(b.featured) - Number(a.featured));
+    if (sort === "salary")    list = [...list].sort((a, b) => b.salaryMin - a.salaryMin);
+    if (sort === "relevance") list = [...list].sort((a, b) => Number(b.featured) - Number(a.featured));
 
     return list;
   }, [search, city, area, mode, exp, sort]);
@@ -355,9 +293,36 @@ export default function BolsaPage() {
     <div className="page-root">
       <Header />
 
-      <HeroBolsa count={ALL_JOBS.length} />
+      {/* ── Hero ── */}
+      <section className="bolsa-hero">
+        <div className="bolsa-hero__inner">
+          <span className="bolsa-hero__eyebrow">Portal del egresado · UCC</span>
+          <h1 className="bolsa-hero__title">
+            Bolsa de <em>empleo</em>
+          </h1>
+          <p className="bolsa-hero__sub">
+            Vacantes reales de empresas aliadas, filtradas por tu área, ciudad y experiencia.
+          </p>
+          <div className="bolsa-hero__kpis">
+            <div className="bolsa-hero__kpi">
+              <span className="bolsa-hero__kpi-val">{ALL_JOBS.length}</span>
+              <span className="bolsa-hero__kpi-lbl">Vacantes activas</span>
+            </div>
+            <div className="bolsa-hero__kpi-sep" />
+            <div className="bolsa-hero__kpi">
+              <span className="bolsa-hero__kpi-val">87</span>
+              <span className="bolsa-hero__kpi-lbl">Empresas publicando</span>
+            </div>
+            <div className="bolsa-hero__kpi-sep" />
+            <div className="bolsa-hero__kpi">
+              <span className="bolsa-hero__kpi-val">34</span>
+              <span className="bolsa-hero__kpi-lbl">Nuevas esta semana</span>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      {/* SEARCH BAR */}
+      {/* ── Search Bar ── */}
       <div className="bolsa-searchbar">
         <div className="bolsa-searchbar__inner">
           <input
@@ -365,6 +330,7 @@ export default function BolsaPage() {
             placeholder="Cargo, empresa o palabra clave..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && setSearch(search)}
           />
           <input
             className="bolsa-searchbar__input bolsa-searchbar__input--city"
@@ -376,59 +342,68 @@ export default function BolsaPage() {
         </div>
       </div>
 
-      <AlertaBanner />
+      {/* ── Alerta Banner ── */}
+      <div className="alerta-banner">
+        <div className="alerta-banner__inner">
+          <span className="alerta-banner__icon">🔔</span>
+          <p className="alerta-banner__text">
+            <strong>Activa alertas de empleo</strong> — recibe un correo cuando publiquen
+            vacantes que encajan con tu perfil.
+          </p>
+          <button className="alerta-banner__btn">Activar alerta</button>
+        </div>
+      </div>
 
-      {/* MAIN LAYOUT */}
+      {/* ── Main Layout ── */}
       <div className="bolsa-layout">
-        <Filters
-          area={area} setArea={setArea}
-          mode={mode} setMode={setMode}
-          exp={exp} setExp={setExp}
-          onClear={clearFilters}
-        />
+        <div className="bolsa-layout__inner">
+          <Filters
+            area={area} setArea={setArea}
+            mode={mode} setMode={setMode}
+            exp={exp}   setExp={setExp}
+            onClear={clearFilters}
+          />
 
-        <main className="bolsa-main">
-          <div className="bolsa-main__bar">
-            <span className="bolsa-main__count">
-              <strong>{filtered.length}</strong> vacantes encontradas
-            </span>
-            <select
-              className="bolsa-main__sort"
-              value={sort}
-              onChange={(e) => setSort(e.target.value)}
-            >
-              <option value="recent">Más recientes</option>
-              <option value="salary">Mayor salario</option>
-              <option value="relevance">Más relevantes</option>
-            </select>
-          </div>
-
-          {filtered.length === 0 ? (
-            <div className="bolsa-empty">
-              <span className="bolsa-empty__icon">🔍</span>
-              <p>No hay vacantes con estos filtros.</p>
-              <button className="btn btn--red" onClick={clearFilters}>
-                Limpiar filtros
-              </button>
+          <main className="bolsa-main">
+            <div className="bolsa-main__bar">
+              <span className="bolsa-main__count">
+                <strong>{filtered.length}</strong> vacantes encontradas
+              </span>
+              <select
+                className="bolsa-main__sort"
+                value={sort}
+                onChange={(e) => setSort(e.target.value)}
+              >
+                <option value="recent">Más recientes</option>
+                <option value="salary">Mayor salario</option>
+                <option value="relevance">Más relevantes</option>
+              </select>
             </div>
-          ) : (
-            <div className="bolsa-jobs">
-              {filtered.map((j) => (
-                <JobCard key={j.id} job={j} />
+
+            {filtered.length === 0 ? (
+              <div className="bolsa-empty">
+                <span className="bolsa-empty__icon">🔍</span>
+                <p>No hay vacantes con estos filtros.</p>
+                <button className="btn btn--red" onClick={clearFilters}>
+                  Limpiar filtros
+                </button>
+              </div>
+            ) : (
+              <div className="bolsa-jobs">
+                {filtered.map((j) => <JobCard key={j.id} job={j} />)}
+              </div>
+            )}
+
+            <div className="bolsa-pagination">
+              {[1, 2, 3].map((p) => (
+                <button key={p} className={`page-btn${p === 1 ? " page-btn--active" : ""}`}>
+                  {p}
+                </button>
               ))}
+              <button className="page-btn">›</button>
             </div>
-          )}
-
-          {/* PAGINATION */}
-          <div className="bolsa-pagination">
-            {[1, 2, 3].map((p) => (
-              <button key={p} className={`page-btn ${p === 1 ? "page-btn--active" : ""}`}>
-                {p}
-              </button>
-            ))}
-            <button className="page-btn">›</button>
-          </div>
-        </main>
+          </main>
+        </div>
       </div>
 
       <Footer />
