@@ -62,7 +62,7 @@ export default function Header() {
             <a href="/">Inicio</a>
           </li>
           <li>
-            <a href="/bolsa-empleo">Bolsa de empleo</a>
+            <a href="/Bolsa_Empleo">Bolsa de empleo</a>
           </li>
 
           <li>
