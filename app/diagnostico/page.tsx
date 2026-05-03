@@ -88,10 +88,12 @@ function getPredictionData(res: ResultadoAPI) {
     const c = res.Corta <= 1 ? res.Corta * 100 : res.Corta;
     const l = res.Larga <= 1 ? res.Larga * 100 : res.Larga;
     
+    const details = { corta: c.toFixed(2), larga: l.toFixed(2) };
+
     if (l >= c) {
-      return { score: Math.round(l), cssClass: "alta", label: "Estabilidad Larga", tipsKey: "alta" as const };
+      return { score: Math.round(l), cssClass: "alta", label: "Estabilidad Larga", tipsKey: "alta" as const, details };
     } else {
-      return { score: Math.round(c), cssClass: "baja", label: "Estabilidad Corta", tipsKey: "baja" as const };
+      return { score: Math.round(c), cssClass: "baja", label: "Estabilidad Corta", tipsKey: "baja" as const, details };
     }
   }
 
@@ -100,9 +102,9 @@ function getPredictionData(res: ResultadoAPI) {
   const num = raw === null ? 0 : (typeof raw === "string" ? parseFloat(raw) : raw);
   const score = num <= 1 ? Math.round(num * 100) : Math.round(num);
   
-  if (score >= 70) return { score, cssClass: "alta", label: "Estabilidad Alta", tipsKey: "alta" as const };
-  if (score >= 40) return { score, cssClass: "media", label: "Estabilidad Media", tipsKey: "media" as const };
-  return { score, cssClass: "baja", label: "Estabilidad Baja", tipsKey: "baja" as const };
+  if (score >= 70) return { score, cssClass: "alta", label: "Estabilidad Alta", tipsKey: "alta" as const, details: null };
+  if (score >= 40) return { score, cssClass: "media", label: "Estabilidad Media", tipsKey: "media" as const, details: null };
+  return { score, cssClass: "baja", label: "Estabilidad Baja", tipsKey: "baja" as const, details: null };
 }
 
 const NIVEL_TIPS: Record<"alta" | "media" | "baja", { icon: string; iconClass: string; title: string; desc: string }[]> = {
@@ -146,7 +148,7 @@ function PillGroup({ label, options, value, onChange }: { label: string; options
 }
 
 function ResultCard({ resultado }: { resultado: ResultadoAPI }) {
-  const { score, cssClass, label, tipsKey } = getPredictionData(resultado);
+  const { score, cssClass, label, tipsKey, details } = getPredictionData(resultado);
   const dashoffset = CIRCUMFERENCE * (1 - score / 100);
 
   return (
@@ -172,6 +174,12 @@ function ResultCard({ resultado }: { resultado: ResultadoAPI }) {
             <div className="diag-score__number">{score}<small>% Confianza</small></div>
           </div>
           <span className={`diag-score__label diag-score__label--${cssClass}`}>{label}</span>
+          
+          {details && (
+            <div className="diag-score__details" style={{ marginTop: '14px', fontSize: '0.85rem', fontWeight: 600, color: '#475569', background: '#f1f5f9', padding: '8px 16px', borderRadius: '50px', letterSpacing: '0.5px' }}>
+              <span style={{ color: '#15803d' }}>Larga: {details.larga}%</span> <span style={{ margin: '0 8px', color: '#cbd5e1' }}>|</span> <span style={{ color: '#b91c1c' }}>Corta: {details.corta}%</span>
+            </div>
+          )}
         </div>
         <div className="diag-result__info">
           {NIVEL_TIPS[tipsKey].map((tip, i) => (
