@@ -1,16 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Header from "../Components/header";
+import Footer from "../Components/footer";
 import "../css/Inicio/inicio.css";
 
 // ── Datos ────────────────────────────────────────────────────────────────────
-const STATS = [
-  { value: 12480, label: "Egresados registrados", suffix: "+" },
-  { value: 3200, label: "Ofertas publicadas", suffix: "+" },
-  { value: 87, label: "Tasa de empleabilidad", suffix: "%" },
-  { value: 540, label: "Empresas aliadas", suffix: "+" },
-];
-
 const FEATURES = [
   {
     icon: "🎯",
@@ -44,30 +39,6 @@ const FEATURES = [
   },
 ];
 
-const TESTIMONIOS = [
-  {
-    nombre: "Laura Martínez",
-    programa: "Ing. de Sistemas · Sede Bogotá",
-    texto:
-      "En menos de 3 semanas encontré trabajo en una empresa tech gracias al portal. El índice de empleabilidad me ayudó a saber qué mejorar.",
-    avatar: "LM",
-  },
-  {
-    nombre: "Carlos Herrera",
-    programa: "Administración de Empresas · Sede Medellín",
-    texto:
-      "Las alertas de empleo son un golazo. Me llegó la oferta perfecta sin tener que buscar todos los días.",
-    avatar: "CH",
-  },
-  {
-    nombre: "Valentina Ríos",
-    programa: "Psicología · Sede Cali",
-    texto:
-      "Me encanta que la hoja de vida solo la ven las empresas donde apliqué. Mucha más privacidad que otras plataformas.",
-    avatar: "VR",
-  },
-];
-
 const PASOS = [
   {
     num: "01",
@@ -91,108 +62,7 @@ const PASOS = [
   },
 ];
 
-// ── Contador animado ──────────────────────────────────────────────────────────
-function AnimatedCounter({
-  target,
-  suffix,
-}: {
-  target: number;
-  suffix: string;
-}) {
-  const [count, setCount] = useState(0);
-  const ref = useRef<HTMLSpanElement>(null);
-  const started = useRef(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !started.current) {
-          started.current = true;
-          const duration = 1800;
-          const steps = 60;
-          const increment = target / steps;
-          let current = 0;
-          const timer = setInterval(() => {
-            current += increment;
-            if (current >= target) {
-              setCount(target);
-              clearInterval(timer);
-            } else {
-              setCount(Math.floor(current));
-            }
-          }, duration / steps);
-        }
-      },
-      { threshold: 0.3 }
-    );
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [target]);
-
-  return (
-    <span ref={ref}>
-      {count.toLocaleString("es-CO")}
-      {suffix}
-    </span>
-  );
-}
-
-// ── Navbar ────────────────────────────────────────────────────────────────────
-function Navbar() {
-  const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  return (
-    <nav className={`navbar ${scrolled ? "navbar--scrolled" : ""}`}>
-      <div className="navbar__inner">
-        <div className="navbar__brand">
-          <span className="navbar__logo-box">UCC</span>
-          <span className="navbar__brand-text">Portal del Egresado</span>
-        </div>
-        <ul
-          className={`navbar__links ${menuOpen ? "navbar__links--open" : ""}`}
-        >
-          <li>
-            <a href="#funciones">Funciones</a>
-          </li>
-          <li>
-            <a href="#como-funciona">¿Cómo funciona?</a>
-          </li>
-          <li>
-            <a href="#testimonios">Testimonios</a>
-          </li>
-          <li>
-            <a href="#estadisticas">Estadísticas</a>
-          </li>
-        </ul>
-        <div className="navbar__cta">
-          <a href="#registro" className="btn btn--ghost">
-            Ingresar
-          </a>
-          <a href="#registro" className="btn btn--red">
-            Registrarse
-          </a>
-        </div>
-        <button
-          className="navbar__hamburger"
-          onClick={() => setMenuOpen(!menuOpen)}
-        >
-          <span />
-          <span />
-          <span />
-        </button>
-      </div>
-    </nav>
-  );
-}
-
-// ── Hero (centrado, sin panel visual) ─────────────────────────────────────────
+// ── Hero ──────────────────────────────────────────────────────────────────────
 function Hero() {
   return (
     <section className="hero">
@@ -221,24 +91,6 @@ function Hero() {
           <span>✓ Gratuito para egresados</span>
           <span>✓ Datos protegidos</span>
         </div>
-      </div>
-    </section>
-  );
-}
-
-// ── Stats ─────────────────────────────────────────────────────────────────────
-function Stats() {
-  return (
-    <section className="stats" id="estadisticas">
-      <div className="stats__inner">
-        {STATS.map((s) => (
-          <div className="stats__item" key={s.label}>
-            <div className="stats__value">
-              <AnimatedCounter target={s.value} suffix={s.suffix} />
-            </div>
-            <div className="stats__label">{s.label}</div>
-          </div>
-        ))}
       </div>
     </section>
   );
@@ -297,9 +149,6 @@ function ComoFunciona() {
 }
 
 // ── Estabilidad laboral ───────────────────────────────────────────────────────
-// El arco SVG tiene una longitud total de ~251px (semicírculo r=80).
-// strokeDashoffset = 251 * (1 - pct/100) recorta desde la derecha.
-// Para "Larga" usamos pct alto (~78), para "Corta" usamos pct bajo (~25).
 const GAUGE_TOTAL = 251;
 
 function Gauge({ pct, label }: { pct: number; label: string }) {
@@ -313,7 +162,6 @@ function Gauge({ pct, label }: { pct: number; label: string }) {
             <stop offset="100%" stopColor="#003f88" />
           </linearGradient>
         </defs>
-        {/* Track */}
         <path
           d="M20,100 A80,80 0 0,1 180,100"
           fill="none"
@@ -321,7 +169,6 @@ function Gauge({ pct, label }: { pct: number; label: string }) {
           strokeWidth="16"
           strokeLinecap="round"
         />
-        {/* Fill */}
         <path
           d="M20,100 A80,80 0 0,1 180,100"
           fill="none"
@@ -346,7 +193,6 @@ function EstabilidadSection() {
     { label: "Empleabilidad sectorial", pct: 65 },
   ];
 
-  // Promedio de los ítems para el gauge
   const promedio = Math.round(
     items.reduce((acc, i) => acc + i.pct, 0) / items.length
   );
@@ -377,38 +223,11 @@ function EstabilidadSection() {
             Ver mi índice →
           </a>
         </div>
-
         <div className="estabilidad__visual">
           <div className="estabilidad__gauge-wrap">
             <Gauge pct={promedio} label={nivelLabel} />
           </div>
         </div>
-      </div>
-    </section>
-  );
-}
-
-// ── Testimonios ───────────────────────────────────────────────────────────────
-function Testimonios() {
-  return (
-    <section className="testimonios" id="testimonios">
-      <div className="section-header">
-        <span className="section-tag">Lo que dicen nuestros egresados</span>
-        <h2 className="section-title">Historias reales de éxito</h2>
-      </div>
-      <div className="testimonios__grid">
-        {TESTIMONIOS.map((t) => (
-          <div className="testimonio-card" key={t.nombre}>
-            <p className="testimonio-card__texto">"{t.texto}"</p>
-            <div className="testimonio-card__autor">
-              <div className="testimonio-card__avatar">{t.avatar}</div>
-              <div>
-                <div className="testimonio-card__nombre">{t.nombre}</div>
-                <div className="testimonio-card__prog">{t.programa}</div>
-              </div>
-            </div>
-          </div>
-        ))}
       </div>
     </section>
   );
@@ -441,35 +260,11 @@ function CTAFinal() {
   );
 }
 
-// ── Footer ────────────────────────────────────────────────────────────────────
-function Footer() {
-  return (
-    <footer className="footer">
-      <div className="footer__inner">
-        <div className="footer__brand">
-          <span className="navbar__logo-box">UCC</span>
-          <span>Portal del Egresado · Universidad Cooperativa de Colombia</span>
-        </div>
-        <div className="footer__links">
-          <a href="#">Política de privacidad</a>
-          <a href="#">Términos de uso</a>
-          <a href="#">Soporte</a>
-          <a href="#">Contacto</a>
-        </div>
-        <p className="footer__copy">
-          © 2025 Universidad Cooperativa de Colombia. Todos los derechos
-          reservados.
-        </p>
-      </div>
-    </footer>
-  );
-}
-
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function InicioPage() {
   return (
     <div className="page-root">
-      <Navbar />
+      <Header />
       <Hero />
       <Features />
       <ComoFunciona />
