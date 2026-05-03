@@ -82,32 +82,40 @@ const OPTIONS = {
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const CIRCUMFERENCE = 2 * Math.PI * 44;
 
-function getScore(res: ResultadoAPI): number {
+function getPredictionData(res: ResultadoAPI) {
+  // Si la API devuelve ambas probabilidades Corta y Larga
+  if (res.Corta !== undefined && res.Larga !== undefined) {
+    const c = res.Corta <= 1 ? res.Corta * 100 : res.Corta;
+    const l = res.Larga <= 1 ? res.Larga * 100 : res.Larga;
+    
+    if (l >= c) {
+      return { score: Math.round(l), cssClass: "alta", label: "Estabilidad Larga", tipsKey: "alta" as const };
+    } else {
+      return { score: Math.round(c), cssClass: "baja", label: "Estabilidad Corta", tipsKey: "baja" as const };
+    }
+  }
+
+  // Fallback si no tiene el formato Corta/Larga
   const raw = res.estabilidad ?? res.resultado_estabilidad ?? res.prediction ?? res.Larga ?? null;
-  if (raw === null) return 0;
-  if (typeof raw === "string") return parseFloat(raw) <= 1 ? Math.round(parseFloat(raw) * 100) : Math.round(parseFloat(raw));
-  return raw <= 1 ? Math.round(raw * 100) : Math.round(raw);
+  const num = raw === null ? 0 : (typeof raw === "string" ? parseFloat(raw) : raw);
+  const score = num <= 1 ? Math.round(num * 100) : Math.round(num);
+  
+  if (score >= 70) return { score, cssClass: "alta", label: "Estabilidad Alta", tipsKey: "alta" as const };
+  if (score >= 40) return { score, cssClass: "media", label: "Estabilidad Media", tipsKey: "media" as const };
+  return { score, cssClass: "baja", label: "Estabilidad Baja", tipsKey: "baja" as const };
 }
-
-function getNivel(score: number): "alta" | "media" | "baja" {
-  if (score >= 70) return "alta";
-  if (score >= 40) return "media";
-  return "baja";
-}
-
-const NIVEL_LABELS = { alta: "Estabilidad Alta", media: "Estabilidad Media", baja: "Estabilidad Baja" };
 
 const NIVEL_TIPS: Record<"alta" | "media" | "baja", { icon: string; iconClass: string; title: string; desc: string }[]> = {
   alta: [
-    { icon: "✓", iconClass: "diag-result__row-icon--green", title: "Perfil sólido", desc: "Tu combinación de formación, experiencia y sector te posiciona muy bien en el mercado." },
+    { icon: "✓", iconClass: "diag-result__row-icon--green", title: "Perfil sólido", desc: "Tu combinación de formación, experiencia y sector te posiciona con una probabilidad alta de estabilidad prolongada." },
     { icon: "→", iconClass: "diag-result__row-icon--blue", title: "Siguiente paso", desc: "Considera certificaciones avanzadas o roles de mayor responsabilidad para seguir creciendo." },
   ],
   media: [
-    { icon: "!", iconClass: "diag-result__row-icon--yellow", title: "Potencial de mejora", desc: "Hay áreas en tu perfil que puedes fortalecer para aumentar tu empleabilidad." },
+    { icon: "!", iconClass: "diag-result__row-icon--yellow", title: "Potencial de mejora", desc: "Hay áreas en tu perfil que puedes fortalecer para aumentar tu empleabilidad a largo plazo." },
     { icon: "→", iconClass: "diag-result__row-icon--blue", title: "Recomendación", desc: "Enfócate en actualizar habilidades técnicas y ampliar tu red profesional en el sector." },
   ],
   baja: [
-    { icon: "!", iconClass: "diag-result__row-icon--red", title: "Atención requerida", desc: "Tu perfil actual presenta brechas importantes frente a las demandas del mercado laboral." },
+    { icon: "!", iconClass: "diag-result__row-icon--red", title: "Atención requerida", desc: "Tu perfil actual tiene una tendencia a la rotación o estabilidad a corto plazo frente a las demandas del mercado." },
     { icon: "→", iconClass: "diag-result__row-icon--blue", title: "Plan de acción", desc: "Te recomendamos revisar tu formación, explorar nuevas áreas y considerar programas de actualización." },
   ],
 };
@@ -138,8 +146,7 @@ function PillGroup({ label, options, value, onChange }: { label: string; options
 }
 
 function ResultCard({ resultado }: { resultado: ResultadoAPI }) {
-  const score = getScore(resultado);
-  const nivel = getNivel(score);
+  const { score, cssClass, label, tipsKey } = getPredictionData(resultado);
   const dashoffset = CIRCUMFERENCE * (1 - score / 100);
 
   return (
@@ -156,18 +163,18 @@ function ResultCard({ resultado }: { resultado: ResultadoAPI }) {
             <svg className="diag-score__svg" viewBox="0 0 100 100">
               <circle className="diag-score__track" cx="50" cy="50" r="44" />
               <circle
-                className={`diag-score__fill diag-score__fill--${nivel}`}
+                className={`diag-score__fill diag-score__fill--${cssClass}`}
                 cx="50" cy="50" r="44"
                 strokeDasharray={CIRCUMFERENCE}
                 strokeDashoffset={dashoffset}
               />
             </svg>
-            <div className="diag-score__number">{score}<small>/ 100</small></div>
+            <div className="diag-score__number">{score}<small>% Confianza</small></div>
           </div>
-          <span className={`diag-score__label diag-score__label--${nivel}`}>{NIVEL_LABELS[nivel]}</span>
+          <span className={`diag-score__label diag-score__label--${cssClass}`}>{label}</span>
         </div>
         <div className="diag-result__info">
-          {NIVEL_TIPS[nivel].map((tip, i) => (
+          {NIVEL_TIPS[tipsKey].map((tip, i) => (
             <div className="diag-result__row" key={i}>
               <div className={`diag-result__row-icon ${tip.iconClass}`}>{tip.icon}</div>
               <div className="diag-result__row-text"><strong>{tip.title}</strong><p>{tip.desc}</p></div>
