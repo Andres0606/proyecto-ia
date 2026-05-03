@@ -21,7 +21,7 @@
 .be-hero {
   background-color: #0a1628;
   background-image: linear-gradient(155deg, #0a1628 0%, #0d2050 55%, #1a3a7c 100%);
-  padding: 5rem 2rem 4rem;
+  padding: 7.5rem 2rem 4rem;
   position: relative;
   overflow: hidden;
   font-family: "Inter", "Segoe UI", Arial, sans-serif;
@@ -597,7 +597,7 @@
 }
 
 @media (max-width: 640px) {
-  .be-hero { padding: 3.5rem 1.5rem 3rem; }
+  .be-hero { padding: 6rem 1.5rem 3rem; }
   .be-hero__title { font-size: 2.1rem; letter-spacing: -0.5px; }
   .be-hero__sep { display: none; }
   .be-searchbar { padding: 1rem 1.5rem; }
