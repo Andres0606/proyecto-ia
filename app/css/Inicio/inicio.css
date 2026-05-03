@@ -248,7 +248,7 @@ body {
   justify-content: center;
   position: relative;
   overflow: hidden;
-  padding: 5rem 2rem 4rem;
+  padding: 8rem 2rem 5rem;
   background: linear-gradient(
     155deg,
     var(--navy) 0%,
