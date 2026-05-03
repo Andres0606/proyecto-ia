@@ -65,52 +65,8 @@ export default function Header() {
             <a href="/bolsa-empleo">Bolsa de empleo</a>
           </li>
 
-          {/* Dropdown Diagnóstico */}
-          <li className="header__dropdown-wrap" ref={dropRef}>
-            <button
-              className="header__drop-trigger"
-              onClick={() => setDropOpen(!dropOpen)}
-              aria-expanded={dropOpen}
-            >
-              Diagnóstico de estabilidad
-              <svg
-                className={`header__drop-arrow ${dropOpen ? "header__drop-arrow--open" : ""}`}
-                width="12"
-                height="12"
-                viewBox="0 0 12 12"
-                fill="none"
-              >
-                <path
-                  d="M2 4L6 8L10 4"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-
-            {dropOpen && (
-              <div className="header__dropdown">
-                <div className="header__dropdown-header">
-                  <span>Diagnóstico laboral</span>
-                  <p>Conoce tu posición real en el mercado colombiano.</p>
-                </div>
-                <ul className="header__dropdown-list">
-                  {DIAGNOSTICO_ITEMS.map((item) => (
-                    <li key={item.title}>
-                      <a href={item.href} className="header__dropdown-item" onClick={() => setDropOpen(false)}>
-                        <span className="header__dropdown-icon">{item.icon}</span>
-                        <div>
-                          <strong>{item.title}</strong>
-                          <p>{item.desc}</p>
-                        </div>
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+          <li>
+            <a href="/diagnostico">Diagnóstico de estabilidad</a>
           </li>
 
           <li>
