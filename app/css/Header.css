@@ -1,0 +1,172 @@
+/* ═══════════════════════════════════════
+   header.css  —  Portal del Egresado UCC
+   ═══════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+.header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 200;
+  transition: background 0.25s ease, box-shadow 0.25s ease;
+}
+
+.header--scrolled {
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 2px 20px rgba(0, 40, 85, 0.1);
+}
+
+.header__inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1.1rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+/* ── Brand ── */
+.header__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.header__logo {
+  background: #c8102e;
+  color: #fff;
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 900;
+  font-size: 1rem;
+  padding: 0.22rem 0.65rem;
+  border-radius: 6px;
+  letter-spacing: 0.05em;
+}
+
+.header__brand-text {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: #002855;
+}
+
+/* ── Links ── */
+.header__links {
+  display: flex;
+  list-style: none;
+  gap: 2rem;
+  margin-left: auto;
+}
+
+.header__links a {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #002855;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.header__links a:hover {
+  color: #c8102e;
+}
+
+/* ── Action buttons ── */
+.header__actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+.header__btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.55rem 1.25rem;
+  border-radius: 999px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+  white-space: nowrap;
+}
+
+.header__btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 40, 85, 0.15);
+}
+
+.header__btn--ghost {
+  background: transparent;
+  color: #002855;
+  border: 2px solid #dce8f7;
+}
+
+.header__btn--ghost:hover {
+  background: #dce8f7;
+}
+
+.header__btn--red {
+  background: #c8102e;
+  color: #fff;
+  border: 2px solid #c8102e;
+}
+
+.header__btn--red:hover {
+  background: #9e0b24;
+  border-color: #9e0b24;
+}
+
+/* ── Hamburger ── */
+.header__hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.4rem;
+  margin-left: auto;
+}
+
+.header__hamburger span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: #002855;
+  border-radius: 2px;
+  transition: 0.22s ease;
+}
+
+.header__hamburger--open span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+.header__hamburger--open span:nth-child(2) {
+  opacity: 0;
+}
+.header__hamburger--open span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* ── Mobile ── */
+@media (max-width: 900px) {
+  .header__links  { display: none; }
+  .header__actions { display: none; }
+  .header__hamburger { display: flex; }
+
+  .header__links--open {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 100%; left: 0; right: 0;
+    background: #fff;
+    padding: 1.2rem 2rem 1.8rem;
+    box-shadow: 0 8px 32px rgba(0,40,85,.12);
+    gap: 1.1rem;
+    border-top: 3px solid #c8102e;
+  }
+}
