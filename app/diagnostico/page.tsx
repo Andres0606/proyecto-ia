@@ -25,6 +25,8 @@ interface FormData {
 interface ResultadoAPI {
   estabilidad?: number;
   resultado_estabilidad?: number;
+  Larga?: number;
+  Corta?: number;
   nivel?: string;
   mensaje?: string;
   prediction?: string | number;
@@ -81,7 +83,7 @@ const OPTIONS = {
 const CIRCUMFERENCE = 2 * Math.PI * 44;
 
 function getScore(res: ResultadoAPI): number {
-  const raw = res.estabilidad ?? res.resultado_estabilidad ?? res.prediction ?? null;
+  const raw = res.estabilidad ?? res.resultado_estabilidad ?? res.prediction ?? res.Larga ?? null;
   if (raw === null) return 0;
   if (typeof raw === "string") return parseFloat(raw) <= 1 ? Math.round(parseFloat(raw) * 100) : Math.round(parseFloat(raw));
   return raw <= 1 ? Math.round(raw * 100) : Math.round(raw);
