@@ -10,7 +10,7 @@ const PLANES = [
   {
     id: "modelo",
     name: "Acceso al Modelo",
-    desc: "Accede a nuestro modelo de diagnóstico de estabilidad laboral y obtén un análisis completo de tu perfil profesional.",
+    desc: "Accede a nuestro modelo de diagnóstico de estabilidad laboral con IA y conoce tu nivel de empleabilidad.",
     price: "25.000",
     period: "pago único",
     note: "Sin cargos recurrentes — paga una vez, usa siempre.",
@@ -19,12 +19,10 @@ const PLANES = [
     popular: false,
     features: [
       { text: "Diagnóstico de estabilidad laboral con IA", included: true },
-      { text: "Análisis de habilidades vs. mercado colombiano", included: true },
-      { text: "Recomendaciones personalizadas de mejora", included: true },
-      { text: "Informe descargable en PDF", included: true },
-      { text: "Acceso a la bolsa de empleo UCC", included: false },
+      { text: "Acceso completo a la bolsa de empleo UCC", included: false },
       { text: "Alertas de vacantes por correo", included: false },
       { text: "Postulación directa a empresas aliadas", included: false },
+      { text: "Recomendaciones de empleos según tu nivel de estabilidad", included: false },
     ],
     cta: "Adquirir acceso",
     ctaClass: "plan-card__cta--outline",
@@ -41,12 +39,10 @@ const PLANES = [
     popular: true,
     features: [
       { text: "Diagnóstico de estabilidad laboral con IA", included: true },
-      { text: "Análisis de habilidades vs. mercado colombiano", included: true },
-      { text: "Recomendaciones personalizadas de mejora", included: true },
-      { text: "Informe descargable en PDF", included: true },
       { text: "Acceso completo a la bolsa de empleo UCC", included: true },
       { text: "Alertas de vacantes por correo", included: true },
       { text: "Postulación directa a empresas aliadas", included: true },
+      { text: "Recomendaciones de empleos según tu nivel de estabilidad", included: true },
     ],
     cta: "Suscribirme ahora",
     ctaClass: "plan-card__cta--red",
@@ -54,14 +50,11 @@ const PLANES = [
 ];
 
 const COMPARATIVA = [
-  { feature: "Diagnóstico con IA", modelo: true, completo: true },
-  { feature: "Análisis de perfil profesional", modelo: true, completo: true },
-  { feature: "Recomendaciones personalizadas", modelo: true, completo: true },
-  { feature: "Informe descargable (PDF)", modelo: true, completo: true },
-  { feature: "Acceso a la bolsa de empleo", modelo: false, completo: true },
-  { feature: "Alertas de vacantes", modelo: false, completo: true },
-  { feature: "Postulación a empresas aliadas", modelo: false, completo: true },
-  { feature: "Soporte prioritario", modelo: false, completo: true },
+  { feature: "Diagnóstico de estabilidad laboral con IA", modelo: true, completo: true },
+  { feature: "Acceso a la bolsa de empleo UCC", modelo: false, completo: true },
+  { feature: "Alertas de vacantes por correo", modelo: false, completo: true },
+  { feature: "Postulación directa a empresas aliadas", modelo: false, completo: true },
+  { feature: "Recomendaciones de empleos según estabilidad", modelo: false, completo: true },
   { feature: "Tipo de cobro", modelo: "Único", completo: "Mensual" },
 ];
 
@@ -72,7 +65,7 @@ const FAQS = [
   },
   {
     q: "¿Qué incluye el pago único del modelo?",
-    a: "Con el pago único obtienes acceso permanente al modelo de diagnóstico de estabilidad laboral con IA. Esto incluye tu análisis completo, comparación con el mercado colombiano, recomendaciones personalizadas y un informe descargable en PDF.",
+    a: "Con el pago único obtienes acceso permanente al modelo de diagnóstico de estabilidad laboral con IA. Podrás conocer tu nivel de empleabilidad y estabilidad en el mercado laboral colombiano.",
   },
   {
     q: "¿Puedo cancelar la suscripción mensual en cualquier momento?",
