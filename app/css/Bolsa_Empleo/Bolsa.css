@@ -32,11 +32,11 @@
   font-family: "Inter", "Segoe UI", sans-serif;
   background: linear-gradient(
     155deg,
-    var(--navy) 0%,
-    var(--navy-mid) 50%,
-    var(--blue) 100%
+    #0a1628 0%,
+    #0d2050 50%,
+    #1a3a7c 100%
   ) !important;
-  background-color: var(--navy) !important;
+  background-color: #0a1628 !important;
   padding: 5rem 2rem 4rem;
   position: relative;
   overflow: hidden;
@@ -45,17 +45,21 @@
   margin: 0 !important;
   outline: none !important;
   box-shadow: none !important;
-  /* Forzar que no haya fondo blanco visible */
   isolation: isolate;
+  /* Forzar colores sólidos sin transparencia heredada */
+  color-scheme: dark;
 }
 
-/* Anular cualquier borde/fondo heredado de `section` o etiqueta genérica */
-section.bolsa-hero,
-div.bolsa-hero {
+/* Máxima especificidad para anular cualquier estilo global de Next.js/Tailwind */
+html body .bolsa-hero,
+html body section.bolsa-hero,
+html body div.bolsa-hero {
+  background: linear-gradient(155deg, #0a1628 0%, #0d2050 50%, #1a3a7c 100%) !important;
+  background-color: #0a1628 !important;
   border: none !important;
   border-radius: 0 !important;
-  background-color: var(--navy) !important;
-  outline: none !important;
+  opacity: 1 !important;
+  filter: none !important;
 }
 
 .bolsa-hero::before {
