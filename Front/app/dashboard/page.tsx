@@ -91,7 +91,7 @@ export default function Dashboard() {
         setUserName(u.nombre_completo ? u.nombre_completo.split(' ')[0] : 'Egresado');
         if (u.foto_url) setUserPhoto(u.foto_url);
 
-        const newFormData = {
+        setFormData({
           nombre_completo: u.nombre_completo || '',
           correo: u.correo || '',
           telefono: u.telefono || '',
@@ -107,10 +107,8 @@ export default function Dashboard() {
           sector_economico: p.sector_economico || '',
           area_desempeno: p.area_desempeno || '',
           emprendimiento: p.emprendimiento || ''
-        };
-        setFormData(newFormData);
+        });
 
-        // Cálculo de progreso
         let pct = 0;
         if (u.foto_url || userPhoto) pct += 15;
         if (u.cv_url) pct += 25;
@@ -120,7 +118,6 @@ export default function Dashboard() {
         pct += (filled / profFields.length) * 40;
         setCompletionPct(Math.round(pct));
 
-        // Si hay datos, mostrar resumen
         setIsEditingProf(!p.programa_academico && !p.nivel_formacion);
       }
     } catch (err) { console.error(err); }
@@ -193,7 +190,6 @@ export default function Dashboard() {
 
       <main className="db-main" style={{ paddingTop: '100px', minHeight: '80vh' }}>
         
-        {/* CABECERA SIEMPRE VISIBLE */}
         <div className="db-card" style={{ margin: '0 auto 40px', maxWidth: '1100px', padding: '30px 40px', display: 'flex', alignItems: 'center', gap: '40px', background: 'white', borderRadius: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
           <div style={{ position: 'relative', width: '130px', height: '130px', flexShrink: 0 }}>
             <svg viewBox="0 0 36 36" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)', position: 'absolute' }}>
@@ -226,30 +222,45 @@ export default function Dashboard() {
         </div>
 
         <div style={{ maxWidth: '1100px', margin: '0 auto 60px' }}>
-          {/* SECCIÓN: DATOS PERSONALES (RESTAURADA) */}
           {activeSection === 'personal' && (
             <div className="db-card" style={{ padding: '45px', borderRadius: '28px' }}>
               <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '35px', fontWeight: 800 }}>👤 Datos Personales</h2>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
-                <div className="form-group"><label>Nombre Completo</label><input type="text" value={formData.nombre_completo} onChange={(e) => setFormData({...formData, nombre_completo: e.target.value})} style={{ padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }} /></div>
-                <div className="form-group"><label>Correo Electrónico</label><input type="email" value={formData.correo} onChange={(e) => setFormData({...formData, correo: e.target.value})} style={{ padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }} /></div>
-                <div className="form-group"><label>Teléfono</label><input type="text" value={formData.telefono} onChange={(e) => setFormData({...formData, telefono: e.target.value})} style={{ padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }} /></div>
-                <div className="form-group"><label style={{ color: '#94a3b8' }}>Cédula</label><input type="text" value={formData.cedula} disabled style={{ background: '#334155', color: '#cbd5e1', padding: '14px', borderRadius: '12px' }} /></div>
-                {/* CAMPOS RESTAURADOS */}
-                <div className="form-group"><label style={{ color: '#94a3b8' }}>Fecha de Nacimiento</label><input type="text" value={formData.fecha_nacimiento} disabled style={{ background: '#334155', color: '#cbd5e1', padding: '14px', borderRadius: '12px' }} /></div>
-                <div className="form-group"><label style={{ color: '#94a3b8' }}>Género</label><input type="text" value={formData.genero} disabled style={{ background: '#334155', color: '#cbd5e1', padding: '14px', borderRadius: '12px' }} /></div>
+                <div className="form-group">
+                  <label>Nombre Completo</label>
+                  <input type="text" value={formData.nombre_completo} onChange={(e) => setFormData({...formData, nombre_completo: e.target.value})} style={{ padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }} />
+                </div>
+                <div className="form-group">
+                  <label>Correo Electrónico</label>
+                  <input type="email" value={formData.correo} onChange={(e) => setFormData({...formData, correo: e.target.value})} style={{ padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }} />
+                </div>
+                <div className="form-group">
+                  <label>Teléfono</label>
+                  <input type="text" value={formData.telefono} onChange={(e) => setFormData({...formData, telefono: e.target.value})} style={{ padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }} />
+                </div>
+                <div className="form-group">
+                  <label style={{ color: '#94a3b8' }}>Cédula (Bloqueado)</label>
+                  <input type="text" value={formData.cedula} disabled style={{ background: '#334155', color: '#cbd5e1', padding: '14px', borderRadius: '12px', border: 'none' }} />
+                </div>
+                <div className="form-group">
+                  <label style={{ color: '#94a3b8' }}>Fecha de Nacimiento (Bloqueado)</label>
+                  <input type="text" value={formData.fecha_nacimiento} disabled style={{ background: '#334155', color: '#cbd5e1', padding: '14px', borderRadius: '12px', border: 'none' }} />
+                </div>
+                <div className="form-group">
+                  <label style={{ color: '#94a3b8' }}>Género (Bloqueado)</label>
+                  <input type="text" value={formData.genero} disabled style={{ background: '#334155', color: '#cbd5e1', padding: '14px', borderRadius: '12px', border: 'none' }} />
+                </div>
               </div>
               <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ width: '100%', marginTop: '40px', padding: '20px', background: 'var(--ucc-navy)', color: 'white', borderRadius: '16px', fontWeight: 800 }}>{loadingProfile ? 'Guardando...' : '💾 Guardar Datos'}</button>
             </div>
           )}
 
-          {/* SECCIÓN: PERFIL PROFESIONAL */}
           {activeSection === 'professional' && (
             <div className="db-card" style={{ padding: '45px', borderRadius: '28px', background: '#f8fafc' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
                 <h2 style={{ color: 'var(--ucc-navy)', margin: 0, fontWeight: 800 }}>💼 Perfil Profesional</h2>
                 <button onClick={() => setIsEditingProf(!isEditingProf)} style={{ background: 'var(--ucc-blue)', color: 'white', border: 'none', borderRadius: '12px', padding: '10px 25px', cursor: 'pointer', fontWeight: 700 }}>
-                  {isEditingProf ? '❌ Cancelar' : '✏️ Actualizar Información'}
+                  {isEditingProf ? '❌ Ver Resumen' : '✏️ Actualizar Información'}
                 </button>
               </div>
 
@@ -273,7 +284,7 @@ export default function Dashboard() {
                       </select>
                     </div>
                   ))}
-                  <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ gridColumn: 'span 3', padding: '20px', background: 'var(--ucc-navy)', color: 'white', borderRadius: '16px', fontWeight: 800 }}>💾 Guardar Perfil</button>
+                  <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ gridColumn: 'span 3', padding: '20px', background: 'var(--ucc-navy)', color: 'white', borderRadius: '16px', fontWeight: 800 }}>💾 Guardar Perfil Profesional</button>
                 </div>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '25px' }}>
@@ -291,15 +302,13 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* SECCIÓN: ACTUALIZAR CV (CON BOTÓN DE VER CV) */}
           {activeSection === 'cv' && (
             <div className="db-card" style={{ padding: '45px', borderRadius: '28px', textAlign: 'center' }}>
               <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '30px' }}>📄 Gestión de Hoja de Vida</h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center' }}>
                 <button onClick={handleViewResume} style={{ width: '100%', maxWidth: '400px', padding: '20px', background: 'var(--ucc-green)', color: 'var(--ucc-navy)', borderRadius: '16px', fontWeight: 800, fontSize: '1.2rem' }}>📄 Ver mi Hoja de Vida Actual</button>
                 <div style={{ width: '100%', height: '2px', background: '#f1f5f9', margin: '20px 0' }} />
-                <p style={{ color: '#64748b' }}>O sube una nueva versión (Solo PDF):</p>
-                <button onClick={() => cvInputRef.current?.click()} style={{ width: '100%', maxWidth: '400px', padding: '20px', background: 'var(--ucc-navy)', color: 'white', borderRadius: '16px', fontWeight: 800 }}>⬆️ Subir Nuevo CV</button>
+                <button onClick={() => cvInputRef.current?.click()} style={{ width: '100%', maxWidth: '400px', padding: '20px', background: 'var(--ucc-navy)', color: 'white', borderRadius: '16px', fontWeight: 800 }}>⬆️ Subir Nuevo CV (PDF)</button>
               </div>
             </div>
           )}
