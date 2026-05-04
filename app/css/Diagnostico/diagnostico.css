@@ -7,8 +7,8 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --red:        var(--ucc-blue);
-  --red-dark:   #0089b6;
+  --red:        #e53e3e;
+  --red-dark:   #c53030;
   --navy:       var(--ucc-navy);
   --navy-mid:   #003875;
   --white:      #ffffff;

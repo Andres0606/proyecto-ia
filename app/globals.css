@@ -14,8 +14,8 @@
   --gray: var(--ucc-gray);
   
   /* Legacy compatibility (to avoid breaking things before update) */
-  --red: var(--ucc-blue);
-  --red-dark: #0089b6;
+  --red: #e53e3e; /* Suave Red */
+  --red-dark: #c53030;
   --navy: var(--ucc-navy);
   --navy-mid: #003875;
 }

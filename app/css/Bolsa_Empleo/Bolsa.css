@@ -173,7 +173,7 @@
 }
 
 .be-searchbar__btn {
-  background: var(--ucc-blue);
+  background: var(--red);
   color: #ffffff;
   border: none;
   border-radius: 10px;
@@ -593,7 +593,7 @@
 }
 
 .be-card__apply {
-  background: var(--ucc-blue);
+  background: var(--red);
   color: #ffffff;
   border: none;
   border-radius: 50px;
@@ -635,7 +635,7 @@
 }
 
 .be-empty__btn {
-  background: var(--ucc-blue);
+  background: var(--red);
   color: #ffffff;
   border: none;
   border-radius: 50px;

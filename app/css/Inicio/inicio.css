@@ -12,8 +12,8 @@
 }
 
 :root {
-  --red: var(--ucc-blue);
-  --red-dark: #0089b6;
+  --red: #e53e3e;
+  --red-dark: #c53030;
   --navy: var(--ucc-navy);
   --navy-mid: #003875;
   --blue: var(--ucc-blue);
