@@ -41,14 +41,14 @@ export default function Dashboard() {
   const [activeSection, setActiveSection] = useState<'none' | 'personal' | 'professional' | 'apps'>('none');
   const [loadingProfile, setLoadingProfile] = useState(false);
   
+  const [fullProfile, setFullProfile] = useState<any>(null);
   const [formData, setFormData] = useState({
-    // Datos Personales (users table)
     nombre_completo: '',
     correo: '',
     telefono: '',
+    cedula: '',
     fecha_nacimiento: '',
     genero: '',
-    // Perfil Profesional (perfiles_usuarios table)
     nivel_formacion: '',
     programa_academico: '',
     estrato: '',
@@ -86,11 +86,13 @@ export default function Dashboard() {
       if (data.success) {
         const u = data.profile;
         const p = data.profile.perfiles_usuarios?.[0] || {};
+        setFullProfile(u);
         setUserName(u.nombre_completo.split(' ')[0]);
         setFormData({
           nombre_completo: u.nombre_completo || '',
           correo: u.correo || '',
           telefono: u.telefono || '',
+          cedula: u.cedula || 'N/A',
           fecha_nacimiento: u.fecha_nacimiento ? u.fecha_nacimiento.split('T')[0] : '',
           genero: u.genero || '',
           nivel_formacion: p.nivel_formacion || '',
@@ -121,9 +123,8 @@ export default function Dashboard() {
           userData: { 
             nombre_completo: formData.nombre_completo,
             correo: formData.correo,
-            telefono: formData.telefono,
-            fecha_nacimiento: formData.fecha_nacimiento,
-            genero: formData.genero
+            telefono: formData.telefono
+            // No enviamos cedula, fecha_nacimiento ni genero porque son read-only
           },
           profileData: {
             nivel_formacion: formData.nivel_formacion,
@@ -141,11 +142,9 @@ export default function Dashboard() {
 
       const data = await res.json();
       if (data.success) {
-        alert("¡Datos actualizados correctamente!");
+        alert("¡Datos actualizados!");
         setActiveSection('none');
         fetchFullProfile(userId);
-      } else {
-        alert(data.message);
       }
     } catch (err: any) {
       alert("Error: " + err.message);
@@ -281,7 +280,7 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Sección: Datos Personales (AHORA EDITABLES) */}
+        {/* Sección: Datos Personales */}
         {activeSection === 'personal' && (
           <div className="db-card" style={{ marginBottom: '30px', padding: '30px', animation: 'fadeIn 0.3s' }}>
             <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '25px', borderBottom: '2px solid #f1f5f9' }}>👤 Datos Personales</h2>
@@ -298,18 +297,18 @@ export default function Dashboard() {
                 <label style={{ fontSize: '0.8rem' }}>Teléfono de Contacto</label>
                 <input type="text" value={formData.telefono} onChange={(e) => setFormData({...formData, telefono: e.target.value})} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', width: '100%' }} />
               </div>
+              {/* Campos de Solo Lectura (Gris Oscuro) */}
               <div className="form-group">
-                <label style={{ fontSize: '0.8rem' }}>Fecha de Nacimiento</label>
-                <input type="date" value={formData.fecha_nacimiento} onChange={(e) => setFormData({...formData, fecha_nacimiento: e.target.value})} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', width: '100%' }} />
+                <label style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Cédula</label>
+                <input type="text" value={formData.cedula} disabled style={{ background: '#334155', color: '#cbd5e1', padding: '12px', borderRadius: '8px', border: 'none', width: '100%' }} />
               </div>
               <div className="form-group">
-                <label style={{ fontSize: '0.8rem' }}>Género</label>
-                <select value={formData.genero} onChange={(e) => setFormData({...formData, genero: e.target.value})} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', width: '100%' }}>
-                  <option value="">Seleccione...</option>
-                  <option value="femenino">Femenino</option>
-                  <option value="masculino">Masculino</option>
-                  <option value="otro">Otro</option>
-                </select>
+                <label style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Fecha de Nacimiento</label>
+                <input type="text" value={formData.fecha_nacimiento} disabled style={{ background: '#334155', color: '#cbd5e1', padding: '12px', borderRadius: '8px', border: 'none', width: '100%' }} />
+              </div>
+              <div className="form-group">
+                <label style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Género</label>
+                <input type="text" value={formData.genero} disabled style={{ background: '#334155', color: '#cbd5e1', padding: '12px', borderRadius: '8px', border: 'none', width: '100%' }} />
               </div>
             </div>
             <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ width: '100%', marginTop: '30px', padding: '15px', background: 'var(--ucc-navy)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>{loadingProfile ? 'Guardando...' : '💾 Guardar Datos Personales'}</button>
