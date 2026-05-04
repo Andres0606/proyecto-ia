@@ -481,8 +481,9 @@ export default function RegistroPage() {
       if (authError) throw authError;
 
       if (authData.user) {
-        // 2. Enviar datos al NUESTRO BACKEND para guardar el perfil completo
-        const backendRes = await fetch('http://localhost:4000/api/users/register', {
+        // 2. Enviar datos al NUESTRO BACKEND (Railway) para guardar el perfil completo
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
+        const backendRes = await fetch(`${backendUrl}/api/users/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
