@@ -38,33 +38,31 @@ export default function Header() {
           <span className="header__brand-text">Portal del Egresado</span>
         </a>
 
-        {/* Links */}
+        {/* Links Principales (Limpios) */}
         <ul className={`header__links ${menuOpen ? "header__links--open" : ""}`}>
           <li><a href="/">Inicio</a></li>
           <li><a href="/Bolsa_Empleo">Bolsa de empleo</a></li>
           <li><a href="/diagnostico">Diagnóstico de estabilidad</a></li>
           <li><a href="/planes">Planes</a></li>
-          
-          {/* Solo mostrar Mi Dashboard si hay sesión */}
-          {user && (
-            <li><a href="/dashboard" style={{ color: 'var(--ucc-green)', fontWeight: 'bold' }}>Mi Dashboard</a></li>
-          )}
         </ul>
 
-        {/* Actions */}
+        {/* Acciones de Usuario */}
         <div className="header__actions">
           {user ? (
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-              <a href="/perfil" className="header__btn header__btn--ghost" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                👤 {user.profile?.nombre_completo.split(' ')[0]}
+            <div className="header__profile-container" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              {/* Botón Mi Perfil (que lleva al Dashboard) */}
+              <a href="/dashboard" className="header__btn header__btn--ghost" style={{ fontWeight: '600' }}>
+                👤 {user.profile?.nombre_completo.split(' ')[0]} - Mi Perfil
               </a>
+              
+              {/* Botón Cerrar Sesión */}
               <button 
                 onClick={handleLogout} 
                 className="header__btn header__btn--red"
-                style={{ cursor: 'pointer', padding: '8px 15px', minWidth: 'auto' }}
+                style={{ cursor: 'pointer', padding: '8px 12px', minWidth: 'auto' }}
                 title="Cerrar Sesión"
               >
-                ✕
+                Cerrar sesión
               </button>
             </div>
           ) : (
