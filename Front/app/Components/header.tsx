@@ -65,18 +65,30 @@ export default function Header() {
                 Mi Perfil: <span style={{ color: 'var(--ucc-red)' }}>{user.profile?.nombre_completo.split(' ')[0]}</span>
               </a>
               
-              {/* Botón Cerrar Sesión Minimalista */}
+              {/* Botón Cerrar Sesión con Estilo */}
               <button 
                 onClick={handleLogout} 
-                className="header__logout-minimal"
+                className="header__logout-btn"
                 style={{ 
-                  background: 'none',
-                  border: 'none',
-                  color: '#666',
-                  fontSize: '0.85rem',
+                  background: 'rgba(229, 62, 62, 0.1)',
+                  border: '1px solid rgba(229, 62, 62, 0.2)',
+                  color: '#e53e3e',
+                  fontSize: '0.8rem',
+                  fontWeight: '600',
                   cursor: 'pointer',
-                  textDecoration: 'underline',
-                  padding: '5px'
+                  padding: '6px 14px',
+                  borderRadius: '50px',
+                  transition: 'all 0.3s ease',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.background = '#e53e3e';
+                  e.currentTarget.style.color = 'white';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.background = 'rgba(229, 62, 62, 0.1)';
+                  e.currentTarget.style.color = '#e53e3e';
                 }}
               >
                 Cerrar sesión
