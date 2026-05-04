@@ -49,7 +49,7 @@ body {
 }
 .diag-hero__blob--1 {
   width: 550px; height: 550px;
-  background: radial-gradient(circle, rgba(200,16,46,0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(141, 198, 63,0.15) 0%, transparent 70%);
   top: -180px; right: -100px;
 }
 .diag-hero__blob--2 {
@@ -60,8 +60,8 @@ body {
 .diag-hero__content { position: relative; z-index: 2; max-width: 680px; margin: 0 auto; }
 .diag-hero__badge {
   display: inline-flex; align-items: center; gap: 8px;
-  background: rgba(200,16,46,0.12);
-  border: 1px solid rgba(200,16,46,0.25);
+  background: rgba(141, 198, 63,0.12);
+  border: 1px solid rgba(141, 198, 63,0.25);
   border-radius: 50px; padding: 7px 20px;
   font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.9);
   margin-bottom: 1.5rem;
@@ -71,7 +71,7 @@ body {
   font-weight: 800; line-height: 1.1;
   letter-spacing: -1px; color: var(--white); margin-bottom: 1rem;
 }
-.diag-hero__accent { color: var(--red); }
+.diag-hero__accent { color: var(--ucc-green); }
 .diag-hero__sub {
   font-size: clamp(0.95rem, 2vw, 1.1rem);
   color: rgba(255,255,255,0.58); line-height: 1.7;
@@ -142,16 +142,16 @@ body {
   line-height: 1.2;
 }
 .diag-pill:hover {
-  border-color: var(--red);
-  color: var(--red);
+  border-color: var(--ucc-green);
+  color: var(--ucc-green);
   background: #fff5f6;
 }
 .diag-pill--active {
   background: var(--red);
-  border-color: var(--red);
+  border-color: var(--ucc-green);
   color: var(--white);
   font-weight: 600;
-  box-shadow: 0 4px 12px rgba(200,16,46,0.22);
+  box-shadow: 0 4px 12px rgba(141, 198, 63,0.22);
 }
 
 /* ══════════════════════════════════════════════════════
@@ -176,7 +176,7 @@ body {
 .diag-submit:hover {
   background: var(--red-dark);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(200,16,46,0.28);
+  box-shadow: 0 8px 24px rgba(141, 198, 63,0.28);
 }
 .diag-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
 .diag-submit__spinner {
@@ -189,7 +189,7 @@ body {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ── Validation hint ── */
-.diag-field--error .diag-field__label { color: var(--red); }
+.diag-field--error .diag-field__label { color: var(--ucc-green); }
 .diag-field--error .diag-pill:not(.diag-pill--active) { border-color: #fca5a5; }
 
 /* ══════════════════════════════════════════════════════
