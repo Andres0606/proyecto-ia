@@ -175,7 +175,13 @@ const updateProfile = async (req, res) => {
     // 2. Actualizar tabla users
     const { error: userError } = await supabase
       .from('users')
-      .update({ telefono: userData.telefono })
+      .update({ 
+        nombre_completo: userData.nombre_completo,
+        correo: userData.correo,
+        telefono: userData.telefono,
+        fecha_nacimiento: userData.fecha_nacimiento,
+        genero: userData.genero
+      })
       .eq('id', userId);
 
     if (userError) throw userError;

@@ -41,9 +41,14 @@ export default function Dashboard() {
   const [activeSection, setActiveSection] = useState<'none' | 'personal' | 'professional' | 'apps'>('none');
   const [loadingProfile, setLoadingProfile] = useState(false);
   
-  const [fullProfile, setFullProfile] = useState<any>(null);
   const [formData, setFormData] = useState({
+    // Datos Personales (users table)
+    nombre_completo: '',
+    correo: '',
     telefono: '',
+    fecha_nacimiento: '',
+    genero: '',
+    // Perfil Profesional (perfiles_usuarios table)
     nivel_formacion: '',
     programa_academico: '',
     estrato: '',
@@ -69,8 +74,6 @@ export default function Dashboard() {
       const userData = JSON.parse(savedUser);
       setUserId(userData.id);
       setUserPhoto(userData.foto_url || userData.profile?.foto_url || userData.user_metadata?.avatar_url || null);
-      const name = userData.profile?.nombre_completo || userData.user_metadata?.full_name || 'Egresado';
-      setUserName(name.split(' ')[0]);
       fetchFullProfile(userData.id);
     }
   }, []);
@@ -81,10 +84,15 @@ export default function Dashboard() {
       const res = await fetch(`${backendUrl}/api/users/profile/${id}`);
       const data = await res.json();
       if (data.success) {
-        setFullProfile(data.profile);
+        const u = data.profile;
         const p = data.profile.perfiles_usuarios?.[0] || {};
+        setUserName(u.nombre_completo.split(' ')[0]);
         setFormData({
-          telefono: data.profile.telefono || '',
+          nombre_completo: u.nombre_completo || '',
+          correo: u.correo || '',
+          telefono: u.telefono || '',
+          fecha_nacimiento: u.fecha_nacimiento ? u.fecha_nacimiento.split('T')[0] : '',
+          genero: u.genero || '',
           nivel_formacion: p.nivel_formacion || '',
           programa_academico: p.programa_academico || '',
           estrato: p.estrato || '',
@@ -110,7 +118,13 @@ export default function Dashboard() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userData: { telefono: formData.telefono },
+          userData: { 
+            nombre_completo: formData.nombre_completo,
+            correo: formData.correo,
+            telefono: formData.telefono,
+            fecha_nacimiento: formData.fecha_nacimiento,
+            genero: formData.genero
+          },
           profileData: {
             nivel_formacion: formData.nivel_formacion,
             programa_academico: formData.programa_academico,
@@ -127,9 +141,11 @@ export default function Dashboard() {
 
       const data = await res.json();
       if (data.success) {
-        alert("¡Perfil actualizado con éxito!");
+        alert("¡Datos actualizados correctamente!");
         setActiveSection('none');
         fetchFullProfile(userId);
+      } else {
+        alert(data.message);
       }
     } catch (err: any) {
       alert("Error: " + err.message);
@@ -265,34 +281,43 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Datos Personales */}
-        {activeSection === 'personal' && fullProfile && (
+        {/* Sección: Datos Personales (AHORA EDITABLES) */}
+        {activeSection === 'personal' && (
           <div className="db-card" style={{ marginBottom: '30px', padding: '30px', animation: 'fadeIn 0.3s' }}>
             <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '25px', borderBottom: '2px solid #f1f5f9' }}>👤 Datos Personales</h2>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
               <div className="form-group">
-                <label style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Nombre Completo</label>
-                <input type="text" value={fullProfile.nombre_completo} disabled style={{ background: '#334155', color: '#cbd5e1', padding: '12px', borderRadius: '8px', border: 'none', width: '100%' }} />
+                <label style={{ fontSize: '0.8rem' }}>Nombre Completo</label>
+                <input type="text" value={formData.nombre_completo} onChange={(e) => setFormData({...formData, nombre_completo: e.target.value})} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', width: '100%' }} />
               </div>
               <div className="form-group">
-                <label style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Correo Electrónico</label>
-                <input type="text" value={fullProfile.correo} disabled style={{ background: '#334155', color: '#cbd5e1', padding: '12px', borderRadius: '8px', border: 'none', width: '100%' }} />
-              </div>
-              <div className="form-group">
-                <label style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Cédula</label>
-                <input type="text" value={fullProfile.cedula || 'N/A'} disabled style={{ background: '#334155', color: '#cbd5e1', padding: '12px', borderRadius: '8px', border: 'none', width: '100%' }} />
+                <label style={{ fontSize: '0.8rem' }}>Correo Electrónico</label>
+                <input type="email" value={formData.correo} onChange={(e) => setFormData({...formData, correo: e.target.value})} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', width: '100%' }} />
               </div>
               <div className="form-group">
                 <label style={{ fontSize: '0.8rem' }}>Teléfono de Contacto</label>
                 <input type="text" value={formData.telefono} onChange={(e) => setFormData({...formData, telefono: e.target.value})} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', width: '100%' }} />
               </div>
+              <div className="form-group">
+                <label style={{ fontSize: '0.8rem' }}>Fecha de Nacimiento</label>
+                <input type="date" value={formData.fecha_nacimiento} onChange={(e) => setFormData({...formData, fecha_nacimiento: e.target.value})} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', width: '100%' }} />
+              </div>
+              <div className="form-group">
+                <label style={{ fontSize: '0.8rem' }}>Género</label>
+                <select value={formData.genero} onChange={(e) => setFormData({...formData, genero: e.target.value})} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', width: '100%' }}>
+                  <option value="">Seleccione...</option>
+                  <option value="femenino">Femenino</option>
+                  <option value="masculino">Masculino</option>
+                  <option value="otro">Otro</option>
+                </select>
+              </div>
             </div>
-            <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ width: '100%', marginTop: '30px', padding: '15px', background: 'var(--ucc-navy)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>{loadingProfile ? 'Guardando...' : '💾 Actualizar Datos Personales'}</button>
+            <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ width: '100%', marginTop: '30px', padding: '15px', background: 'var(--ucc-navy)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>{loadingProfile ? 'Guardando...' : '💾 Guardar Datos Personales'}</button>
           </div>
         )}
 
-        {/* Perfil Profesional - SOLO CAMPOS DE LA BD */}
-        {activeSection === 'professional' && fullProfile && (
+        {/* Sección: Perfil Profesional */}
+        {activeSection === 'professional' && (
           <div className="db-card" style={{ marginBottom: '30px', padding: '30px', animation: 'fadeIn 0.3s' }}>
             <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '25px', borderBottom: '2px solid #f1f5f9' }}>💼 Perfil Profesional</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
