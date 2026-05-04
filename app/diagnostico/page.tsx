@@ -149,21 +149,20 @@ function PillGroup({ label, options, value, onChange }: { label: string; options
 
 function ResultCard({ resultado }: { resultado: ResultadoAPI }) {
   const { score, cssClass, label, tipsKey, details } = getPredictionData(resultado);
-  const [displayScore, setDisplayScore] = useState(0);
+  const [animValue, setAnimValue] = useState(0);
 
   useEffect(() => {
-    let start = 0;
-    const duration = 1000;
+    const duration = 1500; // Un poco más lento para que se aprecie mejor
     const startTime = performance.now();
     
     const animate = (currentTime: number) => {
       const elapsed = currentTime - startTime;
       const progress = Math.min(elapsed / duration, 1);
       
-      // easeOutQuart
-      const easeProgress = 1 - Math.pow(1 - progress, 4);
+      // easeOutExpo para un efecto más premium
+      const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
       
-      setDisplayScore(Math.floor(easeProgress * score));
+      setAnimValue(easeProgress * score);
       
       if (progress < 1) {
         requestAnimationFrame(animate);
@@ -173,7 +172,8 @@ function ResultCard({ resultado }: { resultado: ResultadoAPI }) {
     requestAnimationFrame(animate);
   }, [score]);
 
-  const dashoffset = CIRCUMFERENCE * (1 - score / 100);
+  const displayScore = Math.floor(animValue);
+  const dashoffset = CIRCUMFERENCE * (1 - animValue / 100);
 
   return (
     <div className="diag-result">

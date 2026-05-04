@@ -35,10 +35,8 @@ const ROLES = [
 
 const GENEROS = [
   { value: "", label: "Seleccionar..." },
-  { value: "masculino", label: "Masculino" },
-  { value: "femenino", label: "Femenino" },
-  { value: "otro", label: "Otro" },
-  { value: "prefiero_no_decir", label: "Prefiero no decir" },
+  { value: "masculino", label: "Hombre" },
+  { value: "femenino", label: "Mujer" },
 ];
 
 const SECTORES = [
@@ -173,6 +171,10 @@ function StepDatosPersonales({
   onNext: () => void;
   isLastStep: boolean;
 }) {
+  const [pw1, setPw1] = useState("");
+  const [pw2, setPw2] = useState("");
+  const isMatch = pw1.length > 0 && pw1 === pw2;
+
   return (
     <div className="auth-step">
       <div className="auth-form" style={{ gap: "1rem" }}>
@@ -210,7 +212,12 @@ function StepDatosPersonales({
               id="reg-telefono"
               className="auth-field__input"
               type="tel"
-              placeholder="300 123 4567"
+              placeholder="Ej: 3001234567"
+              minLength={10}
+              maxLength={10}
+              pattern="[0-9]{10}"
+              title="Debe tener exactamente 10 números"
+              required
             />
           </div>
         </div>
@@ -264,6 +271,9 @@ function StepDatosPersonales({
             className="auth-field__input"
             type="password"
             placeholder="Mínimo 8 caracteres"
+            value={pw1}
+            onChange={(e) => setPw1(e.target.value)}
+            style={isMatch ? { borderColor: '#10b981', boxShadow: '0 0 0 1px #10b981' } : {}}
           />
         </div>
 
@@ -278,7 +288,15 @@ function StepDatosPersonales({
             type="password"
             placeholder="Repite tu contraseña"
             onPaste={(e) => e.preventDefault()}
+            value={pw2}
+            onChange={(e) => setPw2(e.target.value)}
+            style={isMatch ? { borderColor: '#10b981', boxShadow: '0 0 0 1px #10b981' } : {}}
           />
+          {isMatch && (
+            <p style={{ color: '#10b981', fontSize: '0.75rem', marginTop: '4px', fontWeight: 600 }}>
+              ✓ Las contraseñas coinciden
+            </p>
+          )}
         </div>
 
         {/* Navigation */}

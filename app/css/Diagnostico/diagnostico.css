@@ -230,7 +230,6 @@ body {
 .diag-score__track { fill: none; stroke: #e2e8f0; stroke-width: 10; }
 .diag-score__fill {
   fill: none; stroke-width: 10; stroke-linecap: round;
-  transition: stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1);
 }
 .diag-score__fill--alta  { stroke: #16a34a; }
 .diag-score__fill--media { stroke: #f59e0b; }

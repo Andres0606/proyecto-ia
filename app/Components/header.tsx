@@ -59,7 +59,7 @@ export default function Header() {
         {/* Links */}
         <ul className={`header__links ${menuOpen ? "header__links--open" : ""}`}>
           <li>
-            <a href="/#funciones">Funciones</a>
+            <a href="/">Inicio</a>
           </li>
           <li>
             <a href="/Bolsa_Empleo">Bolsa de empleo</a>
