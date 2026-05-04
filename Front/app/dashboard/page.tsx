@@ -233,6 +233,7 @@ export default function Dashboard() {
               <h1>{greeting}, {userName}</h1>
               <div style={{ display: 'flex', gap: '10px', marginTop: '12px' }}>
                 <button onClick={startCamera} style={{ background: 'var(--ucc-blue)', color: 'white', border: 'none', borderRadius: '20px', padding: '6px 15px', cursor: 'pointer' }}>📷 Cámara</button>
+                <button onClick={() => avatarInputRef.current?.click()} style={{ background: '#f1f5f9', color: 'var(--ucc-navy)', border: '1px solid #e2e8f0', borderRadius: '20px', padding: '6px 15px', cursor: 'pointer' }}>📁 Subir foto</button>
                 <button onClick={handleViewResume} style={{ background: 'var(--ucc-green)', color: 'var(--ucc-navy)', border: 'none', borderRadius: '20px', padding: '6px 15px', cursor: 'pointer', fontWeight: 'bold' }}>📄 Ver CV Actual</button>
               </div>
             </div>
