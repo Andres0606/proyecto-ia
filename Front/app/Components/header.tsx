@@ -49,18 +49,35 @@ export default function Header() {
         {/* Acciones de Usuario */}
         <div className="header__actions">
           {user ? (
-            <div className="header__profile-container" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-              {/* Botón Mi Perfil (que lleva al Dashboard) */}
-              <a href="/dashboard" className="header__btn header__btn--ghost" style={{ fontWeight: '600' }}>
-                👤 {user.profile?.nombre_completo.split(' ')[0]} - Mi Perfil
+            <div className="header__profile-container" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              {/* Botón Mi Perfil Estilo Cápsula */}
+              <a href="/dashboard" className="header__profile-badge" style={{ 
+                textDecoration: 'none',
+                background: 'rgba(0, 102, 204, 0.1)', 
+                color: 'var(--ucc-navy)',
+                padding: '8px 20px',
+                borderRadius: '50px',
+                fontSize: '0.9rem',
+                fontWeight: '600',
+                border: '1px solid rgba(0, 102, 204, 0.2)',
+                transition: 'all 0.3s ease'
+              }}>
+                Mi Perfil: <span style={{ color: 'var(--ucc-red)' }}>{user.profile?.nombre_completo.split(' ')[0]}</span>
               </a>
               
-              {/* Botón Cerrar Sesión */}
+              {/* Botón Cerrar Sesión Minimalista */}
               <button 
                 onClick={handleLogout} 
-                className="header__btn header__btn--red"
-                style={{ cursor: 'pointer', padding: '8px 12px', minWidth: 'auto' }}
-                title="Cerrar Sesión"
+                className="header__logout-minimal"
+                style={{ 
+                  background: 'none',
+                  border: 'none',
+                  color: '#666',
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  textDecoration: 'underline',
+                  padding: '5px'
+                }}
               >
                 Cerrar sesión
               </button>
