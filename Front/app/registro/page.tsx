@@ -246,6 +246,9 @@ function StepDatosPersonales({
               className="auth-field__input"
               type="text"
               placeholder="1.234.567.890"
+              value={formData.cedula}
+              onChange={(e) => setFormData({ ...formData, cedula: e.target.value })}
+              required
             />
           </div>
           <div className="auth-field">
@@ -256,6 +259,9 @@ function StepDatosPersonales({
               id="reg-fecha"
               className="auth-field__input"
               type="date"
+              value={formData.fecha_nacimiento}
+              onChange={(e) => setFormData({ ...formData, fecha_nacimiento: e.target.value })}
+              required
             />
           </div>
         </div>
@@ -265,7 +271,13 @@ function StepDatosPersonales({
           <label className="auth-field__label" htmlFor="reg-genero">
             Género
           </label>
-          <select id="reg-genero" className="auth-field__select">
+          <select 
+            id="reg-genero" 
+            className="auth-field__select"
+            value={formData.genero}
+            onChange={(e) => setFormData({ ...formData, genero: e.target.value })}
+            required
+          >
             {GENEROS.map((g) => (
               <option key={g.value} value={g.value}>
                 {g.label}
@@ -452,6 +464,9 @@ export default function RegistroPage() {
     confirmPassword: "",
     nombre: "",
     telefono: "",
+    cedula: "",
+    fecha_nacimiento: "",
+    genero: "",
   });
 
   const email = formData.email;
@@ -476,6 +491,9 @@ export default function RegistroPage() {
           password,
           nombre_completo: nombre,
           telefono: formData.telefono,
+          cedula: formData.cedula,
+          fecha_nacimiento: formData.fecha_nacimiento,
+          genero: formData.genero,
           rol_id: rol === "empresa" ? 2 : 1,
           extraData: formData
         })

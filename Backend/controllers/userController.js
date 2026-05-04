@@ -1,7 +1,7 @@
 const supabase = require('../config/supabase');
 
 const registerUser = async (req, res) => {
-  const { email, password, nombre_completo, telefono, rol_id, extraData } = req.body;
+  const { email, password, nombre_completo, telefono, rol_id, extraData, cedula, fecha_nacimiento, genero } = req.body;
 
   try {
     // 1. Crear el usuario en Supabase Auth usando el ADMIN SDK (service_role)
@@ -25,6 +25,9 @@ const registerUser = async (req, res) => {
         nombre_completo, 
         correo: email, 
         telefono, 
+        cedula,
+        fecha_nacimiento,
+        genero,
         rol_id 
       }]);
 
