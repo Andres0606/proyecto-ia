@@ -196,13 +196,23 @@ const updateProfile = async (req, res) => {
 
     const { error: profileError } = await supabase
       .from('perfiles_usuarios')
-      .upsert(dbProfileData, { onConflict: 'user_id' });
+      .upsert(dbProfileData, { 
+        onConflict: 'user_id',
+        ignoreDuplicates: false 
+      });
 
-    if (profileError) throw profileError;
+    if (profileError) {
+      console.error("❌ Error de Supabase (perfiles_usuarios):", profileError);
+      return res.status(400).json({ 
+        success: false, 
+        message: `Error en tabla perfiles_usuarios: ${profileError.message}`,
+        details: profileError.details
+      });
+    }
 
     return res.status(200).json({ success: true, message: 'Perfil actualizado con éxito.' });
   } catch (error) {
-    console.error("❌ Error actualizando perfil:", error);
+    console.error("❌ Error crítico en updateProfile:", error);
     return res.status(500).json({ success: false, message: error.message });
   }
 };
