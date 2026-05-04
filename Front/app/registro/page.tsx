@@ -466,43 +466,28 @@ export default function RegistroPage() {
     setErrorMsg("");
 
     try {
-      // 1. Crear usuario en Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: nombre,
-            role: rol
-          }
-        }
+      // 1. Enviar TODO al NUESTRO BACKEND para que él haga el Auth y el Perfil
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
+      const backendRes = await fetch(`${backendUrl}/api/users/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          password,
+          nombre_completo: nombre,
+          telefono: formData.telefono,
+          rol_id: rol === "empresa" ? 2 : 1,
+          extraData: formData
+        })
       });
 
-      if (authError) throw authError;
-
-      if (authData.user) {
-        // 2. Enviar datos al NUESTRO BACKEND (Railway) para guardar el perfil completo
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
-        const backendRes = await fetch(`${backendUrl}/api/users/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id: authData.user.id,
-            nombre_completo: nombre,
-            correo: email,
-            telefono: formData.telefono,
-            rol_id: rol === "empresa" ? 2 : 1,
-            extraData: formData // Enviamos todo el objeto formData que tiene los campos específicos
-          })
-        });
-
-        const backendData = await backendRes.json();
-        if (!backendData.success) {
-          throw new Error(backendData.message || 'Error al guardar el perfil en el servidor.');
-        }
+      const backendData = await backendRes.json();
+      
+      if (!backendData.success) {
+        throw new Error(backendData.message || 'Error en el servidor backend.');
       }
 
-      // 3. ¡Éxito!
+      // 2. ¡Éxito!
       setLoading(false);
       window.location.href = "/login?registered=true";
 
