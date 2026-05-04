@@ -54,33 +54,92 @@ function DashboardGauge({ pct }: { pct: number }) {
 export default function Dashboard() {
   const [greeting, setGreeting] = useState('Buenos días');
   const [userName, setUserName] = useState('Egresado');
+  const [userId, setUserId] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   
   useEffect(() => {
-    // Saludo según la hora
     const hour = new Date().getHours();
     if (hour >= 12 && hour < 18) setGreeting('Buenas tardes');
     if (hour >= 18 || hour < 5) setGreeting('Buenas noches');
 
-    // Cargar nombre real del usuario
     const savedUser = localStorage.getItem('ucc_user');
     if (savedUser) {
       const userData = JSON.parse(savedUser);
-      // Intentamos sacar el nombre del perfil o de la metadata de auth
+      setUserId(userData.id);
       const name = userData.profile?.nombre_completo || userData.user_metadata?.full_name || 'Egresado';
       setUserName(name.split(' ')[0]);
     }
   }, []);
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'cv') => {
+    const file = e.target.files?.[0];
+    if (!file || !userId) return;
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append(type === 'avatar' ? 'image' : 'cv', file);
+    formData.append('userId', userId);
+
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
+      const endpoint = type === 'avatar' ? '/api/users/upload-avatar' : '/api/users/upload-cv';
+      
+      const res = await fetch(`${backendUrl}${endpoint}`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        alert(type === 'avatar' ? '¡Foto de perfil actualizada!' : '¡Hoja de vida subida con éxito!');
+        if (type === 'avatar') {
+          // Actualizar localmente si es necesario
+          window.location.reload(); 
+        }
+      } else {
+        throw new Error(data.message);
+      }
+    } catch (err: any) {
+      alert("Error al subir archivo: " + err.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <div className="db-page">
       <Header />
       
+      {/* Inputs ocultos para subida */}
+      <input 
+        type="file" 
+        id="upload-avatar" 
+        hidden 
+        accept="image/*" 
+        onChange={(e) => handleFileUpload(e, 'avatar')} 
+      />
+      <input 
+        type="file" 
+        id="upload-cv" 
+        hidden 
+        accept=".pdf" 
+        onChange={(e) => handleFileUpload(e, 'cv')} 
+      />
+
       <main className="db-main" style={{ paddingTop: '100px' }}>
         {/* Header Section */}
         <header className="db-header">
           <div className="db-header__welcome">
             <p className="db-header__date">{new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-            <h1>{greeting}, {userName}</h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <h1>{greeting}, {userName}</h1>
+              <button 
+                onClick={() => document.getElementById('upload-avatar')?.click()}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--ucc-blue)', textDecoration: 'underline' }}
+              >
+                {uploading ? 'Subiendo...' : 'Cambiar foto'}
+              </button>
+            </div>
             <p>Aquí tienes el resumen de tu carrera hoy.</p>
           </div>
         </header>
@@ -115,12 +174,21 @@ export default function Dashboard() {
           {/* Quick Actions Grid */}
           <div style={{ gridColumn: 'span 2' }}>
             <div className="db-actions">
-              {QUICK_ACTIONS.map((action, idx) => (
-                <a key={idx} href={action.link} className="db-action-card" style={{ textDecoration: 'none' }}>
-                  <div className="db-action-card__icon">{action.icon}</div>
-                  <h3>{action.title}</h3>
-                </a>
-              ))}
+              {QUICK_ACTIONS.map((action, idx) => {
+                const isCV = action.title === 'Actualizar CV';
+                return (
+                  <a 
+                    key={idx} 
+                    href={isCV ? undefined : action.link} 
+                    className="db-action-card" 
+                    style={{ textDecoration: 'none', cursor: 'pointer' }}
+                    onClick={isCV ? () => document.getElementById('upload-cv')?.click() : undefined}
+                  >
+                    <div className="db-action-card__icon">{action.icon}</div>
+                    <h3>{action.title}</h3>
+                  </a>
+                );
+              })}
             </div>
           </div>
 
