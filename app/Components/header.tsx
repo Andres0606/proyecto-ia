@@ -24,102 +24,50 @@ const DIAGNOSTICO_ITEMS = [
   },
 ];
 
-import { createClient } from "@/utils/supabase/client";
-
 export default function Header() {
-  const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<{ name: string } | null>(null);
 
-  const supabase = createClient();
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  useEffect(() => {
-    async function getUser() {
-      if (!supabase) return;
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      setLoading(false);
-    }
-    getUser();
-  }, []);
-
-  const handleLogout = async () => {
-    if (!supabase) return;
-    await supabase.auth.signOut();
-    window.location.href = "/";
-  };
+  const handleLogout = () => setUser(null);
 
   return (
-    <nav className={`header ${scrolled ? "header--scrolled" : ""}`}>
+    <header className="header">
       <div className="header__inner">
-        {/* Brand */}
-        <a href="/" className="header__brand" style={{ textDecoration: 'none', color: 'inherit' }}>
-          <span className="header__logo">UCC</span>
-          <span className="header__brand-text">Portal del Egresado</span>
-        </a>
+        {/* Logo */}
+        <div className="header__logo">
+          <a href="/">
+            <img src="/logo-ucc.png" alt="UCC Logo" className="header__logo-img" />
+          </a>
+        </div>
 
-        {/* Links */}
-        <ul className={`header__links ${menuOpen ? "header__links--open" : ""}`}>
-          <li>
-            <a href="/#funciones">Inicio</a>
-          </li>
-          <li>
-            <a href="/Bolsa_Empleo">Bolsa de empleo</a>
-          </li>
-
-          <li>
-            <a href="/diagnostico">Diagnóstico de estabilidad</a>
-          </li>
-
-          <li>
-            <a href="/planes">Planes</a>
-          </li>
-          
-          {user && (
-            <li>
-              <a href="/dashboard" style={{ color: 'var(--ucc-green)', fontWeight: 'bold' }}>Mi Dashboard</a>
-            </li>
-          )}
-        </ul>
+        {/* Nav */}
+        <nav className="header__nav">
+          <ul className={`header__links ${menuOpen ? "header__links--open" : ""}`}>
+            <li><a href="/" className="header__link">Inicio</a></li>
+            <li><a href="/Bolsa_Empleo" className="header__link">Bolsa de Empleo</a></li>
+            <li><a href="/diagnostico" className="header__link">Diagnóstico IA</a></li>
+            <li><a href="/dashboard" className="header__link">Mi Dashboard</a></li>
+          </ul>
+        </nav>
 
         {/* Actions */}
         <div className="header__actions">
-          {loading ? (
-             <div style={{ width: '100px' }} /> 
-          ) : user ? (
+          {user ? (
             <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
               <a href="/perfil" className="header__btn header__btn--ghost" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '1.2rem' }}>👤</span> Mi Perfil
+                👤 Mi Perfil
               </a>
-              <button 
-                onClick={handleLogout} 
-                className="header__btn header__btn--red"
-                style={{ cursor: 'pointer', padding: '8px 15px', minWidth: 'auto' }}
-                title="Cerrar Sesión"
-              >
-                ✕
-              </button>
+              <button onClick={handleLogout} className="header__btn header__btn--red" style={{ cursor: 'pointer', padding: '8px 15px', minWidth: 'auto' }}>✕</button>
             </div>
           ) : (
             <>
-              <a href="/login" className="header__btn header__btn--ghost">
-                Ingresar
-              </a>
-              <a href="/registro" className="header__btn header__btn--red">
-                Registrarse
-              </a>
+              <a href="/login" className="header__btn header__btn--ghost">Ingresar</a>
+              <a href="/registro" className="header__btn header__btn--red">Registrarse</a>
             </>
           )}
         </div>
 
-        {/* Hamburgereeeee */}
+        {/* Hamburger */}
         <button
           className={`header__hamburger ${menuOpen ? "header__hamburger--open" : ""}`}
           onClick={() => setMenuOpen(!menuOpen)}

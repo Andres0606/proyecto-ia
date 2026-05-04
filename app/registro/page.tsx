@@ -463,36 +463,10 @@ export default function RegistroPage() {
 
   const handleRegister = async () => {
     setLoading(true);
-    setErrorMsg("");
-
-    if (!supabase) {
-      setErrorMsg("Error: Supabase no está configurado correctamente.");
-      setLoading(false);
-      return;
-    }
-
-    // 1. Auth Signup
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: nombre,
-          role: rol,
-          phone: formData.telefono,
-        }
-      }
-    });
-
-    if (error) {
-      setErrorMsg(error.message);
-      setLoading(false);
-      return;
-    }
-
-    // 2. Success! (Profile is created by DB Trigger)
-    setLoading(false);
-    window.location.href = "/login?registered=true";
+    // Simulación de registro exitoso (vieja escuela)
+    setTimeout(() => {
+      window.location.href = "/login?registered=true";
+    }, 1000);
   };
 
   const totalSteps = rol === "empresa" ? 3 : 2;

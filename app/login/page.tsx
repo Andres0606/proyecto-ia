@@ -13,37 +13,13 @@ export default function LoginPage() {
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
 
-  const supabase = createClient();
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("registered")) {
-      setSuccessMsg("¡Registro exitoso! Por favor, inicia sesión.");
-    }
-  }, []);
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setErrorMsg("");
-
-    if (!supabase) {
-      setErrorMsg("La configuración de Supabase no se encontró. Verifica las variables de entorno.");
-      setLoading(false);
-      return;
-    }
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      setErrorMsg(error.message);
-      setLoading(false);
-    } else {
+    // Simulación de login exitoso
+    setTimeout(() => {
       window.location.href = "/dashboard";
-    }
+    }, 800);
   };
 
   return (
