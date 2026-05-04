@@ -494,7 +494,7 @@ export default function RegistroPage() {
           cedula: formData.cedula,
           fecha_nacimiento: formData.fecha_nacimiento,
           genero: formData.genero,
-          rol_id: rol === "empresa" ? 2 : 1,
+          rol_id: rol === "egresado" ? 1 : rol === "externo" ? 2 : 3,
           extraData: formData
         })
       });

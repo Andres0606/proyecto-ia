@@ -16,7 +16,7 @@ const registerUser = async (req, res) => {
       email,
       password,
       email_confirm: true, // Lo marcamos como confirmado automáticamente
-      user_metadata: { full_name: nombre_completo, role: rol_id === 2 ? 'empresa' : 'egresado' }
+      user_metadata: { full_name: nombre_completo, role: rol_id === 3 ? 'empresa' : rol_id === 2 ? 'externo' : 'egresado' }
     });
 
     if (authError) throw authError;
@@ -57,7 +57,7 @@ const registerUser = async (req, res) => {
         }]);
       if (profileError) throw profileError;
     } 
-    else if (rol_id === 2) { // Empresa
+    else if (rol_id === 3) { // Empresa
       const { error: companyError } = await supabase
         .from('empresas')
         .insert([{
@@ -72,6 +72,10 @@ const registerUser = async (req, res) => {
           telefono: telefono
         }]);
       if (companyError) throw companyError;
+    }
+    else if (rol_id === 2) { // Externo
+      // Los externos por ahora solo van en la tabla users general
+      // pero podríamos insertar algo en perfiles_usuarios si fuera necesario
     }
 
     return res.status(201).json({
