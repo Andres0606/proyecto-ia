@@ -61,9 +61,9 @@ export default function Dashboard() {
     emprendimiento: ''
   });
 
-  const videoRef = React.useRef<HTMLVideoElement>(null);
   const avatarInputRef = React.useRef<HTMLInputElement>(null);
   const cvInputRef = React.useRef<HTMLInputElement>(null);
+  const videoRef = React.useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -74,23 +74,9 @@ export default function Dashboard() {
     if (savedUser) {
       const userData = JSON.parse(savedUser);
       setUserId(userData.id);
-      setUserPhoto(userData.foto_url || userData.profile?.foto_url || userData.user_metadata?.avatar_url || null);
       fetchFullProfile(userData.id);
     }
   }, []);
-
-  const calculateProgress = (u: any, p: any, photo: any) => {
-    let pct = 0;
-    if (photo || u.foto_url) pct += 15;
-    if (u.cv_url) pct += 25;
-    if (u.telefono && u.nombre_completo) pct += 20;
-    
-    const profFields = [p.nivel_formacion, p.programa_academico, p.estrato, p.estado_civil, p.ingreso_mensual];
-    const filledCount = profFields.filter(f => f && f !== '').length;
-    pct += (filledCount / profFields.length) * 40;
-    
-    setCompletionPct(Math.round(pct));
-  };
 
   const fetchFullProfile = async (id: string) => {
     try {
@@ -98,14 +84,18 @@ export default function Dashboard() {
       const res = await fetch(`${backendUrl}/api/users/profile/${id}`);
       const data = await res.json();
       
-      if (data.success) {
+      if (data.success && data.profile) {
         const u = data.profile;
-        const p = data.profile.perfiles_usuarios?.[0] || {};
+        const p = (data.profile.perfiles_usuarios && data.profile.perfiles_usuarios.length > 0) 
+                  ? data.profile.perfiles_usuarios[0] 
+                  : {};
         
-        if (u.foto_url) setUserPhoto(u.foto_url);
+        console.log("📥 Datos procesados:", { user: u, profile: p });
+
         setUserName(u.nombre_completo ? u.nombre_completo.split(' ')[0] : 'Egresado');
-        
-        setFormData({
+        if (u.foto_url) setUserPhoto(u.foto_url);
+
+        const updatedData = {
           nombre_completo: u.nombre_completo || '',
           correo: u.correo || '',
           telefono: u.telefono || '',
@@ -114,20 +104,36 @@ export default function Dashboard() {
           genero: u.genero || '',
           nivel_formacion: p.nivel_formacion || '',
           programa_academico: p.programa_academico || '',
-          estrato: p.estrato || '',
+          estrato: String(p.estrato || ''),
           estado_civil: p.estado_civil || '',
-          numero_hijos: p.numero_hijos || '',
+          numero_hijos: String(p.numero_hijos || ''),
           ingreso_mensual: p.ingreso_mensual || '',
           sector_economico: p.sector_economico || '',
           area_desempeno: p.area_desempeno || '',
           emprendimiento: p.emprendimiento || ''
-        });
+        };
 
-        calculateProgress(u, p, u.foto_url || userPhoto);
-        setIsEditingProf(!p.programa_academico);
+        setFormData(updatedData);
+
+        // Calcular progreso
+        let pct = 0;
+        if (u.foto_url || userPhoto) pct += 15;
+        if (u.cv_url) pct += 25;
+        if (u.telefono && u.nombre_completo) pct += 20;
+        const profFields = [p.nivel_formacion, p.programa_academico, p.estrato, p.estado_civil, p.ingreso_mensual];
+        const filled = profFields.filter(f => f && f !== '').length;
+        pct += (filled / profFields.length) * 40;
+        setCompletionPct(Math.round(pct));
+
+        // Decidir si mostrar edición o resumen
+        if (p.programa_academico || p.nivel_formacion || p.estrato) {
+          setIsEditingProf(false);
+        } else {
+          setIsEditingProf(true);
+        }
       }
     } catch (err) {
-      console.error(err);
+      console.error("Error cargando perfil:", err);
     }
   };
 
@@ -140,18 +146,23 @@ export default function Dashboard() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userData: { nombre_completo: formData.nombre_completo, correo: formData.correo, telefono: formData.telefono },
+          userData: { 
+            nombre_completo: formData.nombre_completo, 
+            correo: formData.correo, 
+            telefono: formData.telefono 
+          },
           profileData: formData
         }),
       });
       const data = await res.json();
       if (data.success) {
-        alert("¡Datos actualizados correctamente!");
+        alert("¡Perfil actualizado con éxito! ✨");
         setIsEditingProf(false);
-        fetchFullProfile(userId);
+        // Pequeña espera para asegurar que la DB procesó el cambio
+        setTimeout(() => fetchFullProfile(userId), 500);
       }
     } catch (err: any) {
-      alert("Error: " + err.message);
+      alert("Error al guardar: " + err.message);
     } finally {
       setLoadingProfile(false);
     }
@@ -175,7 +186,6 @@ export default function Dashboard() {
       alert(err.message);
     } finally {
       setUploading(false);
-      setShowCamera(false);
     }
   };
 
@@ -210,11 +220,11 @@ export default function Dashboard() {
     }
   };
 
-  const InfoCard = ({ label, value, detail }: { label: string, value: string, detail?: string }) => (
+  const InfoCard = ({ label, value, detail }: { label: string, value: any, detail?: string }) => (
     <div style={{ background: 'white', padding: '22px', borderRadius: '18px', border: '1px solid #f1f5f9', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
       <p style={{ margin: '0 0 8px 0', fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700 }}>{label}</p>
       <p style={{ margin: 0, fontSize: '1.05rem', color: 'var(--ucc-navy)', fontWeight: 700 }}>
-        {value && value !== '' ? (detail ? `${detail} ${value}` : value) : <span style={{ color: '#cbd5e1', fontWeight: 400 }}>No completado</span>}
+        {value && String(value).trim() !== '' ? (detail ? `${detail} ${value}` : value) : <span style={{ color: '#cbd5e1', fontWeight: 400 }}>No completado</span>}
       </p>
     </div>
   );
@@ -227,35 +237,23 @@ export default function Dashboard() {
 
       <main className="db-main" style={{ paddingTop: '80px', minHeight: '80vh' }}>
         
-        {/* CABECERA FUSIONADA: FOTO + PROGRESO */}
         <div className="db-card" style={{ margin: '20px auto 40px', maxWidth: '1100px', padding: '30px 40px', display: 'flex', alignItems: 'center', gap: '40px', background: 'white', borderRadius: '24px', border: 'none', boxShadow: '0 15px 40px rgba(0,0,0,0.08)' }}>
-          
           <div style={{ position: 'relative', width: '130px', height: '130px', flexShrink: 0 }}>
-            {/* Círculo de Progreso */}
             <svg viewBox="0 0 36 36" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)', position: 'absolute', top: 0, left: 0, zIndex: 1 }}>
               <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#f1f5f9" strokeWidth="2" />
-              <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--ucc-blue)" strokeDasharray={`${completionPct}, 100`} strokeWidth="2" strokeLinecap="round" style={{ transition: 'stroke-dasharray 1.5s ease-in-out' }} />
+              <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--ucc-blue)" strokeDasharray={`${completionPct}, 100`} strokeWidth="2" strokeLinecap="round" style={{ transition: 'stroke-dasharray 1.5s ease' }} />
             </svg>
-            
-            {/* Foto del Usuario */}
-            <div style={{ position: 'absolute', top: '10px', left: '10px', right: '10px', bottom: '10px', borderRadius: '50%', background: userPhoto ? `url(${userPhoto}) center/cover` : 'var(--ucc-navy)', zIndex: 2, border: '4px solid white', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '2.5rem', fontWeight: 800 }}>
+            <div style={{ position: 'absolute', top: '10px', left: '10px', right: '10px', bottom: '10px', borderRadius: '50%', background: userPhoto ? `url(${userPhoto}) center/cover` : 'var(--ucc-navy)', zIndex: 2, border: '4px solid white', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '2.5rem', fontWeight: 800 }}>
               {!userPhoto && userName[0]}
             </div>
-            
-            {/* Badge de Porcentaje */}
-            <div style={{ position: 'absolute', bottom: '-5px', left: '50%', transform: 'translateX(-50%)', background: 'var(--ucc-navy)', color: 'white', borderRadius: '12px', padding: '2px 10px', fontSize: '0.8rem', fontWeight: 800, zIndex: 3, boxShadow: '0 4px 8px rgba(0,0,0,0.2)' }}>
-              {completionPct}%
-            </div>
+            <div style={{ position: 'absolute', bottom: '-5px', left: '50%', transform: 'translateX(-50%)', background: 'var(--ucc-navy)', color: 'white', borderRadius: '12px', padding: '2px 10px', fontSize: '0.8rem', fontWeight: 800, zIndex: 3 }}>{completionPct}%</div>
           </div>
-
           <div style={{ flex: 1 }}>
             <h3 style={{ margin: 0, color: 'var(--ucc-navy)', fontSize: '2rem', fontWeight: 800 }}>{greeting}, {userName} ✨</h3>
-            <p style={{ margin: '10px 0 0', color: '#64748b', fontSize: '1.1rem', lineHeight: '1.4' }}>
-              Tu perfil profesional está al {completionPct}%. {completionPct < 100 ? '¡Completa los pasos restantes para destacar!' : '¡Excelente trabajo! Perfil completo.'}
-            </p>
+            <p style={{ margin: '10px 0 0', color: '#64748b', fontSize: '1.1rem' }}>Tu perfil está al {completionPct}%. ¡Sigue así para mejores oportunidades!</p>
             <div style={{ display: 'flex', gap: '15px', marginTop: '20px' }}>
                <button onClick={startCamera} style={{ background: 'var(--ucc-blue)', color: 'white', border: 'none', borderRadius: '14px', padding: '12px 25px', cursor: 'pointer', fontWeight: 700 }}>📸 Cámara</button>
-               <button onClick={() => avatarInputRef.current?.click()} style={{ background: '#f8fafc', color: 'var(--ucc-navy)', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '12px 25px', cursor: 'pointer', fontWeight: 700 }}>📁 Subir Foto</button>
+               <button onClick={() => avatarInputRef.current?.click()} style={{ background: '#f8fafc', color: 'var(--ucc-navy)', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '12px 25px', cursor: 'pointer', fontWeight: 700 }}>📁 Foto</button>
             </div>
           </div>
         </div>
@@ -273,21 +271,21 @@ export default function Dashboard() {
         <div style={{ maxWidth: '1100px', margin: '0 auto 60px' }}>
           {activeSection === 'personal' && (
             <div className="db-card" style={{ padding: '45px', animation: 'slideUp 0.5s ease', borderRadius: '28px' }}>
-              <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '35px', fontWeight: 800, fontSize: '1.8rem' }}>👤 Datos Personales</h2>
+              <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '35px', fontWeight: 800 }}>👤 Datos Personales</h2>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
                 <div className="form-group"><label>Nombre Completo</label><input type="text" value={formData.nombre_completo} onChange={(e) => setFormData({...formData, nombre_completo: e.target.value})} style={{ padding: '16px', borderRadius: '14px', border: '1px solid #e2e8f0' }} /></div>
                 <div className="form-group"><label>Correo Electrónico</label><input type="email" value={formData.correo} onChange={(e) => setFormData({...formData, correo: e.target.value})} style={{ padding: '16px', borderRadius: '14px', border: '1px solid #e2e8f0' }} /></div>
                 <div className="form-group"><label>Teléfono</label><input type="text" value={formData.telefono} onChange={(e) => setFormData({...formData, telefono: e.target.value})} style={{ padding: '16px', borderRadius: '14px', border: '1px solid #e2e8f0' }} /></div>
                 <div className="form-group"><label style={{ color: '#94a3b8' }}>Cédula</label><input type="text" value={formData.cedula} disabled style={{ background: '#334155', color: '#cbd5e1', padding: '16px', borderRadius: '14px' }} /></div>
               </div>
-              <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ width: '100%', marginTop: '40px', padding: '20px', background: 'var(--ucc-navy)', color: 'white', borderRadius: '16px', fontWeight: 800 }}>{loadingProfile ? 'Guardando...' : '💾 Guardar Datos Personales'}</button>
+              <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ width: '100%', marginTop: '40px', padding: '20px', background: 'var(--ucc-navy)', color: 'white', borderRadius: '16px', fontWeight: 800 }}>{loadingProfile ? 'Guardando...' : '💾 Guardar Datos'}</button>
             </div>
           )}
 
           {activeSection === 'professional' && (
             <div className="db-card" style={{ padding: '45px', animation: 'slideUp 0.5s ease', borderRadius: '28px', background: '#f8fafc' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-                <h2 style={{ color: 'var(--ucc-navy)', margin: 0, fontWeight: 800, fontSize: '1.8rem' }}>💼 Perfil Profesional</h2>
+                <h2 style={{ color: 'var(--ucc-navy)', margin: 0, fontWeight: 800 }}>💼 Perfil Profesional</h2>
                 {!isEditingProf && (
                   <button onClick={() => setIsEditingProf(true)} style={{ background: 'var(--ucc-blue)', color: 'white', border: 'none', borderRadius: '14px', padding: '12px 28px', cursor: 'pointer', fontWeight: 700 }}>✏️ Actualizar Información</button>
                 )}
@@ -307,7 +305,7 @@ export default function Dashboard() {
                   ].map((field) => (
                     <div key={field.key} className="form-group">
                       <label style={{ fontSize: '0.85rem', fontWeight: 800, color: '#475569' }}>{field.label}</label>
-                      <select value={(formData as any)[field.key]} onChange={(e) => setFormData({...formData, [field.key]: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '14px', border: '1px solid #e2e8f0', appearance: 'none', background: 'white' }}>
+                      <select value={(formData as any)[field.key]} onChange={(e) => setFormData({...formData, [field.key]: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '14px', border: '1px solid #e2e8f0', background: 'white' }}>
                         <option value="">Seleccione...</option>
                         {field.options.map(o => <option key={o} value={o}>{o}</option>)}
                       </select>
