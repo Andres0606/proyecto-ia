@@ -145,19 +145,24 @@ const getFullProfile = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
     }
 
-    // PASO 2: Obtener el perfil profesional por separado (Garantiza que no falle el join)
-    const { data: profileEntries, error: profileError } = await supabase
+    // PASO 2: Obtener el perfil profesional o de empresa
+    const { data: profileEntries } = await supabase
       .from('perfiles_usuarios')
       .select('*')
       .eq('user_id', userId);
 
-    if (profileError) {
-      console.error('⚠️ Error obteniendo perfiles_usuarios:', profileError.message);
-    }
+    const { data: companyData } = await supabase
+      .from('empresas')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
 
     // Unir los datos
-    const profileData = user;
-    profileData.perfiles_usuarios = profileEntries || [];
+    const profileData = {
+      ...user,
+      perfiles_usuarios: profileEntries || [],
+      empresa: companyData || null
+    };
 
     // Mapeo inverso (Sincronización con Diagnóstico)
     if (profileData.perfiles_usuarios.length > 0) {

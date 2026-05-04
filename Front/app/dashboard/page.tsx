@@ -5,12 +5,21 @@ import Header from '../Components/header';
 import Footer from '../Components/footer';
 import '../css/Dashboard/dashboard.css';
 
-const QUICK_ACTIONS = [
-  { title: 'Datos Personales', icon: '👤', id: 'personal' },
-  { title: 'Perfil Profesional', icon: '💼', id: 'professional' },
-  { title: 'Actualizar CV', icon: '📄', id: 'cv' },
-  { title: 'Mis Postulaciones', icon: '📨', id: 'apps' },
-];
+const getQuickActions = (role: string | null) => {
+  if (role === 'empresa') {
+    return [
+      { title: 'Perfil Empresa', icon: '🏢', id: 'professional' },
+      { title: 'Publicar Vacante', icon: '📢', id: 'cv' }, // Reusing CV icon/id logic for now
+      { title: 'Candidatos', icon: '👥', id: 'apps' },
+    ];
+  }
+  return [
+    { title: 'Datos Personales', icon: '👤', id: 'personal' },
+    { title: 'Perfil Profesional', icon: '💼', id: 'professional' },
+    { title: 'Actualizar CV', icon: '📄', id: 'cv' },
+    { title: 'Mis Postulaciones', icon: '📨', id: 'apps' },
+  ];
+};
 
 const DIAG_OPTIONS = {
   Programa: [
@@ -36,8 +45,10 @@ export default function Dashboard() {
   const [userName, setUserName] = useState('Egresado');
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<'none' | 'personal' | 'professional' | 'apps' | 'cv'>('none');
   const [isEditingProf, setIsEditingProf] = useState(false);
+  const [isEditingPersonal, setIsEditingPersonal] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [completionPct, setCompletionPct] = useState(0);
   
@@ -81,12 +92,20 @@ export default function Dashboard() {
           
           // Fallback
           const meta = userData.profile || userData.user_metadata || {};
-          setUserName(meta.full_name?.split(' ')[0] || meta.nombre_completo?.split(' ')[0] || 'Karen');
+          setUserName(meta.full_name?.split(' ')[0] || meta.nombre_completo?.split(' ')[0] || 'Usuario');
+          
+          // Role detection
+          const roleName = userData.profile?.roles?.nombre || 'egresado';
+          setUserRole(roleName);
+
           setFormData(prev => ({
             ...prev,
             nombre_completo: meta.full_name || meta.nombre_completo || '',
             correo: userData.email || meta.correo || '',
-            telefono: meta.telefono || ''
+            telefono: meta.telefono || '',
+            cedula: meta.cedula || '',
+            fecha_nacimiento: meta.fecha_nacimiento ? meta.fecha_nacimiento.split('T')[0] : '',
+            genero: meta.genero || ''
           }));
 
           fetchFullProfile(cleanId);
@@ -106,6 +125,7 @@ export default function Dashboard() {
       if (data.success && data.profile) {
         const u = data.profile;
         const p = (u.perfiles_usuarios && u.perfiles_usuarios.length > 0) ? u.perfiles_usuarios[0] : {};
+        const c = u.empresa || {};
         
         setUserName(u.nombre_completo ? u.nombre_completo.split(' ')[0] : 'Egresado');
         if (u.foto_url) setUserPhoto(u.foto_url);
@@ -125,10 +145,16 @@ export default function Dashboard() {
           estado_civil: val(p.estado_civil),
           numero_hijos: val(p.numero_hijos),
           ingreso_mensual: val(p.ingreso_mensual),
-          sector_economico: val(p.sector_economico),
+          sector_economico: val(p.sector_economico || c.sector_economico),
           area_desempeno: val(p.area_desempeno),
-          emprendimiento: val(p.emprendimiento)
-        });
+          emprendimiento: val(p.emprendimiento),
+          // Empresa fields
+          razon_social: val(c.razon_social),
+          nit: val(c.nit),
+          ciudad: val(c.ciudad),
+          tamano_empresa: val(c.tamano_empresa),
+          tipo_empresa: val(c.tipo_empresa)
+        } as any);
 
         let pct = 0;
         if (u.foto_url || userPhoto) pct += 15;
@@ -146,27 +172,28 @@ export default function Dashboard() {
   const handleSaveProfile = async () => {
     if (!userId) return;
     setLoadingProfile(true);
-    setUploadStatus({ msg: '⏳ Guardando perfil profesional...', type: 'info' });
+    setUploadStatus({ msg: 'Guardando cambios...', type: 'info' });
     try {
       const backendUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000').replace(/\/$/, '');
       const res = await fetch(`${backendUrl}/api/users/profile/${userId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userData: { nombre_completo: formData.nombre_completo, correo: formData.correo, telefono: formData.telefono },
+          userData: formData,
           profileData: formData
         }),
       });
       const data = await res.json();
       if (data.success) {
-        setUploadStatus({ msg: '✅ ¡Perfil actualizado correctamente!', type: 'success' });
+        setUploadStatus({ msg: 'Perfil actualizado con éxito', type: 'success' });
         setIsEditingProf(false);
+        setIsEditingPersonal(false);
         setTimeout(() => {
           fetchFullProfile(userId);
           setUploadStatus({ msg: '', type: 'none' });
-        }, 3000);
+        }, 2000);
       }
-    } catch (err: any) { setUploadStatus({ msg: '❌ Error al guardar', type: 'error' }); } finally { setLoadingProfile(false); }
+    } catch (err: any) { setUploadStatus({ msg: 'Error al guardar cambios', type: 'error' }); } finally { setLoadingProfile(false); }
   };
 
   const handleFileUpload = async (file: File, type: 'avatar' | 'cv') => {
@@ -316,18 +343,27 @@ export default function Dashboard() {
             )}
           </div>
           <div style={{ flex: 1 }}>
-            <h1 style={{ margin: 0, color: 'var(--ucc-navy)', fontSize: '2rem' }}>{greeting}, {userName} ✨</h1>
-            <p style={{ color: '#64748b' }}>Tu perfil profesional está al {completionPct}%</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+              <h1 style={{ margin: 0, color: 'var(--ucc-navy)', fontSize: '2rem' }}>{greeting}, {userName} ✨</h1>
+              <span style={{ 
+                background: userRole === 'empresa' ? '#fef3c7' : userRole === 'externo' ? '#dcfce7' : '#fee2e2', 
+                color: userRole === 'empresa' ? '#92400e' : userRole === 'externo' ? '#166534' : '#b91c1c',
+                padding: '6px 14px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px'
+              }}>
+                {userRole || 'Egresado'}
+              </span>
+            </div>
+            <p style={{ color: '#64748b', margin: 0 }}>Tu perfil profesional está al {completionPct}%</p>
             <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
-              <button disabled={isUploading} onClick={() => avatarInputRef.current?.click()} style={{ background: '#f8fafc', color: 'var(--ucc-navy)', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '10px 20px', cursor: isUploading ? 'not-allowed' : 'pointer', fontWeight: 600 }}>
-                {isUploading ? '⌛ Subiendo...' : '📁 Cambiar Foto'}
+              <button disabled={isUploading} onClick={() => avatarInputRef.current?.click()} style={{ background: '#f8fafc', color: 'var(--ucc-navy)', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '10px 20px', cursor: isUploading ? 'not-allowed' : 'pointer', fontWeight: 600, transition: 'all 0.2s' }}>
+                {isUploading ? 'Procesando...' : '📁 Cambiar Foto'}
               </button>
             </div>
           </div>
         </div>
 
-        <div className="db-actions" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '25px', margin: '40px auto', maxWidth: '1100px' }}>
-          {QUICK_ACTIONS.map((action) => (
+        <div className="db-actions" style={{ display: 'grid', gridTemplateColumns: `repeat(${getQuickActions(userRole).length}, 1fr)`, gap: '25px', margin: '40px auto', maxWidth: '1100px' }}>
+          {getQuickActions(userRole).map((action) => (
             <div key={action.id} className="db-action-card" style={{ cursor: 'pointer', padding: '30px', textAlign: 'center', background: 'white', borderRadius: '24px', border: activeSection === action.id ? '2px solid var(--ucc-blue)' : '1px solid #f1f5f9', boxShadow: '0 8px 20px rgba(0,0,0,0.03)', transition: 'all 0.3s ease' }} 
               onClick={() => setActiveSection(activeSection === action.id ? 'none' : action.id as any)}>
               <div style={{ fontSize: '3rem', marginBottom: '10px' }}>{action.icon}</div>
@@ -337,64 +373,148 @@ export default function Dashboard() {
         </div>
 
         <div style={{ maxWidth: '1100px', margin: '0 auto 60px' }}>
-          {activeSection === 'personal' && (
+          {activeSection === 'personal' && userRole !== 'empresa' && (
             <div className="db-card" style={{ padding: '45px', borderRadius: '28px' }}>
-              <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '35px', fontWeight: 800 }}>👤 Datos Personales</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '35px' }}>
-                <div className="form-group"><label style={labelStyle}>Nombre Completo</label><input type="text" value={formData.nombre_completo} disabled style={disabledInputStyle} /></div>
-                <div className="form-group"><label style={labelStyle}>Correo Electrónico</label><input type="email" value={formData.correo} disabled style={disabledInputStyle} /></div>
-                <div className="form-group"><label style={labelStyle}>Teléfono</label><input type="text" value={formData.telefono} disabled style={disabledInputStyle} /></div>
-                <div className="form-group"><label style={labelStyle}>Cédula</label><input type="text" value={formData.cedula} disabled style={disabledInputStyle} /></div>
-                <div className="form-group"><label style={labelStyle}>Fecha de Nacimiento</label><input type="text" value={formData.fecha_nacimiento} disabled style={disabledInputStyle} /></div>
-                <div className="form-group"><label style={labelStyle}>Género</label><input type="text" value={formData.genero} disabled style={disabledInputStyle} /></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '35px' }}>
+                <h2 style={{ color: 'var(--ucc-navy)', margin: 0, fontWeight: 800 }}>👤 Datos Personales</h2>
+                <button 
+                  onClick={() => setIsEditingPersonal(!isEditingPersonal)} 
+                  style={{ 
+                    background: isEditingPersonal ? '#f1f5f9' : 'var(--ucc-blue)', 
+                    color: isEditingPersonal ? '#475569' : 'white', 
+                    border: 'none', borderRadius: '12px', padding: '10px 20px', cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem',
+                    boxShadow: isEditingPersonal ? 'none' : '0 4px 12px rgba(0, 122, 255, 0.2)',
+                    transition: 'all 0.2s ease'
+                  }}>
+                  {isEditingPersonal ? '❌ Cancelar' : '✏️ Editar Datos'}
+                </button>
               </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '35px' }}>
+                <div className="form-group">
+                  <label style={labelStyle}>Nombre Completo</label>
+                  <input type="text" value={formData.nombre_completo} onChange={(e) => setFormData({...formData, nombre_completo: e.target.value})} disabled={!isEditingPersonal} style={isEditingPersonal ? {...baseInputStyle, border: '1px solid var(--ucc-blue)'} : disabledInputStyle} />
+                </div>
+                <div className="form-group">
+                  <label style={labelStyle}>Correo Electrónico</label>
+                  <input type="email" value={formData.correo} onChange={(e) => setFormData({...formData, correo: e.target.value})} disabled={!isEditingPersonal} style={isEditingPersonal ? {...baseInputStyle, border: '1px solid var(--ucc-blue)'} : disabledInputStyle} />
+                </div>
+                <div className="form-group">
+                  <label style={labelStyle}>Teléfono</label>
+                  <input type="text" value={formData.telefono} onChange={(e) => setFormData({...formData, telefono: e.target.value})} disabled={!isEditingPersonal} style={isEditingPersonal ? {...baseInputStyle, border: '1px solid var(--ucc-blue)'} : disabledInputStyle} />
+                </div>
+                <div className="form-group">
+                  <label style={labelStyle}>Cédula</label>
+                  <input type="text" value={formData.cedula} onChange={(e) => setFormData({...formData, cedula: e.target.value})} disabled={!isEditingPersonal} style={isEditingPersonal ? {...baseInputStyle, border: '1px solid var(--ucc-blue)'} : disabledInputStyle} />
+                </div>
+                <div className="form-group">
+                  <label style={labelStyle}>Fecha de Nacimiento</label>
+                  <input type="date" value={formData.fecha_nacimiento} onChange={(e) => setFormData({...formData, fecha_nacimiento: e.target.value})} disabled={!isEditingPersonal} style={isEditingPersonal ? {...baseInputStyle, border: '1px solid var(--ucc-blue)'} : disabledInputStyle} />
+                </div>
+                <div className="form-group">
+                  <label style={labelStyle}>Género</label>
+                  {isEditingPersonal ? (
+                    <select value={formData.genero} onChange={(e) => setFormData({...formData, genero: e.target.value})} style={{...baseInputStyle, border: '1px solid var(--ucc-blue)'}}>
+                      <option value="">Seleccione...</option>
+                      <option value="Masculino">Masculino</option>
+                      <option value="Femenino">Femenino</option>
+                      <option value="Otro">Otro</option>
+                    </select>
+                  ) : (
+                    <input type="text" value={formData.genero} disabled style={disabledInputStyle} />
+                  )}
+                </div>
+              </div>
+
+              {isEditingPersonal && (
+                <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ width: '100%', marginTop: '40px', padding: '18px', background: 'var(--ucc-navy)', color: 'white', borderRadius: '16px', fontWeight: 800, cursor: loadingProfile ? 'not-allowed' : 'pointer', transition: 'all 0.3s ease', boxShadow: '0 8px 25px rgba(30, 58, 95, 0.2)' }}>
+                  {loadingProfile ? 'Guardando...' : '💾 Guardar Cambios Personales'}
+                </button>
+              )}
             </div>
           )}
 
           {activeSection === 'professional' && (
             <div className="db-card" style={{ padding: '45px', borderRadius: '28px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-                <h2 style={{ color: 'var(--ucc-navy)', margin: 0, fontWeight: 800 }}>💼 Perfil Profesional</h2>
-                <button onClick={() => setIsEditingProf(!isEditingProf)} style={{ background: 'var(--ucc-blue)', color: 'white', border: 'none', borderRadius: '12px', padding: '10px 25px', cursor: 'pointer', fontWeight: 700 }}>
+                <h2 style={{ color: 'var(--ucc-navy)', margin: 0, fontWeight: 800 }}>
+                  {userRole === 'empresa' ? '🏢 Perfil de Empresa' : '💼 Perfil Profesional'}
+                </h2>
+                <button 
+                  onClick={() => setIsEditingProf(!isEditingProf)} 
+                  style={{ 
+                    background: isEditingProf ? '#f1f5f9' : 'var(--ucc-blue)', 
+                    color: isEditingProf ? '#475569' : 'white', 
+                    border: 'none', borderRadius: '12px', padding: '10px 20px', cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem',
+                    transition: 'all 0.2s ease',
+                    boxShadow: isEditingProf ? 'none' : '0 4px 12px rgba(0, 122, 255, 0.2)'
+                  }}>
                   {isEditingProf ? '❌ Cancelar' : '✏️ Actualizar Información'}
                 </button>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '35px' }}>
-                {[
-                  { label: 'Programa Académico', key: 'programa_academico', options: DIAG_OPTIONS.Programa },
-                  { label: 'Nivel de Formación', key: 'nivel_formacion', options: DIAG_OPTIONS.Formacion },
-                  { label: 'Estado Civil', key: 'estado_civil', options: DIAG_OPTIONS.EstadoCivil },
-                  { label: 'Estrato', key: 'estrato', options: DIAG_OPTIONS.Estrato },
-                  { label: 'Rango de Ingreso', key: 'ingreso_mensual', options: DIAG_OPTIONS.Ingreso },
-                  { label: '¿Emprendimiento?', key: 'emprendimiento', options: DIAG_OPTIONS.Emprendimiento },
-                  { label: 'Área de Desempeño', key: 'area_desempeno', options: DIAG_OPTIONS.Area },
-                  { label: 'Sector Económico', key: 'sector_economico', options: DIAG_OPTIONS.Sector },
-                  { label: 'Número de Hijos', key: 'numero_hijos', options: DIAG_OPTIONS.Hijos },
-                ].map((field) => (
-                  <div key={field.key} className="form-group">
-                    <label style={labelStyle}>{field.label}</label>
-                    {isEditingProf ? (
-                      <select value={(formData as any)[field.key]} onChange={(e) => setFormData({...formData, [field.key]: e.target.value})} style={{...baseInputStyle, border: '1px solid var(--ucc-blue)'}}>
-                        <option value="">Seleccione...</option>
-                        {field.options.map(o => <option key={o} value={o}>{o}</option>)}
-                      </select>
-                    ) : (
-                      <input type="text" value={(formData as any)[field.key] || 'No completado'} disabled style={disabledInputStyle} />
-                    )}
-                  </div>
-                ))}
+                {userRole === 'empresa' ? (
+                  // Empresa Fields
+                  <>
+                    <div className="form-group">
+                      <label style={labelStyle}>Razón Social</label>
+                      <input type="text" value={(formData as any).razon_social || ''} disabled style={disabledInputStyle} />
+                    </div>
+                    <div className="form-group">
+                      <label style={labelStyle}>NIT</label>
+                      <input type="text" value={(formData as any).nit || ''} disabled style={disabledInputStyle} />
+                    </div>
+                    <div className="form-group">
+                      <label style={labelStyle}>Sector Económico</label>
+                      <input type="text" value={(formData as any).sector_economico || ''} disabled style={disabledInputStyle} />
+                    </div>
+                    <div className="form-group">
+                      <label style={labelStyle}>Ciudad</label>
+                      <input type="text" value={(formData as any).ciudad || ''} disabled style={disabledInputStyle} />
+                    </div>
+                    <div className="form-group">
+                      <label style={labelStyle}>Tamaño Empresa</label>
+                      <input type="text" value={(formData as any).tamano_empresa || ''} disabled style={disabledInputStyle} />
+                    </div>
+                  </>
+                ) : (
+                  // Egresado/Externo Fields
+                  [
+                    { label: 'Programa Académico', key: 'programa_academico', options: DIAG_OPTIONS.Programa },
+                    { label: 'Nivel de Formación', key: 'nivel_formacion', options: DIAG_OPTIONS.Formacion },
+                    { label: 'Estado Civil', key: 'estado_civil', options: DIAG_OPTIONS.EstadoCivil },
+                    { label: 'Estrato', key: 'estrato', options: DIAG_OPTIONS.Estrato },
+                    { label: 'Rango de Ingreso', key: 'ingreso_mensual', options: DIAG_OPTIONS.Ingreso },
+                    { label: '¿Emprendimiento?', key: 'emprendimiento', options: DIAG_OPTIONS.Emprendimiento },
+                    { label: 'Área de Desempeño', key: 'area_desempeno', options: DIAG_OPTIONS.Area },
+                    { label: 'Sector Económico', key: 'sector_economico', options: DIAG_OPTIONS.Sector },
+                    { label: 'Número de Hijos', key: 'numero_hijos', options: DIAG_OPTIONS.Hijos },
+                  ].map((field) => (
+                    <div key={field.key} className="form-group">
+                      <label style={labelStyle}>{field.label}</label>
+                      {isEditingProf ? (
+                        <select value={(formData as any)[field.key]} onChange={(e) => setFormData({...formData, [field.key]: e.target.value})} style={{...baseInputStyle, border: '1px solid var(--ucc-blue)'}}>
+                          <option value="">Seleccione...</option>
+                          {field.options.map(o => <option key={o} value={o}>{o}</option>)}
+                        </select>
+                      ) : (
+                        <input type="text" value={(formData as any)[field.key] || 'No completado'} disabled style={disabledInputStyle} />
+                      )}
+                    </div>
+                  ))
+                )}
               </div>
 
-              {isEditingProf && (
-                <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ width: '100%', marginTop: '40px', padding: '20px', background: 'var(--ucc-navy)', color: 'white', borderRadius: '16px', fontWeight: 800, cursor: loadingProfile ? 'not-allowed' : 'pointer', opacity: loadingProfile ? 0.7 : 1 }}>
-                  {loadingProfile ? '⌛ Guardando cambios...' : '💾 Guardar Perfil Profesional'}
+              {isEditingProf && userRole !== 'empresa' && (
+                <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ width: '100%', marginTop: '40px', padding: '18px', background: 'var(--ucc-navy)', color: 'white', borderRadius: '16px', fontWeight: 800, cursor: loadingProfile ? 'not-allowed' : 'pointer', transition: 'all 0.3s ease', boxShadow: '0 8px 25px rgba(30, 58, 95, 0.2)' }}>
+                  {loadingProfile ? 'Guardando...' : '💾 Guardar Perfil Profesional'}
                 </button>
               )}
             </div>
           )}
 
-          {activeSection === 'cv' && (
+          {activeSection === 'cv' && userRole !== 'empresa' && (
             <div className="db-card" style={{ padding: '60px 45px', borderRadius: '28px', textAlign: 'center', background: 'white', position: 'relative' }}>
               <div style={{ maxWidth: '600px', margin: '0 auto' }}>
                 <div style={{ fontSize: '4.5rem', marginBottom: '20px', animation: 'float 3s ease-in-out infinite' }}>📄</div>
@@ -434,6 +554,22 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {activeSection === 'cv' && userRole === 'empresa' && (
+            <div className="db-card" style={{ padding: '60px 45px', borderRadius: '28px', textAlign: 'center' }}>
+              <div style={{ fontSize: '4rem', marginBottom: '20px' }}>📢</div>
+              <h2 style={{ color: 'var(--ucc-navy)', fontWeight: 800 }}>Publicar Vacante</h2>
+              <p style={{ color: '#64748b' }}>Próximamente: Crea y gestiona ofertas laborales para egresados de la UCC.</p>
+            </div>
+          )}
+
+          {activeSection === 'apps' && userRole === 'empresa' && (
+            <div className="db-card" style={{ padding: '60px 45px', borderRadius: '28px', textAlign: 'center' }}>
+              <div style={{ fontSize: '4rem', marginBottom: '20px' }}>👥</div>
+              <h2 style={{ color: 'var(--ucc-navy)', fontWeight: 800 }}>Candidatos</h2>
+              <p style={{ color: '#64748b' }}>Próximamente: Revisa los perfiles y hojas de vida de los candidatos interesados.</p>
             </div>
           )}
         </div>
