@@ -89,4 +89,43 @@ const registerUser = async (req, res) => {
   }
 };
 
-module.exports = { registerUser };
+const loginUser = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    // 1. Autenticar con Supabase Auth
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) throw error;
+
+    // 2. Traer información extra del perfil (opcional pero recomendado)
+    const { data: profile } = await supabase
+      .from('users')
+      .select('*, roles(nombre)')
+      .eq('id', data.user.id)
+      .single();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Login exitoso.',
+      session: data.session,
+      user: {
+        ...data.user,
+        profile: profile
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error en loginUser:', error.message);
+    return res.status(401).json({
+      success: false,
+      message: 'Credenciales inválidas o error en el servidor.',
+      error: error.message
+    });
+  }
+};
+
+module.exports = { registerUser, loginUser };

@@ -16,10 +16,34 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Simulación de login exitoso
-    setTimeout(() => {
+    setErrorMsg("");
+
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
+      const res = await fetch(`${backendUrl}/api/users/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!data.success) {
+        throw new Error(data.message || 'Error al iniciar sesión');
+      }
+
+      // Guardar sesión y datos del usuario
+      localStorage.setItem('ucc_session', JSON.stringify(data.session));
+      localStorage.setItem('ucc_user', JSON.stringify(data.user));
+
+      // Redirigir al dashboard
       window.location.href = "/dashboard";
-    }, 800);
+
+    } catch (err: any) {
+      console.error("Error en login:", err);
+      setErrorMsg(err.message || "Credenciales incorrectas.");
+      setLoading(false);
+    }
   };
 
   return (
