@@ -81,31 +81,31 @@ export default function Dashboard() {
 
   const calculateProgress = (u: any, p: any, photo: any) => {
     let pct = 0;
-    if (photo) pct += 15;
+    if (photo || u.foto_url) pct += 15;
     if (u.cv_url) pct += 25;
     if (u.telefono && u.nombre_completo) pct += 20;
+    
     const profFields = [p.nivel_formacion, p.programa_academico, p.estrato, p.estado_civil, p.ingreso_mensual];
     const filledCount = profFields.filter(f => f && f !== '').length;
     pct += (filledCount / profFields.length) * 40;
+    
     setCompletionPct(Math.round(pct));
   };
 
   const fetchFullProfile = async (id: string) => {
     try {
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
-      console.log(`🔍 Intentando cargar perfil para ID: ${id}`);
-      
       const res = await fetch(`${backendUrl}/api/users/profile/${id}`);
       const data = await res.json();
       
       if (data.success) {
-        console.log("✅ Datos recibidos del servidor:", data.profile);
         const u = data.profile;
         const p = data.profile.perfiles_usuarios?.[0] || {};
         
+        if (u.foto_url) setUserPhoto(u.foto_url);
         setUserName(u.nombre_completo ? u.nombre_completo.split(' ')[0] : 'Egresado');
         
-        const newFormData = {
+        setFormData({
           nombre_completo: u.nombre_completo || '',
           correo: u.correo || '',
           telefono: u.telefono || '',
@@ -121,20 +121,13 @@ export default function Dashboard() {
           sector_economico: p.sector_economico || '',
           area_desempeno: p.area_desempeno || '',
           emprendimiento: p.emprendimiento || ''
-        };
-        
-        setFormData(newFormData);
-        calculateProgress(u, p, userPhoto);
-        
-        // Si hay datos reales, mostramos resumen. Si todo es vacío, mostramos formulario.
-        if (p.programa_academico || p.nivel_formacion) {
-          setIsEditingProf(false);
-        } else {
-          setIsEditingProf(true);
-        }
+        });
+
+        calculateProgress(u, p, u.foto_url || userPhoto);
+        setIsEditingProf(!p.programa_academico);
       }
     } catch (err) {
-      console.error("❌ Error en fetchFullProfile:", err);
+      console.error(err);
     }
   };
 
@@ -147,11 +140,7 @@ export default function Dashboard() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userData: { 
-            nombre_completo: formData.nombre_completo, 
-            correo: formData.correo, 
-            telefono: formData.telefono 
-          },
+          userData: { nombre_completo: formData.nombre_completo, correo: formData.correo, telefono: formData.telefono },
           profileData: formData
         }),
       });
@@ -160,11 +149,9 @@ export default function Dashboard() {
         alert("¡Datos actualizados correctamente!");
         setIsEditingProf(false);
         fetchFullProfile(userId);
-      } else {
-        alert("Error: " + data.message);
       }
     } catch (err: any) {
-      alert("Error crítico: " + err.message);
+      alert("Error: " + err.message);
     } finally {
       setLoadingProfile(false);
     }
@@ -224,7 +211,7 @@ export default function Dashboard() {
   };
 
   const InfoCard = ({ label, value, detail }: { label: string, value: string, detail?: string }) => (
-    <div style={{ background: 'white', padding: '22px', borderRadius: '18px', border: '1px solid #f1f5f9', boxShadow: '0 4px 12px rgba(0,0,0,0.03)', transition: 'transform 0.2s' }}>
+    <div style={{ background: 'white', padding: '22px', borderRadius: '18px', border: '1px solid #f1f5f9', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
       <p style={{ margin: '0 0 8px 0', fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700 }}>{label}</p>
       <p style={{ margin: 0, fontSize: '1.05rem', color: 'var(--ucc-navy)', fontWeight: 700 }}>
         {value && value !== '' ? (detail ? `${detail} ${value}` : value) : <span style={{ color: '#cbd5e1', fontWeight: 400 }}>No completado</span>}
@@ -240,30 +227,42 @@ export default function Dashboard() {
 
       <main className="db-main" style={{ paddingTop: '80px', minHeight: '80vh' }}>
         
-        {/* BARRA DE PROGRESO DESTACADA */}
-        <div className="db-card" style={{ margin: '20px auto 40px', maxWidth: '1100px', padding: '30px 40px', display: 'flex', alignItems: 'center', gap: '50px', background: 'white', borderRadius: '24px', border: 'none', boxShadow: '0 15px 35px rgba(0,0,0,0.06)' }}>
-          <div style={{ position: 'relative', width: '100px', height: '100px' }}>
-            <svg viewBox="0 0 36 36" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
-              <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#f1f5f9" strokeWidth="3" />
-              <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--ucc-blue)" strokeDasharray={`${completionPct}, 100`} strokeWidth="3" strokeLinecap="round" style={{ transition: 'stroke-dasharray 1.5s ease-in-out' }} />
+        {/* CABECERA FUSIONADA: FOTO + PROGRESO */}
+        <div className="db-card" style={{ margin: '20px auto 40px', maxWidth: '1100px', padding: '30px 40px', display: 'flex', alignItems: 'center', gap: '40px', background: 'white', borderRadius: '24px', border: 'none', boxShadow: '0 15px 40px rgba(0,0,0,0.08)' }}>
+          
+          <div style={{ position: 'relative', width: '130px', height: '130px', flexShrink: 0 }}>
+            {/* Círculo de Progreso */}
+            <svg viewBox="0 0 36 36" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)', position: 'absolute', top: 0, left: 0, zIndex: 1 }}>
+              <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#f1f5f9" strokeWidth="2" />
+              <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--ucc-blue)" strokeDasharray={`${completionPct}, 100`} strokeWidth="2" strokeLinecap="round" style={{ transition: 'stroke-dasharray 1.5s ease-in-out' }} />
             </svg>
-            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontWeight: 800, color: 'var(--ucc-navy)', fontSize: '1.4rem' }}>{completionPct}%</div>
+            
+            {/* Foto del Usuario */}
+            <div style={{ position: 'absolute', top: '10px', left: '10px', right: '10px', bottom: '10px', borderRadius: '50%', background: userPhoto ? `url(${userPhoto}) center/cover` : 'var(--ucc-navy)', zIndex: 2, border: '4px solid white', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '2.5rem', fontWeight: 800 }}>
+              {!userPhoto && userName[0]}
+            </div>
+            
+            {/* Badge de Porcentaje */}
+            <div style={{ position: 'absolute', bottom: '-5px', left: '50%', transform: 'translateX(-50%)', background: 'var(--ucc-navy)', color: 'white', borderRadius: '12px', padding: '2px 10px', fontSize: '0.8rem', fontWeight: 800, zIndex: 3, boxShadow: '0 4px 8px rgba(0,0,0,0.2)' }}>
+              {completionPct}%
+            </div>
           </div>
+
           <div style={{ flex: 1 }}>
-            <h3 style={{ margin: 0, color: 'var(--ucc-navy)', fontSize: '1.8rem', fontWeight: 800 }}>{greeting}, {userName} ✨</h3>
-            <p style={{ margin: '10px 0 0', color: '#64748b', fontSize: '1.1rem', lineHeight: '1.5' }}>
-              {completionPct < 100 ? `Tu perfil profesional está al ${completionPct}%. ¡Aún tienes potencial para destacar más!` : '✨ ¡Perfil al 100%! Tienes el máximo nivel de visibilidad.'}
+            <h3 style={{ margin: 0, color: 'var(--ucc-navy)', fontSize: '2rem', fontWeight: 800 }}>{greeting}, {userName} ✨</h3>
+            <p style={{ margin: '10px 0 0', color: '#64748b', fontSize: '1.1rem', lineHeight: '1.4' }}>
+              Tu perfil profesional está al {completionPct}%. {completionPct < 100 ? '¡Completa los pasos restantes para destacar!' : '¡Excelente trabajo! Perfil completo.'}
             </p>
-          </div>
-          <div style={{ display: 'flex', gap: '15px' }}>
-             <button onClick={startCamera} style={{ background: 'var(--ucc-blue)', color: 'white', border: 'none', borderRadius: '14px', padding: '14px 28px', cursor: 'pointer', fontWeight: 700, boxShadow: '0 6px 15px rgba(0,40,85,0.2)' }}>📸 Cámara</button>
-             <button onClick={() => avatarInputRef.current?.click()} style={{ background: '#f8fafc', color: 'var(--ucc-navy)', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '14px 28px', cursor: 'pointer', fontWeight: 700 }}>📁 Subir Foto</button>
+            <div style={{ display: 'flex', gap: '15px', marginTop: '20px' }}>
+               <button onClick={startCamera} style={{ background: 'var(--ucc-blue)', color: 'white', border: 'none', borderRadius: '14px', padding: '12px 25px', cursor: 'pointer', fontWeight: 700 }}>📸 Cámara</button>
+               <button onClick={() => avatarInputRef.current?.click()} style={{ background: '#f8fafc', color: 'var(--ucc-navy)', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '12px 25px', cursor: 'pointer', fontWeight: 700 }}>📁 Subir Foto</button>
+            </div>
           </div>
         </div>
 
         <div className="db-actions" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '25px', margin: '40px auto', maxWidth: '1100px' }}>
           {QUICK_ACTIONS.map((action) => (
-            <div key={action.id} className="db-action-card" style={{ cursor: 'pointer', padding: '35px 20px', textAlign: 'center', background: 'white', borderRadius: '24px', border: activeSection === action.id ? '2px solid var(--ucc-blue)' : '1px solid #f1f5f9', boxShadow: '0 10px 25px rgba(0,0,0,0.03)', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }} 
+            <div key={action.id} className="db-action-card" style={{ cursor: 'pointer', padding: '35px 20px', textAlign: 'center', background: 'white', borderRadius: '24px', border: activeSection === action.id ? '2px solid var(--ucc-blue)' : '1px solid #f1f5f9', boxShadow: '0 10px 25px rgba(0,0,0,0.03)' }} 
               onClick={() => action.id === 'cv' ? cvInputRef.current?.click() : setActiveSection(activeSection === action.id ? 'none' : action.id as any)}>
               <div style={{ fontSize: '3.2rem', marginBottom: '15px' }}>{action.icon}</div>
               <h3 style={{ margin: 0, fontSize: '1.15rem', color: 'var(--ucc-navy)', fontWeight: 800 }}>{action.title}</h3>
@@ -276,12 +275,12 @@ export default function Dashboard() {
             <div className="db-card" style={{ padding: '45px', animation: 'slideUp 0.5s ease', borderRadius: '28px' }}>
               <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '35px', fontWeight: 800, fontSize: '1.8rem' }}>👤 Datos Personales</h2>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
-                <div className="form-group"><label>Nombre Completo</label><input type="text" value={formData.nombre_completo} onChange={(e) => setFormData({...formData, nombre_completo: e.target.value})} style={{ padding: '16px', borderRadius: '14px', border: '1px solid #e2e8f0', fontSize: '1rem' }} /></div>
-                <div className="form-group"><label>Correo Electrónico</label><input type="email" value={formData.correo} onChange={(e) => setFormData({...formData, correo: e.target.value})} style={{ padding: '16px', borderRadius: '14px', border: '1px solid #e2e8f0', fontSize: '1rem' }} /></div>
-                <div className="form-group"><label>Teléfono</label><input type="text" value={formData.telefono} onChange={(e) => setFormData({...formData, telefono: e.target.value})} style={{ padding: '16px', borderRadius: '14px', border: '1px solid #e2e8f0', fontSize: '1rem' }} /></div>
-                <div className="form-group"><label style={{ color: '#94a3b8' }}>Cédula</label><input type="text" value={formData.cedula} disabled style={{ background: '#334155', color: '#cbd5e1', padding: '16px', borderRadius: '14px', border: 'none' }} /></div>
+                <div className="form-group"><label>Nombre Completo</label><input type="text" value={formData.nombre_completo} onChange={(e) => setFormData({...formData, nombre_completo: e.target.value})} style={{ padding: '16px', borderRadius: '14px', border: '1px solid #e2e8f0' }} /></div>
+                <div className="form-group"><label>Correo Electrónico</label><input type="email" value={formData.correo} onChange={(e) => setFormData({...formData, correo: e.target.value})} style={{ padding: '16px', borderRadius: '14px', border: '1px solid #e2e8f0' }} /></div>
+                <div className="form-group"><label>Teléfono</label><input type="text" value={formData.telefono} onChange={(e) => setFormData({...formData, telefono: e.target.value})} style={{ padding: '16px', borderRadius: '14px', border: '1px solid #e2e8f0' }} /></div>
+                <div className="form-group"><label style={{ color: '#94a3b8' }}>Cédula</label><input type="text" value={formData.cedula} disabled style={{ background: '#334155', color: '#cbd5e1', padding: '16px', borderRadius: '14px' }} /></div>
               </div>
-              <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ width: '100%', marginTop: '40px', padding: '20px', background: 'var(--ucc-navy)', color: 'white', borderRadius: '16px', fontWeight: 800, fontSize: '1.1rem', cursor: 'pointer', transition: 'all 0.2s' }}>{loadingProfile ? 'Guardando...' : '💾 Guardar Datos Personales'}</button>
+              <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ width: '100%', marginTop: '40px', padding: '20px', background: 'var(--ucc-navy)', color: 'white', borderRadius: '16px', fontWeight: 800 }}>{loadingProfile ? 'Guardando...' : '💾 Guardar Datos Personales'}</button>
             </div>
           )}
 
@@ -290,7 +289,7 @@ export default function Dashboard() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
                 <h2 style={{ color: 'var(--ucc-navy)', margin: 0, fontWeight: 800, fontSize: '1.8rem' }}>💼 Perfil Profesional</h2>
                 {!isEditingProf && (
-                  <button onClick={() => setIsEditingProf(true)} style={{ background: 'var(--ucc-blue)', color: 'white', border: 'none', borderRadius: '14px', padding: '12px 28px', cursor: 'pointer', fontWeight: 700, boxShadow: '0 4px 12px rgba(0,174,239,0.2)' }}>✏️ Actualizar Información</button>
+                  <button onClick={() => setIsEditingProf(true)} style={{ background: 'var(--ucc-blue)', color: 'white', border: 'none', borderRadius: '14px', padding: '12px 28px', cursor: 'pointer', fontWeight: 700 }}>✏️ Actualizar Información</button>
                 )}
               </div>
 
@@ -307,19 +306,15 @@ export default function Dashboard() {
                     { label: '¿Emprendimiento?', key: 'emprendimiento', options: DIAG_OPTIONS.Emprendimiento },
                   ].map((field) => (
                     <div key={field.key} className="form-group">
-                      <label style={{ fontSize: '0.85rem', fontWeight: 800, color: '#475569', marginBottom: '8px', display: 'block' }}>{field.label}</label>
-                      <select 
-                        value={(formData as any)[field.key]} 
-                        onChange={(e) => setFormData({...formData, [field.key]: e.target.value})}
-                        style={{ width: '100%', padding: '15px', borderRadius: '14px', border: '1px solid #e2e8f0', appearance: 'none', background: 'white url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2364748b\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpolyline points=\'6 9 12 15 18 9\'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 15px center/18px', fontSize: '0.95rem' }}
-                      >
+                      <label style={{ fontSize: '0.85rem', fontWeight: 800, color: '#475569' }}>{field.label}</label>
+                      <select value={(formData as any)[field.key]} onChange={(e) => setFormData({...formData, [field.key]: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '14px', border: '1px solid #e2e8f0', appearance: 'none', background: 'white' }}>
                         <option value="">Seleccione...</option>
                         {field.options.map(o => <option key={o} value={o}>{o}</option>)}
                       </select>
                     </div>
                   ))}
                   <div style={{ gridColumn: 'span 3', display: 'flex', gap: '20px', marginTop: '25px' }}>
-                    <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ flex: 2, padding: '20px', background: 'var(--ucc-navy)', color: 'white', borderRadius: '16px', fontWeight: 800, fontSize: '1.1rem' }}>{loadingProfile ? 'Guardando...' : '💾 Guardar Perfil Profesional'}</button>
+                    <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ flex: 2, padding: '20px', background: 'var(--ucc-navy)', color: 'white', borderRadius: '16px', fontWeight: 800 }}>{loadingProfile ? 'Guardando...' : '💾 Guardar Perfil'}</button>
                     <button onClick={() => setIsEditingProf(false)} style={{ flex: 1, padding: '20px', background: '#f1f5f9', color: '#475569', borderRadius: '16px', fontWeight: 700 }}>Cancelar</button>
                   </div>
                 </div>
@@ -342,11 +337,11 @@ export default function Dashboard() {
 
         {showCamera && (
           <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,40,85,0.95)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 4000, backdropFilter: 'blur(12px)' }}>
-            <div style={{ background: 'white', padding: '35px', borderRadius: '35px', textAlign: 'center', maxWidth: '480px', width: '92%', boxShadow: '0 25px 60px rgba(0,0,0,0.3)' }}>
+            <div style={{ background: 'white', padding: '35px', borderRadius: '35px', textAlign: 'center', maxWidth: '480px', width: '92%' }}>
               <video ref={videoRef} autoPlay style={{ width: '100%', borderRadius: '25px', marginBottom: '30px', transform: 'scaleX(-1)' }} />
               <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
-                <button onClick={capturePhoto} className="btn" style={{ background: 'var(--ucc-green)', color: 'var(--ucc-navy)', padding: '16px 40px', fontWeight: 800, borderRadius: '18px', fontSize: '1.1rem' }}>📸 Capturar</button>
-                <button onClick={stopCamera} className="btn" style={{ background: '#f1f5f9', color: '#002855', padding: '16px 40px', borderRadius: '18px', fontSize: '1.1rem' }}>Cancelar</button>
+                <button onClick={capturePhoto} className="btn" style={{ background: 'var(--ucc-green)', color: 'var(--ucc-navy)', padding: '16px 40px', fontWeight: 800, borderRadius: '18px' }}>📸 Capturar</button>
+                <button onClick={stopCamera} className="btn" style={{ background: '#f1f5f9', color: '#002855', padding: '16px 40px', borderRadius: '18px' }}>Cancelar</button>
               </div>
             </div>
           </div>
