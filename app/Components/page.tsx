@@ -170,7 +170,7 @@ function Gauge({ pct, label }: { pct: number; label: string }) {
       <svg viewBox="0 0 200 110" className="gauge-svg">
         <defs>
           <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#c8102e" />
+            <stop offset="0%" stopColor="#e53e3e" />
             <stop offset="100%" stopColor="#003f88" />
           </linearGradient>
         </defs>

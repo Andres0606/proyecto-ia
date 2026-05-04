@@ -45,7 +45,7 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 600px 500px at -80px -180px, rgba(200, 16, 46, 0.16) 0%, transparent 70%),
+    radial-gradient(ellipse 600px 500px at -80px -180px, rgba(229, 62, 62, 0.16) 0%, transparent 70%),
     radial-gradient(ellipse 400px 400px at calc(100% + 60px) calc(100% + 80px), rgba(26, 58, 124, 0.28) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
@@ -186,7 +186,7 @@
 }
 
 .be-searchbar__btn:hover {
-  background: var(--ucc-navy);
+  background: var(--red-dark);
   transform: translateY(-1px);
 }
 
@@ -303,7 +303,7 @@
 }
 
 .be-filters__clear:hover {
-  color: #a50d25;
+  color: #c53030;
 }
 
 .be-filter-group {
@@ -540,7 +540,7 @@
 
 .be-badge--exp {
   background: #fde8ec;
-  color: #a50d25;
+  color: #c53030;
 }
 
 .be-badge--city {
@@ -605,9 +605,9 @@
 }
 
 .be-card__apply:hover {
-  background: #a50d25;
+  background: #c53030;
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(200, 16, 46, 0.3);
+  box-shadow: 0 6px 18px rgba(229, 62, 62, 0.3);
 }
 
 /* ─────────────────────────────────────────────────────
@@ -647,7 +647,7 @@
 }
 
 .be-empty__btn:hover {
-  background: #a50d25;
+  background: #c53030;
 }
 
 /* ─────────────────────────────────────────────────────

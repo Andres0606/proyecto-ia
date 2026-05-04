@@ -15,7 +15,7 @@
 
 :root {
   --red: var(--ucc-green);
-  --red-dark: #a50d25;
+  --red-dark: #c53030;
   --navy: #0a1628;
   --navy-mid: #0d2050;
   --blue: #1a3a7c;
@@ -78,7 +78,7 @@ body {
 .auth-page__blob--1 {
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, rgba(200, 16, 46, 0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(229, 62, 62, 0.15) 0%, transparent 70%);
   top: -200px;
   left: -150px;
 }
@@ -94,7 +94,7 @@ body {
 .auth-page__blob--3 {
   width: 350px;
   height: 350px;
-  background: radial-gradient(circle, rgba(200, 16, 46, 0.08) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(229, 62, 62, 0.08) 0%, transparent 70%);
   top: 50%;
   left: 60%;
   transform: translate(-50%, -50%);
@@ -229,7 +229,7 @@ body {
 .auth-field__select:focus {
   border-color: var(--red);
   background: var(--white);
-  box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.08);
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.08);
 }
 
 .auth-field__select {
@@ -297,7 +297,7 @@ body {
 .auth-form__submit:hover {
   background: var(--red-dark);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(200, 16, 46, 0.3);
+  box-shadow: 0 8px 24px rgba(229, 62, 62, 0.3);
 }
 
 .auth-form__submit:active {
@@ -398,7 +398,7 @@ body {
   background: var(--red);
   border-color: var(--red);
   color: var(--white);
-  box-shadow: 0 0 16px rgba(200, 16, 46, 0.2);
+  box-shadow: 0 0 16px rgba(229, 62, 62, 0.2);
 }
 
 .auth-stepper__circle--done {
@@ -477,7 +477,7 @@ body {
 .auth-form__next:hover {
   background: var(--red-dark);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(200, 16, 46, 0.3);
+  box-shadow: 0 6px 20px rgba(229, 62, 62, 0.3);
 }
 
 /* ══════════════════════════════════════════════════════
@@ -510,8 +510,8 @@ body {
 
 .auth-role-card--selected {
   border-color: var(--red);
-  background: rgba(200, 16, 46, 0.04);
-  box-shadow: 0 0 20px rgba(200, 16, 46, 0.06);
+  background: rgba(229, 62, 62, 0.04);
+  box-shadow: 0 0 20px rgba(229, 62, 62, 0.06);
 }
 
 .auth-role-card--selected:hover {
