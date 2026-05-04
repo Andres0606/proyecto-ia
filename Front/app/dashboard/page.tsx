@@ -291,10 +291,10 @@ export default function Dashboard() {
               <h2 style={{ marginBottom: '15px', color: 'var(--ucc-navy)' }}>Captura tu mejor perfil</h2>
               <video ref={videoRef} autoPlay style={{ width: '100%', maxWidth: '400px', borderRadius: '15px', marginBottom: '20px', transform: 'scaleX(-1)' }} />
               <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
-                <button onClick={capturePhoto} className="btn" style={{ background: 'var(--ucc-green)', color: 'var(--ucc-navy)', padding: '10px 30px', fontWeight: 'bold' }}>
+                <button onClick={capturePhoto} className="btn" style={{ background: 'var(--ucc-green)', color: 'var(--ucc-navy)', padding: '12px 30px', fontWeight: '800', border: 'none', borderRadius: '10px', cursor: 'pointer' }}>
                   {uploading ? 'Subiendo...' : '📸 Capturar'}
                 </button>
-                <button onClick={stopCamera} className="btn" style={{ background: 'var(--ucc-red)', color: 'white', padding: '10px 30px' }}>
+                <button onClick={stopCamera} className="btn" style={{ background: '#f1f5f9', color: '#002855', padding: '12px 30px', fontWeight: '800', border: '1px solid #cbd5e1', borderRadius: '10px', cursor: 'pointer' }}>
                   Cancelar
                 </button>
               </div>
