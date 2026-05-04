@@ -12,35 +12,12 @@ const QUICK_ACTIONS = [
   { title: 'Mis Postulaciones', icon: '📨', id: 'apps' },
 ];
 
-const DIAG_OPTIONS = {
-  Programa: [
-    "Derecho", "Contaduria Publica", "Ingenieria Civil", "Ciencias Economicas",
-    "Medicina", "Psicologia", "Odontologia", "Enfermeria", "Ingenieria de Sistemas",
-    "Medicina Veterinaria y Zootecnia", "Especializacion", "Tecnico Auxiliar en Enfermeria"
-  ],
-  Estrato: ["Uno", "Dos", "Tres", "Cuatro", "Cinco", "Seis"],
-  EstadoCivil: ["Casado", "Union libre", "Soltero", "Separado", "Viudo"],
-  Hijos: ["Cero", "Uno", "Dos", "Tres", "Cuatro", "Cinco"],
-  Formacion: ["Profesional", "Especialista", "Magister", "Doctorado", "Tecnico Profesional"],
-  Emprendimiento: ["Si", "No"],
-  Area: [
-    "Servicios", "Administrativa", "Salud", "Financiera", "Industrial",
-    "Economica", "Gestion Humana", "Educacion", "Comercial", "Contable", "Sistemas"
-  ],
-  Sector: ["Servicios", "Comercial", "Industrial"],
-  Ingreso: ["1 SML o menos", "2-3 SML", "3-5 SML", "5 SML o mas"]
-};
-
 export default function Dashboard() {
   const [greeting, setGreeting] = useState('Buenos días');
   const [userName, setUserName] = useState('Egresado');
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [showCamera, setShowCamera] = useState(false);
   const [activeSection, setActiveSection] = useState<'none' | 'personal' | 'professional' | 'apps' | 'cv'>('none');
-  const [isEditingProf, setIsEditingProf] = useState(false);
-  const [loadingProfile, setLoadingProfile] = useState(false);
   const [completionPct, setCompletionPct] = useState(0);
   
   const [formData, setFormData] = useState({
@@ -63,7 +40,6 @@ export default function Dashboard() {
 
   const avatarInputRef = React.useRef<HTMLInputElement>(null);
   const cvInputRef = React.useRef<HTMLInputElement>(null);
-  const videoRef = React.useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -117,37 +93,12 @@ export default function Dashboard() {
         const filled = profFields.filter(f => f && String(f).trim() !== '').length;
         pct += (filled / profFields.length) * 40;
         setCompletionPct(Math.round(pct));
-
-        setIsEditingProf(!p.programa_academico && !p.nivel_formacion);
       }
     } catch (err) { console.error(err); }
   };
 
-  const handleSaveProfile = async () => {
-    if (!userId) return;
-    setLoadingProfile(true);
-    try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
-      const res = await fetch(`${backendUrl}/api/users/profile/${userId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userData: { nombre_completo: formData.nombre_completo, correo: formData.correo, telefono: formData.telefono },
-          profileData: formData
-        }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        alert("¡Datos guardados! ✨");
-        setIsEditingProf(false);
-        setTimeout(() => fetchFullProfile(userId), 600);
-      }
-    } catch (err: any) { alert(err.message); } finally { setLoadingProfile(false); }
-  };
-
   const handleFileUpload = async (file: File, type: 'avatar' | 'cv') => {
     if (!userId) return;
-    setUploading(true);
     const fd = new FormData();
     fd.append(type === 'avatar' ? 'image' : 'cv', file);
     fd.append('userId', userId);
@@ -159,7 +110,7 @@ export default function Dashboard() {
         if (type === 'avatar') setUserPhoto(data.url);
         fetchFullProfile(userId);
       }
-    } catch (err: any) { alert(err.message); } finally { setUploading(false); }
+    } catch (err: any) { alert(err.message); }
   };
 
   const handleViewResume = async () => {
@@ -171,37 +122,6 @@ export default function Dashboard() {
       if (data.success) window.open(data.url, '_blank');
       else alert("Aún no has subido tu CV");
     } catch (err) { alert("Error cargando CV"); }
-  };
-
-  const startCamera = async () => {
-    setShowCamera(true);
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      if (videoRef.current) videoRef.current.srcObject = stream;
-    } catch (err) { setShowCamera(false); }
-  };
-
-  const stopCamera = () => {
-    if (videoRef.current?.srcObject) {
-      (videoRef.current.srcObject as MediaStream).getTracks().forEach(t => t.stop());
-      videoRef.current.srcObject = null;
-    }
-    setShowCamera(false);
-  };
-
-  const capturePhoto = () => {
-    if (videoRef.current) {
-      const canvas = document.createElement('canvas');
-      canvas.width = videoRef.current.videoWidth;
-      canvas.height = videoRef.current.videoHeight;
-      canvas.getContext('2d')?.drawImage(videoRef.current, 0, 0);
-      canvas.toBlob((blob) => {
-        if (blob) {
-          handleFileUpload(new File([blob], "capture.jpg", { type: "image/jpeg" }), 'avatar');
-          stopCamera();
-        }
-      }, 'image/jpeg');
-    }
   };
 
   const baseInputStyle = {
@@ -259,8 +179,7 @@ export default function Dashboard() {
             <h1 style={{ margin: 0, color: 'var(--ucc-navy)', fontSize: '2rem' }}>{greeting}, {userName} ✨</h1>
             <p style={{ color: '#64748b' }}>Tu perfil profesional está al {completionPct}%</p>
             <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
-              <button onClick={startCamera} style={{ background: 'var(--ucc-blue)', color: 'white', border: 'none', borderRadius: '12px', padding: '10px 20px', cursor: 'pointer', fontWeight: 600 }}>📸 Cámara</button>
-              <button onClick={() => avatarInputRef.current?.click()} style={{ background: '#f8fafc', color: 'var(--ucc-navy)', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '10px 20px', cursor: 'pointer', fontWeight: 600 }}>📁 Foto</button>
+              <button onClick={() => avatarInputRef.current?.click()} style={{ background: '#f8fafc', color: 'var(--ucc-navy)', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '10px 20px', cursor: 'pointer', fontWeight: 600 }}>📁 Cambiar Foto</button>
               <button onClick={handleViewResume} style={{ background: 'var(--ucc-green)', color: 'var(--ucc-navy)', border: 'none', borderRadius: '12px', padding: '10px 20px', cursor: 'pointer', fontWeight: 700 }}>📄 Ver CV Actual</button>
             </div>
           </div>
@@ -281,81 +200,51 @@ export default function Dashboard() {
             <div className="db-card" style={{ padding: '45px', borderRadius: '28px' }}>
               <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '35px', fontWeight: 800 }}>👤 Datos Personales</h2>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '35px' }}>
-                <div style={formGroupStyle}><label style={labelStyle}>Nombre Completo</label><input type="text" value={formData.nombre_completo} onChange={(e) => setFormData({...formData, nombre_completo: e.target.value})} style={baseInputStyle} /></div>
-                <div style={formGroupStyle}><label style={labelStyle}>Correo Electrónico</label><input type="email" value={formData.correo} onChange={(e) => setFormData({...formData, correo: e.target.value})} style={baseInputStyle} /></div>
-                <div style={formGroupStyle}><label style={labelStyle}>Teléfono</label><input type="text" value={formData.telefono} onChange={(e) => setFormData({...formData, telefono: e.target.value})} style={baseInputStyle} /></div>
+                <div style={formGroupStyle}><label style={labelStyle}>Nombre Completo</label><input type="text" value={formData.nombre_completo} disabled style={disabledInputStyle} /></div>
+                <div style={formGroupStyle}><label style={labelStyle}>Correo Electrónico</label><input type="email" value={formData.correo} disabled style={disabledInputStyle} /></div>
+                <div style={formGroupStyle}><label style={labelStyle}>Teléfono</label><input type="text" value={formData.telefono} disabled style={disabledInputStyle} /></div>
                 <div style={formGroupStyle}><label style={labelStyle}>Cédula</label><input type="text" value={formData.cedula} disabled style={disabledInputStyle} /></div>
                 <div style={formGroupStyle}><label style={labelStyle}>Fecha de Nacimiento</label><input type="text" value={formData.fecha_nacimiento} disabled style={disabledInputStyle} /></div>
                 <div style={formGroupStyle}><label style={labelStyle}>Género</label><input type="text" value={formData.genero} disabled style={disabledInputStyle} /></div>
               </div>
-              <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ width: '100%', marginTop: '40px', padding: '20px', background: 'var(--ucc-navy)', color: 'white', borderRadius: '16px', fontWeight: 800 }}>{loadingProfile ? 'Guardando...' : '💾 Guardar Datos'}</button>
             </div>
           )}
 
           {activeSection === 'professional' && (
             <div className="db-card" style={{ padding: '45px', borderRadius: '28px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-                <h2 style={{ color: 'var(--ucc-navy)', margin: 0, fontWeight: 800 }}>💼 Perfil Profesional</h2>
-                <button onClick={() => setIsEditingProf(!isEditingProf)} style={{ background: 'var(--ucc-blue)', color: 'white', border: 'none', borderRadius: '12px', padding: '10px 25px', cursor: 'pointer', fontWeight: 700 }}>
-                  {isEditingProf ? '❌ Ver Resumen' : '✏️ Actualizar Información'}
-                </button>
-              </div>
-
+              <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '40px', fontWeight: 800 }}>💼 Perfil Profesional</h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '35px' }}>
                 {[
-                  { label: 'Programa Académico', key: 'programa_academico', options: DIAG_OPTIONS.Programa },
-                  { label: 'Nivel de Formación', key: 'nivel_formacion', options: DIAG_OPTIONS.Formacion },
-                  { label: 'Estado Civil', key: 'estado_civil', options: DIAG_OPTIONS.EstadoCivil },
-                  { label: 'Estrato', key: 'estrato', options: DIAG_OPTIONS.Estrato },
-                  { label: 'Rango de Ingreso', key: 'ingreso_mensual', options: DIAG_OPTIONS.Ingreso },
-                  { label: '¿Emprendimiento?', key: 'emprendimiento', options: DIAG_OPTIONS.Emprendimiento },
-                  { label: 'Área de Desempeño', key: 'area_desempeno', options: DIAG_OPTIONS.Area },
-                  { label: 'Sector Económico', key: 'sector_economico', options: DIAG_OPTIONS.Sector },
-                  { label: 'Número de Hijos', key: 'numero_hijos', options: DIAG_OPTIONS.Hijos },
-                ].map((field) => (
-                  <div key={field.key} style={formGroupStyle}>
+                  { label: 'Programa Académico', value: formData.programa_academico },
+                  { label: 'Nivel de Formación', value: formData.nivel_formacion },
+                  { label: 'Estado Civil', value: formData.estado_civil },
+                  { label: 'Estrato', value: formData.estrato },
+                  { label: 'Rango de Ingreso', value: formData.ingreso_mensual },
+                  { label: '¿Emprendimiento?', value: formData.emprendimiento },
+                  { label: 'Área de Desempeño', value: formData.area_desempeno },
+                  { label: 'Sector Económico', value: formData.sector_economico },
+                  { label: 'Número de Hijos', value: formData.numero_hijos },
+                ].map((field, idx) => (
+                  <div key={idx} style={formGroupStyle}>
                     <label style={labelStyle}>{field.label}</label>
-                    {isEditingProf ? (
-                      <select value={(formData as any)[field.key]} onChange={(e) => setFormData({...formData, [field.key]: e.target.value})} style={baseInputStyle}>
-                        <option value="">Seleccione...</option>
-                        {field.options.map(o => <option key={o} value={o}>{o}</option>)}
-                      </select>
-                    ) : (
-                      <input type="text" value={(formData as any)[field.key] || 'No completado'} disabled style={disabledInputStyle} />
-                    )}
+                    <input type="text" value={field.value || 'No completado'} disabled style={disabledInputStyle} />
                   </div>
                 ))}
               </div>
-
-              {isEditingProf && (
-                <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ width: '100%', marginTop: '40px', padding: '20px', background: 'var(--ucc-navy)', color: 'white', borderRadius: '16px', fontWeight: 800 }}>💾 Guardar Perfil Profesional</button>
-              )}
             </div>
           )}
 
           {activeSection === 'cv' && (
             <div className="db-card" style={{ padding: '45px', borderRadius: '28px', textAlign: 'center' }}>
-              <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '30px' }}>📄 Gestión de Hoja de Vida</h2>
+              <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '30px' }}>📄 Hoja de Vida</h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center' }}>
                 <button onClick={handleViewResume} style={{ width: '100%', maxWidth: '400px', padding: '20px', background: 'var(--ucc-green)', color: 'var(--ucc-navy)', borderRadius: '16px', fontWeight: 800, fontSize: '1.2rem' }}>📄 Ver mi Hoja de Vida Actual</button>
                 <div style={{ width: '100%', height: '2px', background: '#f1f5f9', margin: '20px 0' }} />
-                <button onClick={() => cvInputRef.current?.click()} style={{ width: '100%', maxWidth: '400px', padding: '20px', background: 'var(--ucc-navy)', color: 'white', borderRadius: '16px', fontWeight: 800 }}>⬆️ Subir Nuevo CV (PDF)</button>
+                <button onClick={() => cvInputRef.current?.click()} style={{ width: '100%', maxWidth: '400px', padding: '20px', background: '#f8fafc', color: 'var(--ucc-navy)', border: '1px solid #e2e8f0', borderRadius: '16px', fontWeight: 800 }}>⬆️ Subir Nuevo CV (PDF)</button>
               </div>
             </div>
           )}
         </div>
-
-        {showCamera && (
-          <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,40,85,0.95)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 4000, backdropFilter: 'blur(12px)' }}>
-            <div style={{ background: 'white', padding: '35px', borderRadius: '35px', textAlign: 'center', maxWidth: '480px', width: '92%' }}>
-              <video ref={videoRef} autoPlay style={{ width: '100%', borderRadius: '25px', marginBottom: '30px', transform: 'scaleX(-1)' }} />
-              <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
-                <button onClick={capturePhoto} className="btn" style={{ background: 'var(--ucc-green)', color: 'var(--ucc-navy)', padding: '16px 40px', fontWeight: 800, borderRadius: '18px' }}>📸 Capturar</button>
-                <button onClick={() => setShowCamera(false)} className="btn" style={{ background: '#f1f5f9', color: '#002855', padding: '16px 40px', borderRadius: '18px' }}>Cancelar</button>
-              </div>
-            </div>
-          </div>
-        )}
       </main>
       <Footer />
     </div>
