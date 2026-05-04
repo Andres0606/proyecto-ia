@@ -232,7 +232,6 @@ export default function Dashboard() {
             <p style={{ color: '#64748b' }}>Tu perfil profesional está al {completionPct}%</p>
             <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
               <button onClick={() => avatarInputRef.current?.click()} style={{ background: '#f8fafc', color: 'var(--ucc-navy)', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '10px 20px', cursor: 'pointer', fontWeight: 600 }}>📁 Cambiar Foto</button>
-              <button onClick={handleViewResume} style={{ background: 'var(--ucc-green)', color: 'var(--ucc-navy)', border: 'none', borderRadius: '12px', padding: '10px 20px', cursor: 'pointer', fontWeight: 700 }}>📄 Ver CV Actual</button>
             </div>
           </div>
         </div>
@@ -306,12 +305,27 @@ export default function Dashboard() {
           )}
 
           {activeSection === 'cv' && (
-            <div className="db-card" style={{ padding: '45px', borderRadius: '28px', textAlign: 'center' }}>
-              <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '30px' }}>📄 Hoja de Vida</h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center' }}>
-                <button onClick={handleViewResume} style={{ width: '100%', maxWidth: '400px', padding: '20px', background: 'var(--ucc-green)', color: 'var(--ucc-navy)', borderRadius: '16px', fontWeight: 800, fontSize: '1.2rem' }}>📄 Ver mi Hoja de Vida Actual</button>
-                <div style={{ width: '100%', height: '2px', background: '#f1f5f9', margin: '20px 0' }} />
-                <button onClick={() => cvInputRef.current?.click()} style={{ width: '100%', maxWidth: '400px', padding: '20px', background: '#f8fafc', color: 'var(--ucc-navy)', border: '1px solid #e2e8f0', borderRadius: '16px', fontWeight: 800 }}>⬆️ Subir Nuevo CV (PDF)</button>
+            <div className="db-card" style={{ padding: '60px 45px', borderRadius: '28px', textAlign: 'center', background: 'white' }}>
+              <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+                <div style={{ fontSize: '4rem', marginBottom: '20px' }}>📄</div>
+                <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '15px', fontWeight: 800, fontSize: '2rem' }}>Gestión de Hoja de Vida</h2>
+                <p style={{ color: '#64748b', marginBottom: '40px', fontSize: '1.1rem' }}>Mantén tu CV actualizado para mejorar tus oportunidades laborales en nuestra bolsa de empleo.</p>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                  <button onClick={handleViewResume} style={{ width: '100%', padding: '22px', background: 'var(--ucc-green)', color: 'var(--ucc-navy)', borderRadius: '18px', fontWeight: 800, fontSize: '1.2rem', border: 'none', cursor: 'pointer', boxShadow: '0 4px 15px rgba(139, 195, 74, 0.3)', transition: 'transform 0.2s ease' }}>
+                    📄 Ver mi Hoja de Vida Actual
+                  </button>
+                  
+                  <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0' }}>
+                    <div style={{ flex: 1, height: '1px', background: '#f1f5f9' }} />
+                    <span style={{ padding: '0 15px', color: '#cbd5e1', fontSize: '0.9rem', fontWeight: 600 }}>O ACTUALIZAR</span>
+                    <div style={{ flex: 1, height: '1px', background: '#f1f5f9' }} />
+                  </div>
+
+                  <button onClick={() => cvInputRef.current?.click()} style={{ width: '100%', padding: '20px', background: 'white', color: 'var(--ucc-navy)', border: '2px dashed #cbd5e1', borderRadius: '18px', fontWeight: 700, fontSize: '1.1rem', cursor: 'pointer', transition: 'all 0.2s ease' }}>
+                    ⬆️ Subir Nuevo CV (PDF)
+                  </button>
+                </div>
               </div>
             </div>
           )}
