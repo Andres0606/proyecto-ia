@@ -170,7 +170,19 @@ const updateProfile = async (req, res) => {
       .from('perfiles_usuarios')
       .upsert({
         user_id: userId,
-        ...profileData
+        genero: profileData.genero,
+        edad: profileData.edad,
+        nivel_formacion: profileData.nivel_formacion,
+        programa_academico: profileData.programa_academico,
+        estrato: profileData.estrato,
+        estado_civil: profileData.estado_civil,
+        numero_hijos: profileData.numero_hijos,
+        ingreso_mensual: profileData.ingreso_mensual,
+        sector_economico: profileData.sector_economico,
+        area_desempeno: profileData.area_desempeno,
+        emprendimiento: profileData.emprendimiento,
+        tipo_organizacion: profileData.tipo_organizacion,
+        tamano_organizacion: profileData.tamano_organizacion
       }, { onConflict: 'user_id' });
 
     if (profileError) throw profileError;

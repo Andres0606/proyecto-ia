@@ -12,6 +12,35 @@ const QUICK_ACTIONS = [
   { title: 'Mis Postulaciones', icon: '📨', id: 'apps' },
 ];
 
+const DIAG_OPTIONS = {
+  Programa: [
+    "Derecho", "Contaduria Publica", "Ingenieria Civil", "Ciencias Economicas",
+    "Medicina", "Psicologia", "Odontologia", "Enfermeria", "Ingenieria de Sistemas",
+    "Medicina Veterinaria y Zootecnia", "Especializacion", "Tecnico Auxiliar en Enfermeria"
+  ],
+  Genero: ["M", "F"],
+  Edad: [
+    { val: "1", label: "21 - 25" }, { val: "2", label: "26 - 30" }, { val: "3", label: "31 - 35" },
+    { val: "4", label: "36 - 40" }, { val: "5", label: "41 - 45" }, { val: "6", label: "46 - 50" },
+    { val: "7", label: "51 - 55" }, { val: "8", label: "56 - 60" }, { val: "9", label: "61 - 69" }
+  ],
+  Estrato: ["Uno", "Dos", "Tres", "Cuatro", "Cinco", "Seis"],
+  EstadoCivil: ["Casado", "Union libre", "Soltero", "Separado", "Viudo"],
+  Hijos: ["Cero", "Uno", "Dos", "Tres", "Cuatro", "Cinco"],
+  Formacion: ["Profesional", "Especialista", "Magister", "Doctorado", "Tecnico Profesional"],
+  Emprendimiento: ["Si", "No"],
+  TipoOrg: ["Privada", "Publica", "Solidaria", "Trabaja Independiente"],
+  Area: [
+    "Servicios", "Administrativa", "Salud", "Financiera", "Industrial",
+    "Economica", "Gestion Humana", "Educacion", "Comercial", "Contable", "Sistemas"
+  ],
+  Tamano: [
+    "10 o menos empleados", "11 y 50 empleados", "51 y 200 empleados", "Mas de 200 empleados"
+  ],
+  Sector: ["Servicios", "Comercial", "Industrial"],
+  Ingreso: ["1 SML o menos", "2-3 SML", "3-5 SML", "5 SML o mas"]
+};
+
 export default function Dashboard() {
   const [greeting, setGreeting] = useState('Buenos días');
   const [userName, setUserName] = useState('Egresado');
@@ -25,6 +54,9 @@ export default function Dashboard() {
   const [fullProfile, setFullProfile] = useState<any>(null);
   const [formData, setFormData] = useState({
     telefono: '',
+    // Campos sincronizados con Diagnóstico
+    genero: '',
+    edad: '',
     nivel_formacion: '',
     programa_academico: '',
     estrato: '',
@@ -33,7 +65,9 @@ export default function Dashboard() {
     ingreso_mensual: '',
     sector_economico: '',
     area_desempeno: '',
-    emprendimiento: false
+    emprendimiento: '',
+    tipo_organizacion: '',
+    tamano_organizacion: ''
   });
 
   const videoRef = React.useRef<HTMLVideoElement>(null);
@@ -66,15 +100,19 @@ export default function Dashboard() {
         const p = data.profile.perfiles_usuarios?.[0] || {};
         setFormData({
           telefono: data.profile.telefono || '',
+          genero: p.genero || '',
+          edad: p.edad || '',
           nivel_formacion: p.nivel_formacion || '',
           programa_academico: p.programa_academico || '',
-          estrato: p.estrato?.toString() || '',
+          estrato: p.estrato || '',
           estado_civil: p.estado_civil || '',
-          numero_hijos: p.numero_hijos?.toString() || '',
-          ingreso_mensual: p.ingreso_mensual?.toString() || '',
+          numero_hijos: p.numero_hijos || '',
+          ingreso_mensual: p.ingreso_mensual || '',
           sector_economico: p.sector_economico || '',
           area_desempeno: p.area_desempeno || '',
-          emprendimiento: !!p.emprendimiento
+          emprendimiento: p.emprendimiento || '',
+          tipo_organizacion: p.tipo_organizacion || '',
+          tamano_organizacion: p.tamano_organizacion || ''
         });
       }
     } catch (err) {
@@ -93,22 +131,26 @@ export default function Dashboard() {
         body: JSON.stringify({
           userData: { telefono: formData.telefono },
           profileData: {
+            genero: formData.genero,
+            edad: formData.edad,
             nivel_formacion: formData.nivel_formacion,
             programa_academico: formData.programa_academico,
-            estrato: parseInt(formData.estrato) || 0,
+            estrato: formData.estrato,
             estado_civil: formData.estado_civil,
-            numero_hijos: parseInt(formData.numero_hijos) || 0,
-            ingreso_mensual: parseFloat(formData.ingreso_mensual) || 0,
+            numero_hijos: formData.numero_hijos,
+            ingreso_mensual: formData.ingreso_mensual,
             sector_economico: formData.sector_economico,
             area_desempeno: formData.area_desempeno,
-            emprendimiento: formData.emprendimiento
+            emprendimiento: formData.emprendimiento,
+            tipo_organizacion: formData.tipo_organizacion,
+            tamano_organizacion: formData.tamano_organizacion
           }
         }),
       });
 
       const data = await res.json();
       if (data.success) {
-        alert("¡Perfil actualizado!");
+        alert("¡Perfil sincronizado y actualizado!");
         setActiveSection('none');
         fetchFullProfile(userId);
       }
@@ -245,7 +287,7 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Sección 1: Datos Personales (users table) */}
+        {/* Sección: Datos Personales */}
         {activeSection === 'personal' && fullProfile && (
           <div className="db-card" style={{ marginBottom: '30px', padding: '30px', animation: 'fadeIn 0.3s' }}>
             <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '25px', borderBottom: '2px solid #f1f5f9' }}>👤 Datos Personales</h2>
@@ -271,59 +313,108 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Sección 2: Perfil Profesional (perfiles_usuarios table) */}
+        {/* Sección: Perfil Profesional (Sincronizada con Diagnóstico) */}
         {activeSection === 'professional' && fullProfile && (
           <div className="db-card" style={{ marginBottom: '30px', padding: '30px', animation: 'fadeIn 0.3s' }}>
-            <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '25px', borderBottom: '2px solid #f1f5f9' }}>💼 Perfil Profesional y Socioeconómico</h2>
+            <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '25px', borderBottom: '2px solid #f1f5f9' }}>💼 Perfil Profesional y Socioeconómico (IA UCC)</h2>
+            
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
               <div className="form-group">
-                <label style={{ fontSize: '0.8rem' }}>Nivel de Formación</label>
-                <select value={formData.nivel_formacion} onChange={(e) => setFormData({...formData, nivel_formacion: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                <label style={{ fontSize: '0.8rem' }}>Programa</label>
+                <select value={formData.programa_academico} onChange={(e) => setFormData({...formData, programa_academico: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
                   <option value="">Seleccione...</option>
-                  <option value="Pregrado">Pregrado</option><option value="Especialización">Especialización</option><option value="Maestría">Maestría</option><option value="Doctorado">Doctorado</option>
+                  {DIAG_OPTIONS.Programa.map(o => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
               <div className="form-group">
-                <label style={{ fontSize: '0.8rem' }}>Programa Académico</label>
-                <input type="text" value={formData.programa_academico} onChange={(e) => setFormData({...formData, programa_academico: e.target.value})} style={{ width: '100%', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
+                <label style={{ fontSize: '0.8rem' }}>Género</label>
+                <select value={formData.genero} onChange={(e) => setFormData({...formData, genero: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                  <option value="">Seleccione...</option>
+                  {DIAG_OPTIONS.Genero.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
+              <div className="form-group">
+                <label style={{ fontSize: '0.8rem' }}>Rango de Edad</label>
+                <select value={formData.edad} onChange={(e) => setFormData({...formData, edad: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                  <option value="">Seleccione...</option>
+                  {DIAG_OPTIONS.Edad.map(o => <option key={o.val} value={o.val}>{o.label}</option>)}
+                </select>
               </div>
               <div className="form-group">
                 <label style={{ fontSize: '0.8rem' }}>Estrato</label>
-                <input type="number" value={formData.estrato} onChange={(e) => setFormData({...formData, estrato: e.target.value})} style={{ width: '100%', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
+                <select value={formData.estrato} onChange={(e) => setFormData({...formData, estrato: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                  <option value="">Seleccione...</option>
+                  {DIAG_OPTIONS.Estrato.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
               </div>
               <div className="form-group">
                 <label style={{ fontSize: '0.8rem' }}>Estado Civil</label>
-                <select value={formData.estado_civil} onChange={(e) => setFormData({...formData, estado_civil: e.target.value})} style={{ width: '100%', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                <select value={formData.estado_civil} onChange={(e) => setFormData({...formData, estado_civil: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
                   <option value="">Seleccione...</option>
-                  <option value="Soltero">Soltero/a</option><option value="Casado">Casado/a</option><option value="Union Libre">Unión Libre</option>
+                  {DIAG_OPTIONS.EstadoCivil.map(o => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
               <div className="form-group">
                 <label style={{ fontSize: '0.8rem' }}>Número de Hijos</label>
-                <input type="number" value={formData.numero_hijos} onChange={(e) => setFormData({...formData, numero_hijos: e.target.value})} style={{ width: '100%', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
+                <select value={formData.numero_hijos} onChange={(e) => setFormData({...formData, numero_hijos: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                  <option value="">Seleccione...</option>
+                  {DIAG_OPTIONS.Hijos.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
               </div>
               <div className="form-group">
-                <label style={{ fontSize: '0.8rem' }}>Ingreso Mensual</label>
-                <input type="number" value={formData.ingreso_mensual} onChange={(e) => setFormData({...formData, ingreso_mensual: e.target.value})} style={{ width: '100%', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
+                <label style={{ fontSize: '0.8rem' }}>Nivel de Formación</label>
+                <select value={formData.nivel_formacion} onChange={(e) => setFormData({...formData, nivel_formacion: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                  <option value="">Seleccione...</option>
+                  {DIAG_OPTIONS.Formacion.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
               </div>
               <div className="form-group">
-                <label style={{ fontSize: '0.8rem' }}>Sector Económico</label>
-                <input type="text" value={formData.sector_economico} onChange={(e) => setFormData({...formData, sector_economico: e.target.value})} style={{ width: '100%', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
+                <label style={{ fontSize: '0.8rem' }}>Tipo de Organización</label>
+                <select value={formData.tipo_organizacion} onChange={(e) => setFormData({...formData, tipo_organizacion: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                  <option value="">Seleccione...</option>
+                  {DIAG_OPTIONS.TipoOrg.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
               </div>
               <div className="form-group">
                 <label style={{ fontSize: '0.8rem' }}>Área de Desempeño</label>
-                <input type="text" value={formData.area_desempeno} onChange={(e) => setFormData({...formData, area_desempeno: e.target.value})} style={{ width: '100%', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px' }} />
+                <select value={formData.area_desempeno} onChange={(e) => setFormData({...formData, area_desempeno: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                  <option value="">Seleccione...</option>
+                  {DIAG_OPTIONS.Area.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
               </div>
-              <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingTop: '25px' }}>
-                <input type="checkbox" checked={formData.emprendimiento} onChange={(e) => setFormData({...formData, emprendimiento: e.target.checked})} style={{ width: '20px', height: '20px' }} />
-                <label style={{ fontSize: '0.9rem' }}>¿Emprendimiento?</label>
+              <div className="form-group">
+                <label style={{ fontSize: '0.8rem' }}>Tamaño Organización</label>
+                <select value={formData.tamano_organizacion} onChange={(e) => setFormData({...formData, tamano_organizacion: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                  <option value="">Seleccione...</option>
+                  {DIAG_OPTIONS.Tamano.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
+              <div className="form-group">
+                <label style={{ fontSize: '0.8rem' }}>Sector</label>
+                <select value={formData.sector_economico} onChange={(e) => setFormData({...formData, sector_economico: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                  <option value="">Seleccione...</option>
+                  {DIAG_OPTIONS.Sector.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
+              <div className="form-group">
+                <label style={{ fontSize: '0.8rem' }}>Rango de Ingreso</label>
+                <select value={formData.ingreso_mensual} onChange={(e) => setFormData({...formData, ingreso_mensual: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                  <option value="">Seleccione...</option>
+                  {DIAG_OPTIONS.Ingreso.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
+              <div className="form-group">
+                <label style={{ fontSize: '0.8rem' }}>¿Emprendimiento?</label>
+                <select value={formData.emprendimiento} onChange={(e) => setFormData({...formData, emprendimiento: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                  <option value="">Seleccione...</option>
+                  {DIAG_OPTIONS.Emprendimiento.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
               </div>
             </div>
-            <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ width: '100%', marginTop: '30px', padding: '15px', background: 'var(--ucc-navy)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>{loadingProfile ? 'Guardando...' : '💾 Actualizar Perfil Profesional'}</button>
+            <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ width: '100%', marginTop: '30px', padding: '15px', background: 'var(--ucc-navy)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>{loadingProfile ? 'Guardando...' : '💾 Sincronizar Perfil con IA UCC'}</button>
           </div>
         )}
 
-        {/* Sección 3: Postulaciones (Placeholder) */}
         {activeSection === 'apps' && (
           <div className="db-card" style={{ marginBottom: '30px', padding: '30px', animation: 'fadeIn 0.3s', textAlign: 'center' }}>
             <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '20px' }}>📨 Mis Postulaciones</h2>
