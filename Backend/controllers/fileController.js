@@ -65,11 +65,11 @@ const uploadResume = async (req, res) => {
 
     if (error) throw error;
 
-    // 2. Guardar la RUTA en la tabla perfiles_usuarios (no URL pública porque es privado)
+    // 2. Guardar la RUTA en la tabla 'users' (antes estaba en perfiles_usuarios)
     const { error: updateError } = await supabase
-      .from('perfiles_usuarios')
-      .update({ cv_url: fileName }) // Guardamos el path para poder pedirlo luego
-      .eq('user_id', userId);
+      .from('users')
+      .update({ cv_url: fileName }) 
+      .eq('id', userId);
 
     if (updateError) throw updateError;
 
