@@ -110,6 +110,7 @@ const uploadResume = async (req, res) => {
 const getResumeUrl = async (req, res) => {
   try {
     const { userId } = req.params;
+    console.log(`🔍 Buscando CV para el usuario: ${userId}`);
 
     // 1. Buscar la ruta del CV en la tabla users
     const { data: user, error: userError } = await supabase
@@ -119,42 +120,40 @@ const getResumeUrl = async (req, res) => {
       .single();
 
     if (userError || !user?.cv_url) {
+      console.log(`⚠️ No se encontró cv_url en la DB para el usuario ${userId}`);
       return res.status(404).json({ success: false, message: 'No se encontró una hoja de vida para este usuario.' });
     }
 
+    const cleanPath = user.cv_url.trim();
+    console.log(`📂 Intentando recuperar archivo de Storage: "${cleanPath}"`);
+
     // Si la URL ya es un enlace completo, retornarla directamente
-    if (user.cv_url.startsWith('http')) {
-      return res.status(200).json({
-        success: true,
-        url: user.cv_url
-      });
+    if (cleanPath.startsWith('http')) {
+      return res.status(200).json({ success: true, url: cleanPath });
     }
 
     // 2. Crear una Signed URL (enlace temporal de 60 segundos)
     const { data, error } = await supabase.storage
       .from('hojas-de-vida')
-      .createSignedUrl(user.cv_url, 60); // 60 segundos de validez
+      .createSignedUrl(cleanPath, 60);
 
     if (error) {
-      console.error('⚠️ Error al crear Signed URL (¿Bucket público? Intentando getPublicUrl):', error.message);
-      // Fallback: intentar obtener la URL pública si la Signed URL falla
+      console.error(`❌ Error de Supabase al crear Signed URL para "${cleanPath}":`, error.message);
+      
+      // Fallback: intentar obtener la URL pública si la Signed URL falla (solo si el bucket es público)
       const { data: publicData } = supabase.storage
         .from('hojas-de-vida')
-        .getPublicUrl(user.cv_url);
+        .getPublicUrl(cleanPath);
         
       if (publicData && publicData.publicUrl) {
-         return res.status(200).json({
-           success: true,
-           url: publicData.publicUrl
-         });
+         console.log("ℹ️ Usando fallback de URL pública.");
+         return res.status(200).json({ success: true, url: publicData.publicUrl });
       }
       throw error;
     }
 
-    return res.status(200).json({
-      success: true,
-      url: data.signedUrl
-    });
+    console.log('✅ URL firmada generada exitosamente.');
+    return res.status(200).json({ success: true, url: data.signedUrl });
 
   } catch (error) {
     console.error('💥 Error en getResumeUrl:', error.message);
