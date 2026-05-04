@@ -109,6 +109,13 @@ export default function Dashboard() {
       
       if (data.success && data.profile) {
         const u = data.profile;
+        const fetchedRol = Number(u.rol_id);
+
+        // Async Route Guard
+        if (fetchedRol === 4) { window.location.href = "/dashboard-admin"; return; }
+        if (fetchedRol === 2) { window.location.href = "/dashboard-externo"; return; }
+        if (fetchedRol === 3) { window.location.href = "/dashboard-empresa"; return; }
+
         const p = (u.perfiles_usuarios && u.perfiles_usuarios.length > 0) ? u.perfiles_usuarios[0] : {};
         const c = u.empresa || {};
         
