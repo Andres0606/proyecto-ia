@@ -231,7 +231,7 @@ body {
 .diag-score__fill {
   fill: none; stroke-width: 10; stroke-linecap: round;
 }
-.diag-score__fill--baja  { stroke: var(--red); }
+.diag-score__fill--baja  { stroke: var(--ucc-navy); }
 .diag-score__fill--media { stroke: var(--ucc-blue); }
 .diag-score__fill--alta  { stroke: var(--ucc-green); }
 .diag-score__number {
@@ -246,7 +246,7 @@ body {
   text-transform: uppercase; letter-spacing: 0.8px;
   padding: 5px 14px; border-radius: 50px;
 }
-.diag-score__label--baja  { background: rgba(229, 62, 62, 0.12); color: var(--red); }
+.diag-score__label--baja  { background: rgba(0, 40, 85, 0.12); color: var(--ucc-navy); }
 .diag-score__label--media { background: rgba(0, 169, 224, 0.12); color: var(--ucc-blue); }
 .diag-score__label--alta  { background: rgba(141, 198, 63, 0.12); color: var(--ucc-green); }
 
