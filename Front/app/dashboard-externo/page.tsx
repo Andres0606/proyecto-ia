@@ -59,10 +59,18 @@ export default function DashboardExterno() {
         const rawId = userData.id || userData.profile?.id || userData.user_id;
         if (rawId) {
           const cleanId = String(rawId).trim().split(':')[0];
-          setUserId(cleanId);
-          const meta = userData.profile || userData.user_metadata || {};
-          setUserName(meta.full_name?.split(' ')[0] || meta.nombre_completo?.split(' ')[0] || 'Usuario');
-          fetchFullProfile(cleanId);
+          const rolId = userData.profile?.rol_id;
+
+          // Route Guard
+          if (rolId === 4) window.location.href = "/dashboard-admin";
+          else if (rolId === 3) window.location.href = "/dashboard-empresa";
+          else if (rolId === 1) window.location.href = "/dashboard";
+          else {
+            setUserId(cleanId);
+            const meta = userData.profile || userData.user_metadata || {};
+            setUserName(meta.full_name?.split(' ')[0] || meta.nombre_completo?.split(' ')[0] || 'Usuario');
+            fetchFullProfile(cleanId);
+          }
         }
       } catch (e) { console.error(e); }
     }

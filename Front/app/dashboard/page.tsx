@@ -81,27 +81,19 @@ export default function Dashboard() {
         const rawId = userData.id || userData.profile?.id || userData.user_id;
         if (rawId) {
           const cleanId = String(rawId).trim().split(':')[0];
-          setUserId(cleanId);
+          const rolId = userData.profile?.rol_id;
           
-          // Fallback
-          const meta = userData.profile || userData.user_metadata || {};
-          setUserName(meta.full_name?.split(' ')[0] || meta.nombre_completo?.split(' ')[0] || 'Usuario');
-          
-          // Role detection
-          const roleName = userData.profile?.roles?.nombre || 'egresado';
-          setUserRole(roleName);
-
-          setFormData(prev => ({
-            ...prev,
-            nombre_completo: meta.full_name || meta.nombre_completo || '',
-            correo: userData.email || meta.correo || '',
-            telefono: meta.telefono || '',
-            cedula: meta.cedula || '',
-            fecha_nacimiento: meta.fecha_nacimiento ? meta.fecha_nacimiento.split('T')[0] : '',
-            genero: meta.genero || ''
-          }));
-
-          fetchFullProfile(cleanId);
+          // Route Guard
+          if (rolId === 4) window.location.href = "/dashboard-admin";
+          else if (rolId === 2) window.location.href = "/dashboard-externo";
+          else if (rolId === 3) window.location.href = "/dashboard-empresa";
+          else {
+            setUserId(cleanId);
+            const meta = userData.profile || userData.user_metadata || {};
+            setUserName(meta.full_name?.split(' ')[0] || meta.nombre_completo?.split(' ')[0] || 'Usuario');
+            setUserRole('egresado');
+            fetchFullProfile(cleanId);
+          }
         }
       } catch (e) {
         console.error(e);

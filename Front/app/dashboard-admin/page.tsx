@@ -21,7 +21,15 @@ export default function DashboardAdmin() {
     const savedUser = sessionStorage.getItem('ucc_user');
     if (savedUser) {
       const userData = JSON.parse(savedUser);
-      setUserName(userData.profile?.nombre_completo || 'Admin');
+      const rolId = userData.profile?.rol_id;
+
+      // Route Guard
+      if (rolId === 2) window.location.href = "/dashboard-externo";
+      else if (rolId === 3) window.location.href = "/dashboard-empresa";
+      else if (rolId === 1) window.location.href = "/dashboard";
+      else {
+        setUserName(userData.profile?.nombre_completo || 'Admin');
+      }
     }
     // Mock stats for now
     setStats({ total_users: 1542, total_companies: 87, total_jobs: 124 });

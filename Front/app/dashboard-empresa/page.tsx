@@ -33,8 +33,17 @@ export default function DashboardEmpresa() {
         const userData = JSON.parse(savedUser);
         const rawId = userData.id || userData.profile?.id || userData.user_id;
         if (rawId) {
-          setUserId(String(rawId).trim().split(':')[0]);
-          fetchFullProfile(String(rawId).trim().split(':')[0]);
+          const cleanId = String(rawId).trim().split(':')[0];
+          const rolId = userData.profile?.rol_id;
+
+          // Route Guard
+          if (rolId === 4) window.location.href = "/dashboard-admin";
+          else if (rolId === 2) window.location.href = "/dashboard-externo";
+          else if (rolId === 1) window.location.href = "/dashboard";
+          else {
+            setUserId(cleanId);
+            fetchFullProfile(cleanId);
+          }
         }
       } catch (e) { console.error(e); }
     }

@@ -51,7 +51,12 @@ export default function Header() {
           {user ? (
             <div className="header__profile-container" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
               {/* Botón Mi Perfil Estilo Cápsula */}
-              <a href="/dashboard" className="header__profile-badge" style={{ 
+              <a href={
+                user.profile?.rol_id === 4 ? "/dashboard-admin" :
+                user.profile?.rol_id === 2 ? "/dashboard-externo" :
+                user.profile?.rol_id === 3 ? "/dashboard-empresa" :
+                "/dashboard"
+              } className="header__profile-badge" style={{ 
                 textDecoration: 'none',
                 background: 'rgba(0, 102, 204, 0.1)', 
                 color: 'var(--ucc-navy)',
@@ -63,7 +68,7 @@ export default function Header() {
                 transition: 'all 0.3s ease'
               }}>
                 Mi Perfil: <span style={{ color: 'var(--ucc-red)' }}>
-                  {(user.profile?.nombre_completo || user.user_metadata?.full_name || 'Egresado').split(' ')[0]}
+                  {(user.profile?.nombre_completo || user.user_metadata?.full_name || 'Usuario').split(' ')[0]}
                 </span>
               </a>
               
