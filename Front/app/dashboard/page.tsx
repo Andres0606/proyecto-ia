@@ -232,6 +232,20 @@ export default function Dashboard() {
     border: '1px solid #e2e8f0'
   };
 
+  const labelStyle = {
+    fontSize: '0.9rem',
+    fontWeight: 700,
+    color: 'var(--ucc-navy)',
+    marginBottom: '8px',
+    display: 'block'
+  };
+
+  const formGroupStyle = {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '4px'
+  };
+
   return (
     <div className="db-page">
       <Header />
@@ -275,13 +289,13 @@ export default function Dashboard() {
           {activeSection === 'personal' && (
             <div className="db-card" style={{ padding: '45px', borderRadius: '28px' }}>
               <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '35px', fontWeight: 800 }}>👤 Datos Personales</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
-                <div className="form-group"><label>Nombre Completo</label><input type="text" value={formData.nombre_completo} onChange={(e) => setFormData({...formData, nombre_completo: e.target.value})} style={baseInputStyle} /></div>
-                <div className="form-group"><label>Correo Electrónico</label><input type="email" value={formData.correo} onChange={(e) => setFormData({...formData, correo: e.target.value})} style={baseInputStyle} /></div>
-                <div className="form-group"><label>Teléfono</label><input type="text" value={formData.telefono} onChange={(e) => setFormData({...formData, telefono: e.target.value})} style={baseInputStyle} /></div>
-                <div className="form-group"><label>Cédula</label><input type="text" value={formData.cedula} disabled style={disabledInputStyle} /></div>
-                <div className="form-group"><label>Fecha de Nacimiento</label><input type="text" value={formData.fecha_nacimiento} disabled style={disabledInputStyle} /></div>
-                <div className="form-group"><label>Género</label><input type="text" value={formData.genero} disabled style={disabledInputStyle} /></div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '35px' }}>
+                <div style={formGroupStyle}><label style={labelStyle}>Nombre Completo</label><input type="text" value={formData.nombre_completo} onChange={(e) => setFormData({...formData, nombre_completo: e.target.value})} style={baseInputStyle} /></div>
+                <div style={formGroupStyle}><label style={labelStyle}>Correo Electrónico</label><input type="email" value={formData.correo} onChange={(e) => setFormData({...formData, correo: e.target.value})} style={baseInputStyle} /></div>
+                <div style={formGroupStyle}><label style={labelStyle}>Teléfono</label><input type="text" value={formData.telefono} onChange={(e) => setFormData({...formData, telefono: e.target.value})} style={baseInputStyle} /></div>
+                <div style={formGroupStyle}><label style={labelStyle}>Cédula</label><input type="text" value={formData.cedula} disabled style={disabledInputStyle} /></div>
+                <div style={formGroupStyle}><label style={labelStyle}>Fecha de Nacimiento</label><input type="text" value={formData.fecha_nacimiento} disabled style={disabledInputStyle} /></div>
+                <div style={formGroupStyle}><label style={labelStyle}>Género</label><input type="text" value={formData.genero} disabled style={disabledInputStyle} /></div>
               </div>
               <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ width: '100%', marginTop: '40px', padding: '20px', background: 'var(--ucc-navy)', color: 'white', borderRadius: '16px', fontWeight: 800 }}>{loadingProfile ? 'Guardando...' : '💾 Guardar Datos'}</button>
             </div>
@@ -297,7 +311,7 @@ export default function Dashboard() {
               </div>
 
               {isEditingProf ? (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '25px', background: 'white', padding: '30px', borderRadius: '24px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '30px', background: 'white', padding: '30px', borderRadius: '24px' }}>
                   {[
                     { label: 'Programa Académico', key: 'programa_academico', options: DIAG_OPTIONS.Programa },
                     { label: 'Estrato', key: 'estrato', options: DIAG_OPTIONS.Estrato },
@@ -308,8 +322,8 @@ export default function Dashboard() {
                     { label: 'Rango de Ingreso', key: 'ingreso_mensual', options: DIAG_OPTIONS.Ingreso },
                     { label: '¿Emprendimiento?', key: 'emprendimiento', options: DIAG_OPTIONS.Emprendimiento },
                   ].map((field) => (
-                    <div key={field.key} className="form-group">
-                      <label style={{ fontSize: '0.85rem', fontWeight: 800, color: '#475569' }}>{field.label}</label>
+                    <div key={field.key} style={formGroupStyle}>
+                      <label style={labelStyle}>{field.label}</label>
                       <select value={(formData as any)[field.key]} onChange={(e) => setFormData({...formData, [field.key]: e.target.value})} style={baseInputStyle}>
                         <option value="">Seleccione...</option>
                         {field.options.map(o => <option key={o} value={o}>{o}</option>)}
