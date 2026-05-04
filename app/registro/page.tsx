@@ -489,26 +489,8 @@ export default function RegistroPage() {
       return;
     }
 
-    // 2. Insert into users table (Public profile)
-    if (data.user) {
-      const { error: profileError } = await supabase.from('users').insert({
-        id: data.user.id,
-        nombre_completo: nombre,
-        correo: email,
-        rol: rol
-      });
-
-      if (profileError) {
-        console.error("Error creating profile:", profileError.message);
-        setErrorMsg("Tu cuenta se creó, pero hubo un error al crear tu perfil: " + profileError.message);
-        setLoading(false);
-        return;
-      }
-    }
-
-    // 3. Success!
+    // 2. Success! (Profile is created by DB Trigger)
     setLoading(false);
-    // Redirect to login after registration
     window.location.href = "/login?registered=true";
   };
 
