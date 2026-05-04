@@ -3,7 +3,7 @@
 import { useState } from "react";
 import "../css/Auth/auth.css";
 
-import { createClient } from "../utils/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 
 export default function LoginPage() {
   const [showPw, setShowPw] = useState(false);
@@ -32,6 +32,7 @@ export default function LoginPage() {
     }
   };
 
+  return (
     <div className="auth-page">
       {/* Background */}
       <div className="auth-page__bg-grid" />

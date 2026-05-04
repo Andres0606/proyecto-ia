@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import "../css/Auth/auth.css";
+import { createClient } from "@/utils/supabase/client";
 
 // ── Tipos ────────────────────────────────────────────────────────────────────
 type RolType = "egresado" | "externo" | "empresa" | null;
@@ -437,7 +438,6 @@ function StepDatosEmpresa({
 // ══════════════════════════════════════════════════════
 // MAIN REGISTRO PAGE
 // ══════════════════════════════════════════════════════
-import { createClient } from "../utils/supabase/client";
 
 export default function RegistroPage() {
   const [step, setStep] = useState(1);
