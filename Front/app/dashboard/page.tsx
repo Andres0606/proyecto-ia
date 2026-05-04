@@ -202,19 +202,19 @@ export default function Dashboard() {
 
   const handleViewResume = async () => {
     if (!userId) return;
-    setUploadStatus({ msg: '⏳ Preparando documento para visualización...', type: 'info' });
+    setUploadStatus({ msg: 'Preparando documento...', type: 'info' });
     try {
       const backendUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000').replace(/\/$/, '');
       const res = await fetch(`${backendUrl}/api/users/get-cv-url/${userId}`);
       const data = await res.json();
       if (data.success) {
-        setUploadStatus({ msg: '✅ Abriendo CV...', type: 'success' });
+        setUploadStatus({ msg: 'Abriendo hoja de vida...', type: 'success' });
         window.open(data.url, '_blank');
       } else {
-        setUploadStatus({ msg: 'ℹ️ Aún no has subido un archivo CV', type: 'info' });
+        setUploadStatus({ msg: 'Aún no has subido una hoja de vida', type: 'info' });
       }
     } catch (err) { 
-      setUploadStatus({ msg: '❌ Error al recuperar el archivo', type: 'error' }); 
+      setUploadStatus({ msg: 'Error al recuperar el archivo', type: 'error' }); 
     }
     setTimeout(() => setUploadStatus({ msg: '', type: 'none' }), 2000);
   };
@@ -252,18 +252,49 @@ export default function Dashboard() {
       <input type="file" ref={avatarInputRef} hidden accept="image/*" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'avatar')} />
       <input type="file" ref={cvInputRef} hidden accept=".pdf" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'cv')} />
 
-      {/* Notificación Centralizada de Alto Impacto */}
+      {/* Notificación Toast Moderna */}
       {uploadStatus.type !== 'none' && (
         <div style={{
-          position: 'fixed', top: '20px', left: '50%', transform: 'translateX(-50%)', zIndex: 9999,
-          padding: '20px 40px', borderRadius: '20px', color: 'white', fontWeight: 800,
-          boxShadow: '0 15px 40px rgba(0,0,0,0.15)', border: '2px solid rgba(255,255,255,0.2)',
-          display: 'flex', alignItems: 'center', gap: '15px', fontSize: '1.1rem',
-          animation: 'popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-          background: uploadStatus.type === 'success' ? '#059669' : uploadStatus.type === 'error' ? '#dc2626' : 'var(--ucc-navy)'
+          position: 'fixed', bottom: '32px', right: '32px', zIndex: 9999,
+          padding: '16px 22px',
+          borderRadius: '16px',
+          color: 'white',
+          fontWeight: 600,
+          fontSize: '0.95rem',
+          letterSpacing: '0.01em',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.20), 0 4px 16px rgba(0,0,0,0.10)',
+          border: '1px solid rgba(255,255,255,0.15)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          minWidth: '260px',
+          maxWidth: '360px',
+          backdropFilter: 'blur(12px)',
+          animation: 'slideInRight 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+          background:
+            uploadStatus.type === 'success'
+              ? 'linear-gradient(135deg, #059669 0%, #047857 100%)'
+              : uploadStatus.type === 'error'
+              ? 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)'
+              : 'linear-gradient(135deg, #1e3a5f 0%, #0f2340 100%)'
         }}>
-          {uploadStatus.type === 'info' && <div className="spinner-white" />}
-          {uploadStatus.msg}
+          {/* Icono según tipo */}
+          {uploadStatus.type === 'info' && (
+            <div className="spinner-white" style={{ flexShrink: 0 }} />
+          )}
+          {uploadStatus.type === 'success' && (
+            <svg style={{ flexShrink: 0 }} width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" fill="rgba(255,255,255,0.2)" />
+              <path d="M7 12.5l3.5 3.5 6.5-7" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          )}
+          {uploadStatus.type === 'error' && (
+            <svg style={{ flexShrink: 0 }} width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" fill="rgba(255,255,255,0.2)" />
+              <path d="M15 9l-6 6M9 9l6 6" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
+            </svg>
+          )}
+          <span>{uploadStatus.msg}</span>
         </div>
       )}
 
@@ -409,9 +440,9 @@ export default function Dashboard() {
       </main>
 
       <style jsx>{`
-        @keyframes popIn {
-          from { transform: translate(-50%, -100%); opacity: 0; }
-          to { transform: translate(-50%, 0); opacity: 1; }
+        @keyframes slideInRight {
+          from { transform: translateX(120%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
         }
         @keyframes float {
           0% { transform: translateY(0px); }
@@ -419,12 +450,13 @@ export default function Dashboard() {
           100% { transform: translateY(0px); }
         }
         .spinner-white {
-          width: 20px;
-          height: 20px;
-          border: 3px solid rgba(255,255,255,0.3);
+          width: 18px;
+          height: 18px;
+          border: 2.5px solid rgba(255,255,255,0.3);
           border-top-color: white;
           border-radius: 50%;
-          animation: spin 1s linear infinite;
+          animation: spin 0.8s linear infinite;
+          flex-shrink: 0;
         }
         .spinner-blue {
           width: 30px;
