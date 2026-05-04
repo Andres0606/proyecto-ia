@@ -303,7 +303,7 @@ export default function BolsaPage() {
             <p className="be-hero__sub">
               Vacantes reales de empresas aliadas, filtradas por tu área, ciudad y experiencia.
             </p>
-          )}
+
           <div className="be-hero__kpis">
             <div>
               <span className="be-hero__kpi-val">{ALL_JOBS.length}</span>

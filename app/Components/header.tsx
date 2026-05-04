@@ -78,6 +78,6 @@ export default function Header() {
           <span />
         </button>
       </div>
-    </nav>
+    </header>
   );
 }
