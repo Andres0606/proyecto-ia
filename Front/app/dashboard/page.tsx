@@ -204,15 +204,6 @@ export default function Dashboard() {
     }
   };
 
-  const InfoCard = ({ label, value, detail }: { label: string, value: any, detail?: string }) => (
-    <div style={{ background: 'white', padding: '22px', borderRadius: '18px', border: '1px solid #f1f5f9', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
-      <p style={{ margin: '0 0 8px 0', fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700 }}>{label}</p>
-      <p style={{ margin: 0, fontSize: '1.05rem', color: 'var(--ucc-navy)', fontWeight: 700 }}>
-        {value && String(value).trim() !== '' ? (detail ? `${detail} ${value}` : value) : <span style={{ color: '#cbd5e1', fontWeight: 400 }}>No completado</span>}
-      </p>
-    </div>
-  );
-
   const baseInputStyle = {
     padding: '16px 24px',
     borderRadius: '14px',
@@ -302,7 +293,7 @@ export default function Dashboard() {
           )}
 
           {activeSection === 'professional' && (
-            <div className="db-card" style={{ padding: '45px', borderRadius: '28px', background: '#f8fafc' }}>
+            <div className="db-card" style={{ padding: '45px', borderRadius: '28px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
                 <h2 style={{ color: 'var(--ucc-navy)', margin: 0, fontWeight: 800 }}>💼 Perfil Profesional</h2>
                 <button onClick={() => setIsEditingProf(!isEditingProf)} style={{ background: 'var(--ucc-blue)', color: 'white', border: 'none', borderRadius: '12px', padding: '10px 25px', cursor: 'pointer', fontWeight: 700 }}>
@@ -310,40 +301,34 @@ export default function Dashboard() {
                 </button>
               </div>
 
-              {isEditingProf ? (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '30px', background: 'white', padding: '30px', borderRadius: '24px' }}>
-                  {[
-                    { label: 'Programa Académico', key: 'programa_academico', options: DIAG_OPTIONS.Programa },
-                    { label: 'Estrato', key: 'estrato', options: DIAG_OPTIONS.Estrato },
-                    { label: 'Estado Civil', key: 'estado_civil', options: DIAG_OPTIONS.EstadoCivil },
-                    { label: 'Número de Hijos', key: 'numero_hijos', options: DIAG_OPTIONS.Hijos },
-                    { label: 'Nivel de Formación', key: 'nivel_formacion', options: DIAG_OPTIONS.Formacion },
-                    { label: 'Área de Desempeño', key: 'area_desempeno', options: DIAG_OPTIONS.Area },
-                    { label: 'Rango de Ingreso', key: 'ingreso_mensual', options: DIAG_OPTIONS.Ingreso },
-                    { label: '¿Emprendimiento?', key: 'emprendimiento', options: DIAG_OPTIONS.Emprendimiento },
-                  ].map((field) => (
-                    <div key={field.key} style={formGroupStyle}>
-                      <label style={labelStyle}>{field.label}</label>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '35px' }}>
+                {[
+                  { label: 'Programa Académico', key: 'programa_academico', options: DIAG_OPTIONS.Programa },
+                  { label: 'Nivel de Formación', key: 'nivel_formacion', options: DIAG_OPTIONS.Formacion },
+                  { label: 'Estado Civil', key: 'estado_civil', options: DIAG_OPTIONS.EstadoCivil },
+                  { label: 'Estrato', key: 'estrato', options: DIAG_OPTIONS.Estrato },
+                  { label: 'Rango de Ingreso', key: 'ingreso_mensual', options: DIAG_OPTIONS.Ingreso },
+                  { label: '¿Emprendimiento?', key: 'emprendimiento', options: DIAG_OPTIONS.Emprendimiento },
+                  { label: 'Área de Desempeño', key: 'area_desempeno', options: DIAG_OPTIONS.Area },
+                  { label: 'Sector Económico', key: 'sector_economico', options: DIAG_OPTIONS.Sector },
+                  { label: 'Número de Hijos', key: 'numero_hijos', options: DIAG_OPTIONS.Hijos },
+                ].map((field) => (
+                  <div key={field.key} style={formGroupStyle}>
+                    <label style={labelStyle}>{field.label}</label>
+                    {isEditingProf ? (
                       <select value={(formData as any)[field.key]} onChange={(e) => setFormData({...formData, [field.key]: e.target.value})} style={baseInputStyle}>
                         <option value="">Seleccione...</option>
                         {field.options.map(o => <option key={o} value={o}>{o}</option>)}
                       </select>
-                    </div>
-                  ))}
-                  <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ gridColumn: 'span 3', padding: '20px', background: 'var(--ucc-navy)', color: 'white', borderRadius: '16px', fontWeight: 800 }}>💾 Guardar Perfil Profesional</button>
-                </div>
-              ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '25px' }}>
-                  <InfoCard label="Programa" value={formData.programa_academico} />
-                  <InfoCard label="Nivel Formación" value={formData.nivel_formacion} />
-                  <InfoCard label="Estado Civil" value={formData.estado_civil} />
-                  <InfoCard label="Socioeconómico" value={formData.estrato} detail="Estrato" />
-                  <InfoCard label="Ingresos" value={formData.ingreso_mensual} />
-                  <InfoCard label="Emprendimiento" value={formData.emprendimiento} />
-                  <InfoCard label="Área de desempeño" value={formData.area_desempeno} />
-                  <InfoCard label="Sector Económico" value={formData.sector_economico} />
-                  <InfoCard label="Número de Hijos" value={formData.numero_hijos} />
-                </div>
+                    ) : (
+                      <input type="text" value={(formData as any)[field.key] || 'No completado'} disabled style={disabledInputStyle} />
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {isEditingProf && (
+                <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ width: '100%', marginTop: '40px', padding: '20px', background: 'var(--ucc-navy)', color: 'white', borderRadius: '16px', fontWeight: 800 }}>💾 Guardar Perfil Profesional</button>
               )}
             </div>
           )}
