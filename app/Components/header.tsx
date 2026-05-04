@@ -72,6 +72,9 @@ export default function Header() {
           <li>
             <a href="/planes">Planes</a>
           </li>
+          <li>
+            <a href="/dashboard" style={{ color: 'var(--ucc-green)', fontWeight: 'bold' }}>Mi Dashboard</a>
+          </li>
         </ul>
 
         {/* Actions */}

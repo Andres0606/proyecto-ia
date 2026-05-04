@@ -166,14 +166,20 @@ function StepDatosPersonales({
   onBack,
   onNext,
   isLastStep,
+  formData,
+  setFormData,
+  loading,
 }: {
   onBack: () => void;
   onNext: () => void;
   isLastStep: boolean;
+  formData: any;
+  setFormData: (d: any) => void;
+  loading: boolean;
 }) {
-  const [pw1, setPw1] = useState("");
-  const [pw2, setPw2] = useState("");
+  const { password: pw1, confirmPassword: pw2 } = formData;
   const isMatch = pw1.length > 0 && pw1 === pw2;
+
 
   return (
     <div className="auth-step">
@@ -183,42 +189,48 @@ function StepDatosPersonales({
           <label className="auth-field__label" htmlFor="reg-nombre">
             Nombre completo
           </label>
-          <input
-            id="reg-nombre"
-            className="auth-field__input"
-            type="text"
-            placeholder="Juan Pérez López"
-          />
-        </div>
-
-        {/* Correo & Teléfono */}
-        <div className="auth-form__row">
-          <div className="auth-field">
-            <label className="auth-field__label" htmlFor="reg-correo">
-              Correo electrónico
-            </label>
             <input
-              id="reg-correo"
+              id="reg-nombre"
               className="auth-field__input"
-              type="email"
-              placeholder="tucorreo@ejemplo.com"
-            />
-          </div>
-          <div className="auth-field">
-            <label className="auth-field__label" htmlFor="reg-telefono">
-              Teléfono
-            </label>
-            <input
-              id="reg-telefono"
-              className="auth-field__input"
-              type="tel"
-              placeholder="Ej: 3001234567"
-              minLength={10}
-              maxLength={10}
-              pattern="[0-9]{10}"
-              title="Debe tener exactamente 10 números"
+              type="text"
+              placeholder="Juan Pérez López"
+              value={formData.nombre}
+              onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
               required
             />
+          </div>
+
+          {/* Correo & Teléfono */}
+          <div className="auth-form__row">
+            <div className="auth-field">
+              <label className="auth-field__label" htmlFor="reg-correo">
+                Correo electrónico
+              </label>
+              <input
+                id="reg-correo"
+                className="auth-field__input"
+                type="email"
+                placeholder="tucorreo@ejemplo.com"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                required
+              />
+            </div>
+            <div className="auth-field">
+              <label className="auth-field__label" htmlFor="reg-telefono">
+                Teléfono
+              </label>
+              <input
+                id="reg-telefono"
+                className="auth-field__input"
+                type="tel"
+                placeholder="Ej: 3001234567"
+                minLength={10}
+                maxLength={10}
+                value={formData.telefono}
+                onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
+                required
+              />
           </div>
         </div>
 
@@ -272,8 +284,10 @@ function StepDatosPersonales({
             type="password"
             placeholder="Mínimo 8 caracteres"
             value={pw1}
-            onChange={(e) => setPw1(e.target.value)}
+            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             style={isMatch ? { borderColor: '#10b981', boxShadow: '0 0 0 1px #10b981' } : {}}
+            required
+            minLength={8}
           />
         </div>
 
@@ -289,8 +303,9 @@ function StepDatosPersonales({
             placeholder="Repite tu contraseña"
             onPaste={(e) => e.preventDefault()}
             value={pw2}
-            onChange={(e) => setPw2(e.target.value)}
+            onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
             style={isMatch ? { borderColor: '#10b981', boxShadow: '0 0 0 1px #10b981' } : {}}
+            required
           />
           {isMatch && (
             <p style={{ color: '#10b981', fontSize: '0.75rem', marginTop: '4px', fontWeight: 600 }}>
@@ -301,11 +316,11 @@ function StepDatosPersonales({
 
         {/* Navigation */}
         <div className="auth-form__nav">
-          <button className="auth-form__back" type="button" onClick={onBack}>
+          <button className="auth-form__back" type="button" onClick={onBack} disabled={loading}>
             ← Atrás
           </button>
-          <button className="auth-form__next" type="button" onClick={onNext}>
-            {isLastStep ? "Crear cuenta" : "Continuar →"}
+          <button className="auth-form__next" type="button" onClick={onNext} disabled={loading || (isLastStep && !isMatch)}>
+            {loading ? "Registrando..." : isLastStep ? "Crear cuenta" : "Continuar →"}
           </button>
         </div>
       </div>
@@ -422,9 +437,69 @@ function StepDatosEmpresa({
 // ══════════════════════════════════════════════════════
 // MAIN REGISTRO PAGE
 // ══════════════════════════════════════════════════════
+import { createClient } from "../utils/supabase/client";
+
 export default function RegistroPage() {
   const [step, setStep] = useState(1);
   const [rol, setRol] = useState<RolType>(null);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  // Form states
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    confirmPassword: "",
+    nombre: "",
+    telefono: "",
+  });
+
+  const email = formData.email;
+  const password = formData.password;
+  const nombre = formData.nombre;
+
+  const supabase = createClient();
+
+
+  const handleRegister = async () => {
+    setLoading(true);
+    setErrorMsg("");
+
+    // 1. Auth Signup
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: nombre,
+          role: rol,
+        }
+      }
+    });
+
+    if (error) {
+      setErrorMsg(error.message);
+      setLoading(false);
+      return;
+    }
+
+    // 2. Insert into users table (Public profile)
+    if (data.user) {
+      const { error: profileError } = await supabase.from('users').insert({
+        id: data.user.id,
+        nombre_completo: nombre,
+        correo: email,
+        rol: rol
+      });
+
+      if (profileError) {
+        console.error("Error creating profile:", profileError.message);
+        // We continue even if profile creation fails, as auth was successful
+      }
+    }
+
+    window.location.href = '/dashboard';
+  };
 
   const totalSteps = rol === "empresa" ? 3 : 2;
   const isLastPersonalStep = rol !== "empresa";
@@ -437,10 +512,8 @@ export default function RegistroPage() {
     if (step > 1) setStep(step - 1);
   };
 
-  const handleSubmit = () => {
-    // TODO: Conectar con Supabase / backend
-    alert("¡Cuenta creada exitosamente!");
-  };
+  const handleSubmit = handleRegister;
+
 
   const subtitles: Record<number, string> = {
     1: "Selecciona el tipo de cuenta que deseas crear",
@@ -472,6 +545,12 @@ export default function RegistroPage() {
         <h1 className="auth-card__title">Crear cuenta</h1>
         <p className="auth-card__subtitle">{subtitles[step]}</p>
 
+        {errorMsg && (
+          <div style={{ color: '#e53e3e', background: '#fff5f5', padding: '0.8rem', borderRadius: '8px', fontSize: '0.85rem', border: '1px solid #feb2b2', marginBottom: '1rem' }}>
+            ⚠ {errorMsg}
+          </div>
+        )}
+
         {/* Stepper */}
         <Stepper step={step} rol={rol} />
 
@@ -485,6 +564,9 @@ export default function RegistroPage() {
             onBack={handleBack}
             onNext={isLastPersonalStep ? handleSubmit : handleNext}
             isLastStep={isLastPersonalStep}
+            formData={formData}
+            setFormData={setFormData}
+            loading={loading}
           />
         )}
 

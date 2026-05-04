@@ -3,10 +3,35 @@
 import { useState } from "react";
 import "../css/Auth/auth.css";
 
+import { createClient } from "../utils/supabase/client";
+
 export default function LoginPage() {
   const [showPw, setShowPw] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
-  return (
+  const supabase = createClient();
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setErrorMsg("");
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      setErrorMsg(error.message);
+      setLoading(false);
+    } else {
+      window.location.href = "/dashboard";
+    }
+  };
+
     <div className="auth-page">
       {/* Background */}
       <div className="auth-page__bg-grid" />
@@ -33,7 +58,13 @@ export default function LoginPage() {
         </p>
 
         {/* Form */}
-        <form className="auth-form" onSubmit={(e) => e.preventDefault()}>
+        <form className="auth-form" onSubmit={handleLogin}>
+          {errorMsg && (
+            <div style={{ color: '#e53e3e', background: '#fff5f5', padding: '0.8rem', borderRadius: '8px', fontSize: '0.85rem', border: '1px solid #feb2b2' }}>
+              ⚠ {errorMsg}
+            </div>
+          )}
+
           <div className="auth-field">
             <label className="auth-field__label" htmlFor="login-email">
               Correo electrónico
@@ -44,6 +75,9 @@ export default function LoginPage() {
               type="email"
               placeholder="tucorreo@ejemplo.com"
               autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
             />
           </div>
 
@@ -58,6 +92,9 @@ export default function LoginPage() {
                 type={showPw ? "text" : "password"}
                 placeholder="••••••••"
                 autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
               />
               <button
                 type="button"
@@ -74,8 +111,8 @@ export default function LoginPage() {
             <a href="/recuperar">¿Olvidaste tu contraseña?</a>
           </div>
 
-          <button type="submit" className="auth-form__submit">
-            Ingresar
+          <button type="submit" className="auth-form__submit" disabled={loading}>
+            {loading ? "Ingresando..." : "Ingresar"}
           </button>
         </form>
 
