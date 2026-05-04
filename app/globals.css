@@ -1,5 +1,25 @@
 /* globals.css */
 
+:root {
+  /* Institutional UCC Palette */
+  --ucc-blue: #00A9E0;
+  --ucc-green: #8DC63F;
+  --ucc-gray: #414042;
+  --ucc-navy: #002855;
+  
+  /* Semantic mappings */
+  --primary: var(--ucc-blue);
+  --accent: var(--ucc-green);
+  --dark: var(--ucc-navy);
+  --gray: var(--ucc-gray);
+  
+  /* Legacy compatibility (to avoid breaking things before update) */
+  --red: var(--ucc-green);
+  --red-dark: #7ab337;
+  --navy: var(--ucc-navy);
+  --navy-mid: #003875;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -9,6 +29,7 @@
 body {
   margin: 0;
   padding: 0;
+  font-family: 'DM Sans', sans-serif;
 }
 
 button, .btn, a.btn, input[type="submit"] {

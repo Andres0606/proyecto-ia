@@ -3,8 +3,8 @@
    ═══════════════════════════════════════ */
 
 .footer {
-  background: #002855;
-  border-top: 4px solid #c8102e;
+  background: var(--ucc-navy);
+  border-top: 4px solid var(--ucc-green);
   font-family: 'DM Sans', 'Segoe UI', sans-serif;
   line-height: 1.5;
   font-size: 16px;
@@ -28,7 +28,7 @@
 }
 
 .footer__logo {
-  background: #c8102e;
+  background: var(--ucc-green);
   color: #fff;
   font-family: 'Fraunces', Georgia, serif;
   font-weight: 900;
@@ -123,9 +123,9 @@
 }
 
 .footer__socials a:hover {
-  border-color: #c8102e;
+  border-color: var(--ucc-green);
   color: #fff;
-  background: #c8102e;
+  background: var(--ucc-green);
 }
 
 /* ── Responsive ── */

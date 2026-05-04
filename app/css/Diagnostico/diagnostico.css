@@ -7,10 +7,10 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --red:        #c8102e;
-  --red-dark:   #a50d25;
-  --navy:       #0a1628;
-  --navy-mid:   #0d2050;
+  --red:        var(--ucc-green);
+  --red-dark:   #7ab337;
+  --navy:       var(--ucc-navy);
+  --navy-mid:   #003875;
   --white:      #ffffff;
   --gray-light: #f1f5f9;
   --gray:       #94a3b8;
