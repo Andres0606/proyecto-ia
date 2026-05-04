@@ -41,6 +41,10 @@ export default function Dashboard() {
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [completionPct, setCompletionPct] = useState(0);
   
+  // Estados para feedback de archivos
+  const [uploadStatus, setUploadStatus] = useState<{msg: string, type: 'info' | 'success' | 'error' | 'none'}>({msg: '', type: 'none'});
+  const [isUploading, setIsUploading] = useState(false);
+  
   const [formData, setFormData] = useState({
     nombre_completo: '',
     correo: '',
@@ -81,14 +85,10 @@ export default function Dashboard() {
       const res = await fetch(`${backendUrl}/api/users/profile/${id}`);
       const data = await res.json();
       
-      console.log('📡 Respuesta del Backend:', data);
-
       if (data.success && data.profile) {
         const u = data.profile;
         const p = (u.perfiles_usuarios && u.perfiles_usuarios.length > 0) ? u.perfiles_usuarios[0] : {};
         
-        console.log('💼 Datos Perfil Profesional (p):', p);
-
         setUserName(u.nombre_completo ? u.nombre_completo.split(' ')[0] : 'Egresado');
         if (u.foto_url) setUserPhoto(u.foto_url);
 
@@ -122,9 +122,7 @@ export default function Dashboard() {
         pct += (filled / profFields.length) * 40;
         setCompletionPct(Math.round(pct));
       }
-    } catch (err) { 
-      console.error('❌ Error cargando perfil:', err);
-    }
+    } catch (err) { console.error(err); }
   };
 
   const handleSaveProfile = async () => {
@@ -142,27 +140,45 @@ export default function Dashboard() {
       });
       const data = await res.json();
       if (data.success) {
-        alert("¡Perfil actualizado con éxito! ✨");
+        setUploadStatus({ msg: '✅ ¡Perfil actualizado correctamente!', type: 'success' });
         setIsEditingProf(false);
-        setTimeout(() => fetchFullProfile(userId), 600);
+        setTimeout(() => {
+          fetchFullProfile(userId);
+          setUploadStatus({ msg: '', type: 'none' });
+        }, 2000);
       }
-    } catch (err: any) { alert(err.message); } finally { setLoadingProfile(false); }
+    } catch (err: any) { setUploadStatus({ msg: '❌ Error al guardar', type: 'error' }); } finally { setLoadingProfile(false); }
   };
 
   const handleFileUpload = async (file: File, type: 'avatar' | 'cv') => {
     if (!userId) return;
+    setIsUploading(true);
+    setUploadStatus({ msg: `⏳ Cargando ${type === 'avatar' ? 'foto' : 'archivo'}...`, type: 'info' });
+
     const fd = new FormData();
     fd.append(type === 'avatar' ? 'image' : 'cv', file);
     fd.append('userId', userId);
+    
     try {
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
       const res = await fetch(`${backendUrl}/api/users/upload-${type === 'avatar' ? 'avatar' : 'cv'}`, { method: 'POST', body: fd });
       const data = await res.json();
+      
       if (data.success) {
+        setUploadStatus({ msg: '✅ ¡Archivo cargado con éxito!', type: 'success' });
         if (type === 'avatar') setUserPhoto(data.url);
-        fetchFullProfile(userId);
+        setTimeout(() => {
+          fetchFullProfile(userId);
+          setUploadStatus({ msg: '', type: 'none' });
+        }, 2500);
+      } else {
+        setUploadStatus({ msg: '❌ Error en la carga', type: 'error' });
       }
-    } catch (err: any) { alert(err.message); }
+    } catch (err: any) { 
+      setUploadStatus({ msg: '❌ Error de conexión', type: 'error' }); 
+    } finally { 
+      setIsUploading(false); 
+    }
   };
 
   const handleViewResume = async () => {
@@ -172,8 +188,9 @@ export default function Dashboard() {
       const res = await fetch(`${backendUrl}/api/users/get-cv-url/${userId}`);
       const data = await res.json();
       if (data.success) window.open(data.url, '_blank');
-      else alert("Aún no has subido tu CV");
-    } catch (err) { alert("Error cargando CV"); }
+      else setUploadStatus({ msg: 'ℹ️ No has subido un CV aún', type: 'info' });
+    } catch (err) { setUploadStatus({ msg: '❌ Error al abrir CV', type: 'error' }); }
+    setTimeout(() => setUploadStatus({ msg: '', type: 'none' }), 3000);
   };
 
   const baseInputStyle = {
@@ -215,6 +232,19 @@ export default function Dashboard() {
       <input type="file" ref={avatarInputRef} hidden accept="image/*" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'avatar')} />
       <input type="file" ref={cvInputRef} hidden accept=".pdf" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'cv')} />
 
+      {/* Notificación Toast */}
+      {uploadStatus.type !== 'none' && (
+        <div style={{
+          position: 'fixed', top: '120px', right: '40px', zIndex: 1000,
+          padding: '15px 30px', borderRadius: '14px', color: 'white', fontWeight: 700,
+          boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+          animation: 'slideIn 0.3s ease-out',
+          background: uploadStatus.type === 'success' ? '#10b981' : uploadStatus.type === 'error' ? '#ef4444' : 'var(--ucc-navy)'
+        }}>
+          {uploadStatus.msg}
+        </div>
+      )}
+
       <main className="db-main" style={{ paddingTop: '100px', minHeight: '80vh' }}>
         
         <div className="db-card" style={{ margin: '0 auto 40px', maxWidth: '1100px', padding: '30px 40px', display: 'flex', alignItems: 'center', gap: '40px', background: 'white', borderRadius: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
@@ -226,19 +256,26 @@ export default function Dashboard() {
             <div style={{ position: 'absolute', top: '10px', left: '10px', right: '10px', bottom: '10px', borderRadius: '50%', background: userPhoto ? `url(${userPhoto}) center/cover` : 'var(--ucc-navy)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '2.5rem', fontWeight: 800, border: '4px solid white' }}>
               {!userPhoto && userName[0]}
             </div>
+            {isUploading && (
+              <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.7)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div className="spinner-mini" />
+              </div>
+            )}
           </div>
           <div style={{ flex: 1 }}>
             <h1 style={{ margin: 0, color: 'var(--ucc-navy)', fontSize: '2rem' }}>{greeting}, {userName} ✨</h1>
             <p style={{ color: '#64748b' }}>Tu perfil profesional está al {completionPct}%</p>
             <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
-              <button onClick={() => avatarInputRef.current?.click()} style={{ background: '#f8fafc', color: 'var(--ucc-navy)', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '10px 20px', cursor: 'pointer', fontWeight: 600 }}>📁 Cambiar Foto</button>
+              <button disabled={isUploading} onClick={() => avatarInputRef.current?.click()} style={{ background: '#f8fafc', color: 'var(--ucc-navy)', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '10px 20px', cursor: isUploading ? 'not-allowed' : 'pointer', fontWeight: 600 }}>
+                {isUploading ? '⌛ Subiendo...' : '📁 Cambiar Foto'}
+              </button>
             </div>
           </div>
         </div>
 
         <div className="db-actions" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '25px', margin: '40px auto', maxWidth: '1100px' }}>
           {QUICK_ACTIONS.map((action) => (
-            <div key={action.id} className="db-action-card" style={{ cursor: 'pointer', padding: '30px', textAlign: 'center', background: 'white', borderRadius: '24px', border: activeSection === action.id ? '2px solid var(--ucc-blue)' : '1px solid #f1f5f9', boxShadow: '0 8px 20px rgba(0,0,0,0.03)' }} 
+            <div key={action.id} className="db-action-card" style={{ cursor: 'pointer', padding: '30px', textAlign: 'center', background: 'white', borderRadius: '24px', border: activeSection === action.id ? '2px solid var(--ucc-blue)' : '1px solid #f1f5f9', boxShadow: '0 8px 20px rgba(0,0,0,0.03)', transition: 'all 0.3s ease' }} 
               onClick={() => setActiveSection(activeSection === action.id ? 'none' : action.id as any)}>
               <div style={{ fontSize: '3rem', marginBottom: '10px' }}>{action.icon}</div>
               <h3 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--ucc-navy)', fontWeight: 800 }}>{action.title}</h3>
@@ -285,7 +322,7 @@ export default function Dashboard() {
                   <div key={field.key} style={formGroupStyle}>
                     <label style={labelStyle}>{field.label}</label>
                     {isEditingProf ? (
-                      <select value={(formData as any)[field.key]} onChange={(e) => setFormData({...formData, [field.key]: e.target.value})} style={baseInputStyle}>
+                      <select value={(formData as any)[field.key]} onChange={(e) => setFormData({...formData, [field.key]: e.target.value})} style={{...baseInputStyle, border: '1px solid var(--ucc-blue)'}}>
                         <option value="">Seleccione...</option>
                         {field.options.map(o => <option key={o} value={o}>{o}</option>)}
                       </select>
@@ -297,40 +334,86 @@ export default function Dashboard() {
               </div>
 
               {isEditingProf && (
-                <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ width: '100%', marginTop: '40px', padding: '20px', background: 'var(--ucc-navy)', color: 'white', borderRadius: '16px', fontWeight: 800 }}>
-                  {loadingProfile ? 'Guardando...' : '💾 Guardar Perfil Profesional'}
+                <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ width: '100%', marginTop: '40px', padding: '20px', background: 'var(--ucc-navy)', color: 'white', borderRadius: '16px', fontWeight: 800, cursor: loadingProfile ? 'not-allowed' : 'pointer', opacity: loadingProfile ? 0.7 : 1 }}>
+                  {loadingProfile ? '⌛ Guardando cambios...' : '💾 Guardar Perfil Profesional'}
                 </button>
               )}
             </div>
           )}
 
           {activeSection === 'cv' && (
-            <div className="db-card" style={{ padding: '60px 45px', borderRadius: '28px', textAlign: 'center', background: 'white' }}>
+            <div className="db-card" style={{ padding: '60px 45px', borderRadius: '28px', textAlign: 'center', background: 'white', position: 'relative', overflow: 'hidden' }}>
               <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-                <div style={{ fontSize: '4rem', marginBottom: '20px' }}>📄</div>
-                <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '15px', fontWeight: 800, fontSize: '2rem' }}>Gestión de Hoja de Vida</h2>
-                <p style={{ color: '#64748b', marginBottom: '40px', fontSize: '1.1rem' }}>Mantén tu CV actualizado para mejorar tus oportunidades laborales en nuestra bolsa de empleo.</p>
+                <div style={{ fontSize: '4.5rem', marginBottom: '20px', animation: 'float 3s ease-in-out infinite' }}>📄</div>
+                <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '15px', fontWeight: 800, fontSize: '2.2rem' }}>Gestión de Hoja de Vida</h2>
+                <p style={{ color: '#64748b', marginBottom: '45px', fontSize: '1.1rem', lineHeight: '1.6' }}>Optimiza tu perfil para las empresas. Un CV actualizado aumenta tus posibilidades en un 80%.</p>
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                  <button onClick={handleViewResume} style={{ width: '100%', padding: '22px', background: 'var(--ucc-green)', color: 'var(--ucc-navy)', borderRadius: '18px', fontWeight: 800, fontSize: '1.2rem', border: 'none', cursor: 'pointer', boxShadow: '0 4px 15px rgba(139, 195, 74, 0.3)', transition: 'transform 0.2s ease' }}>
+                  <button onClick={handleViewResume} style={{ width: '100%', padding: '22px', background: 'var(--ucc-green)', color: 'var(--ucc-navy)', borderRadius: '20px', fontWeight: 800, fontSize: '1.2rem', border: 'none', cursor: 'pointer', boxShadow: '0 8px 20px rgba(139, 195, 74, 0.25)', transition: 'all 0.3s ease' }}>
                     📄 Ver mi Hoja de Vida Actual
                   </button>
                   
-                  <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0' }}>
-                    <div style={{ flex: 1, height: '1px', background: '#f1f5f9' }} />
-                    <span style={{ padding: '0 15px', color: '#cbd5e1', fontSize: '0.9rem', fontWeight: 600 }}>O ACTUALIZAR</span>
-                    <div style={{ flex: 1, height: '1px', background: '#f1f5f9' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', margin: '25px 0' }}>
+                    <div style={{ flex: 1, height: '2px', background: '#f1f5f9' }} />
+                    <span style={{ padding: '0 20px', color: '#94a3b8', fontSize: '0.9rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>Actualizar Archivo</span>
+                    <div style={{ flex: 1, height: '2px', background: '#f1f5f9' }} />
                   </div>
 
-                  <button onClick={() => cvInputRef.current?.click()} style={{ width: '100%', padding: '20px', background: 'white', color: 'var(--ucc-navy)', border: '2px dashed #cbd5e1', borderRadius: '18px', fontWeight: 700, fontSize: '1.1rem', cursor: 'pointer', transition: 'all 0.2s ease' }}>
-                    ⬆️ Subir Nuevo CV (PDF)
-                  </button>
+                  <div 
+                    onClick={() => !isUploading && cvInputRef.current?.click()}
+                    style={{ 
+                      width: '100%', padding: '40px 20px', background: isUploading ? '#f8fafc' : '#ffffff', 
+                      color: 'var(--ucc-navy)', border: '2px dashed #cbd5e1', borderRadius: '20px', 
+                      fontWeight: 700, fontSize: '1.1rem', cursor: isUploading ? 'not-allowed' : 'pointer', 
+                      transition: 'all 0.3s ease', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px'
+                    }}>
+                    {isUploading ? (
+                      <>
+                        <div className="spinner-mini" />
+                        <span>Subiendo archivo...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span style={{ fontSize: '2rem' }}>⬆️</span>
+                        <span>Haz clic para subir nuevo CV (PDF)</span>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 400, color: '#94a3b8' }}>Máximo 5MB • Formato PDF</span>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
           )}
         </div>
       </main>
+
+      <style jsx>{`
+        @keyframes slideIn {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes float {
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+          100% { transform: translateY(0px); }
+        }
+        .spinner-mini {
+          width: 24px;
+          height: 24px;
+          border: 3px solid rgba(0,0,0,0.1);
+          border-top-color: var(--ucc-blue);
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        .db-action-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 12px 25px rgba(0,0,0,0.08) !important;
+        }
+      `}</style>
+      
       <Footer />
     </div>
   );
