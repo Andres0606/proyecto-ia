@@ -59,6 +59,8 @@ export default function Dashboard() {
   const [uploading, setUploading] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const videoRef = React.useRef<HTMLVideoElement>(null);
+  const avatarInputRef = React.useRef<HTMLInputElement>(null);
+  const cvInputRef = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -69,7 +71,6 @@ export default function Dashboard() {
     if (savedUser) {
       const userData = JSON.parse(savedUser);
       setUserId(userData.id);
-      // Intentamos sacar la foto de varias fuentes posibles
       setUserPhoto(userData.foto_url || userData.profile?.foto_url || userData.user_metadata?.avatar_url || null);
       const name = userData.profile?.nombre_completo || userData.user_metadata?.full_name || 'Egresado';
       setUserName(name.split(' ')[0]);
@@ -98,7 +99,6 @@ export default function Dashboard() {
         alert(type === 'avatar' ? '¡Foto de perfil actualizada!' : '¡Hoja de vida subida con éxito!');
         if (type === 'avatar') {
           setUserPhoto(data.url);
-          // Actualizar localStorage para que persista el cambio sin recargar todo
           const savedUser = JSON.parse(localStorage.getItem('ucc_user') || '{}');
           savedUser.foto_url = data.url;
           localStorage.setItem('ucc_user', JSON.stringify(savedUser));
@@ -139,7 +139,6 @@ export default function Dashboard() {
         if (blob) {
           const file = new File([blob], "capture.jpg", { type: "image/jpeg" });
           handleFileUpload(file, 'avatar');
-          // Detener la cámara después de capturar
           const stream = videoRef.current?.srcObject as MediaStream;
           stream?.getTracks().forEach(track => track.stop());
         }
@@ -171,14 +170,14 @@ export default function Dashboard() {
       {/* Inputs ocultos para subida */}
       <input 
         type="file" 
-        id="upload-avatar" 
+        ref={avatarInputRef}
         hidden 
         accept="image/*" 
         onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'avatar')} 
       />
       <input 
         type="file" 
-        id="upload-cv" 
+        ref={cvInputRef}
         hidden 
         accept=".pdf" 
         onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'cv')} 
@@ -188,8 +187,11 @@ export default function Dashboard() {
         {/* Header Section */}
         <header className="db-header">
           <div className="db-header__welcome" style={{ display: 'flex', alignItems: 'center', gap: '25px' }}>
-            {/* Foto de Perfil / Avatar */}
-            <div style={{ position: 'relative' }}>
+            {/* Foto de Perfil / Avatar clickable */}
+            <div 
+              style={{ position: 'relative', cursor: 'pointer' }}
+              onClick={() => avatarInputRef.current?.click()}
+            >
               <div style={{ 
                 width: '90px', 
                 height: '90px', 
@@ -202,17 +204,17 @@ export default function Dashboard() {
                 color: 'white',
                 border: '3px solid white',
                 boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
-                overflow: 'hidden'
-              }}>
+                overflow: 'hidden',
+                transition: 'transform 0.3s ease'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              >
                 {!userPhoto && userName[0]}
               </div>
-              <button 
-                onClick={() => document.getElementById('upload-avatar')?.click()}
-                style={{ position: 'absolute', bottom: '0', right: '0', background: 'var(--ucc-red)', border: 'none', borderRadius: '50%', width: '28px', height: '28px', color: 'white', cursor: 'pointer', fontSize: '0.8rem' }}
-                title="Subir foto"
-              >
+              <div style={{ position: 'absolute', bottom: '0', right: '0', background: 'var(--ucc-red)', border: 'none', borderRadius: '50%', width: '28px', height: '28px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', boxShadow: '0 2px 5px rgba(0,0,0,0.2)' }}>
                 📷
-              </button>
+              </div>
             </div>
 
             <div>
@@ -220,18 +222,54 @@ export default function Dashboard() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                 <h1>{greeting}, {userName}</h1>
               </div>
-              <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '12px' }}>
                 <button 
                   onClick={startCamera}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--ucc-blue)', textDecoration: 'underline', padding: 0 }}
+                  style={{ 
+                    background: 'var(--ucc-blue)', 
+                    color: 'white', 
+                    border: 'none', 
+                    borderRadius: '20px', 
+                    padding: '6px 15px', 
+                    fontSize: '0.85rem', 
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    fontWeight: '600'
+                  }}
                 >
-                  Tomar foto con cámara
+                  📷 Cámara
+                </button>
+                <button 
+                  onClick={() => avatarInputRef.current?.click()}
+                  style={{ 
+                    background: '#f1f5f9', 
+                    color: 'var(--ucc-navy)', 
+                    border: '1px solid #e2e8f0', 
+                    borderRadius: '20px', 
+                    padding: '6px 15px', 
+                    fontSize: '0.85rem', 
+                    cursor: 'pointer',
+                    fontWeight: '600'
+                  }}
+                >
+                  📁 Subir foto
                 </button>
                 <button 
                   onClick={handleViewResume}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--ucc-green)', textDecoration: 'underline', padding: 0 }}
+                  style={{ 
+                    background: 'var(--ucc-green)', 
+                    color: 'var(--ucc-navy)', 
+                    border: 'none', 
+                    borderRadius: '20px', 
+                    padding: '6px 15px', 
+                    fontSize: '0.85rem', 
+                    cursor: 'pointer',
+                    fontWeight: '700'
+                  }}
                 >
-                  📄 Ver CV actual
+                  📄 Ver CV Actual
                 </button>
               </div>
             </div>
@@ -241,11 +279,11 @@ export default function Dashboard() {
         {/* Modal de Cámara Estilizado */}
         {showCamera && (
           <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,40,85,0.9)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 2000, backdropFilter: 'blur(5px)' }}>
-            <div style={{ background: 'white', padding: '20px', borderRadius: '20px', boxShadow: '0 20px 50px rgba(0,0,0,0.3)', textAlign: 'center' }}>
+            <div style={{ background: 'white', padding: '20px', borderRadius: '20px', boxShadow: '0 20px 50px rgba(0,0,0,0.3)', textAlign: 'center', maxWidth: '90%' }}>
               <h2 style={{ marginBottom: '15px', color: 'var(--ucc-navy)' }}>Captura tu mejor perfil</h2>
               <video ref={videoRef} autoPlay style={{ width: '100%', maxWidth: '400px', borderRadius: '15px', marginBottom: '20px', transform: 'scaleX(-1)' }} />
               <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
-                <button onClick={capturePhoto} className="btn" style={{ background: 'var(--ucc-green)', color: 'white', padding: '10px 30px' }}>
+                <button onClick={capturePhoto} className="btn" style={{ background: 'var(--ucc-green)', color: 'var(--ucc-navy)', padding: '10px 30px', fontWeight: 'bold' }}>
                   {uploading ? 'Subiendo...' : '📸 Capturar'}
                 </button>
                 <button onClick={() => setShowCamera(false)} className="btn" style={{ background: 'var(--ucc-red)', color: 'white', padding: '10px 30px' }}>
@@ -294,7 +332,7 @@ export default function Dashboard() {
                     href={isCV ? undefined : action.link} 
                     className="db-action-card" 
                     style={{ textDecoration: 'none', cursor: 'pointer' }}
-                    onClick={isCV ? () => document.getElementById('upload-cv')?.click() : undefined}
+                    onClick={isCV ? () => cvInputRef.current?.click() : undefined}
                   >
                     <div className="db-action-card__icon">{action.icon}</div>
                     <h3>{action.title}</h3>
