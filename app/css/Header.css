@@ -12,6 +12,10 @@
   backdrop-filter: blur(14px);
   box-shadow: 0 1px 0 rgba(0, 40, 85, 0.08);
   transition: box-shadow 0.25s ease;
+  font-family: 'DM Sans', sans-serif;
+  line-height: 1.5;
+  font-size: 16px;
+  letter-spacing: normal;
 }
 
 .header--scrolled {

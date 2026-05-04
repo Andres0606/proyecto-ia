@@ -6,6 +6,9 @@
   background: #002855;
   border-top: 4px solid #c8102e;
   font-family: 'DM Sans', 'Segoe UI', sans-serif;
+  line-height: 1.5;
+  font-size: 16px;
+  letter-spacing: normal;
 }
 
 .footer__inner {
