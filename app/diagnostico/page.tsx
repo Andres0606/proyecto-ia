@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "../Components/header";
 import Footer from "../Components/footer";
 import "../css/Diagnostico/diagnostico.css";
@@ -149,6 +149,30 @@ function PillGroup({ label, options, value, onChange }: { label: string; options
 
 function ResultCard({ resultado }: { resultado: ResultadoAPI }) {
   const { score, cssClass, label, tipsKey, details } = getPredictionData(resultado);
+  const [displayScore, setDisplayScore] = useState(0);
+
+  useEffect(() => {
+    let start = 0;
+    const duration = 1000;
+    const startTime = performance.now();
+    
+    const animate = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // easeOutQuart
+      const easeProgress = 1 - Math.pow(1 - progress, 4);
+      
+      setDisplayScore(Math.floor(easeProgress * score));
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+    
+    requestAnimationFrame(animate);
+  }, [score]);
+
   const dashoffset = CIRCUMFERENCE * (1 - score / 100);
 
   return (
@@ -171,7 +195,7 @@ function ResultCard({ resultado }: { resultado: ResultadoAPI }) {
                 strokeDashoffset={dashoffset}
               />
             </svg>
-            <div className="diag-score__number">{score}<small>% Confianza</small></div>
+            <div className="diag-score__number">{displayScore}<small>% Confianza</small></div>
           </div>
           <span className={`diag-score__label diag-score__label--${cssClass}`}>{label}</span>
           

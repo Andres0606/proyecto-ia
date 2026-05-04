@@ -64,13 +64,25 @@ const PASOS = [
 
 // ── Hero ──────────────────────────────────────────────────────────────────────
 function Hero() {
+  const [scrollOp, setScrollOp] = useState(1);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      const newOpacity = Math.max(1 - scrollY / 300, 0);
+      setScrollOp(newOpacity);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <section className="hero">
       <div className="hero__bg-grid" />
       <div className="hero__blob hero__blob--1" />
       <div className="hero__blob hero__blob--2" />
       <div className="hero__content hero__content--centered">
-        <h1 className="hero__title">
+        <h1 className="hero__title" style={{ opacity: scrollOp, transition: 'opacity 0.1s' }}>
           Tu carrera profesional<br />
           <span className="hero__title-accent">empieza aquí.</span>
         </h1>

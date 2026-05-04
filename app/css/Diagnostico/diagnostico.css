@@ -82,7 +82,15 @@ body {
    FORM SECTION
    ══════════════════════════════════════════════════════ */
 .diag-form-section { padding: 4rem 2rem 5rem; background: var(--gray-light); }
-.diag-form-wrap { max-width: 900px; margin: 0 auto; }
+.diag-form-wrap {
+  max-width: 900px;
+  margin: 0 auto;
+  background: var(--white);
+  padding: 2.5rem;
+  border-radius: 24px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+  border: 1px solid #e2e8f0;
+}
 
 /* ── Section card ── */
 .diag-card {

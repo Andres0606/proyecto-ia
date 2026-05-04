@@ -51,10 +51,10 @@ export default function Header() {
     <nav className={`header ${scrolled ? "header--scrolled" : ""}`}>
       <div className="header__inner">
         {/* Brand */}
-        <div className="header__brand">
+        <a href="/" className="header__brand" style={{ textDecoration: 'none', color: 'inherit' }}>
           <span className="header__logo">UCC</span>
           <span className="header__brand-text">Portal del Egresado</span>
-        </div>
+        </a>
 
         {/* Links */}
         <ul className={`header__links ${menuOpen ? "header__links--open" : ""}`}>

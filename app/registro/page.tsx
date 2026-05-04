@@ -165,14 +165,10 @@ function StepRol({
 
 // ── Step 2: Personal Data ────────────────────────────────────────────────────
 function StepDatosPersonales({
-  showPw,
-  setShowPw,
   onBack,
   onNext,
   isLastStep,
 }: {
-  showPw: boolean;
-  setShowPw: (v: boolean) => void;
   onBack: () => void;
   onNext: () => void;
   isLastStep: boolean;
@@ -263,22 +259,12 @@ function StepDatosPersonales({
           <label className="auth-field__label" htmlFor="reg-password">
             Contraseña
           </label>
-          <div className="auth-field__password-wrap">
-            <input
-              id="reg-password"
-              className="auth-field__input"
-              type={showPw ? "text" : "password"}
-              placeholder="Mínimo 8 caracteres"
-            />
-            <button
-              type="button"
-              className="auth-field__toggle-pw"
-              onClick={() => setShowPw(!showPw)}
-              aria-label={showPw ? "Ocultar" : "Mostrar"}
-            >
-              {showPw ? "Ocultar" : "Mostrar"}
-            </button>
-          </div>
+          <input
+            id="reg-password"
+            className="auth-field__input"
+            type="password"
+            placeholder="Mínimo 8 caracteres"
+          />
         </div>
 
         {/* Confirmar contraseña */}
@@ -291,6 +277,7 @@ function StepDatosPersonales({
             className="auth-field__input"
             type="password"
             placeholder="Repite tu contraseña"
+            onPaste={(e) => e.preventDefault()}
           />
         </div>
 
@@ -420,7 +407,6 @@ function StepDatosEmpresa({
 export default function RegistroPage() {
   const [step, setStep] = useState(1);
   const [rol, setRol] = useState<RolType>(null);
-  const [showPw, setShowPw] = useState(false);
 
   const totalSteps = rol === "empresa" ? 3 : 2;
   const isLastPersonalStep = rol !== "empresa";
@@ -478,8 +464,6 @@ export default function RegistroPage() {
 
         {step === 2 && (
           <StepDatosPersonales
-            showPw={showPw}
-            setShowPw={setShowPw}
             onBack={handleBack}
             onNext={isLastPersonalStep ? handleSubmit : handleNext}
             isLastStep={isLastPersonalStep}

@@ -590,12 +590,14 @@ body {
 
 .faq-item__answer {
   max-height: 0;
+  opacity: 0;
   overflow: hidden;
-  transition: max-height 0.35s ease, padding 0.35s ease;
+  transition: max-height 0.35s ease, padding 0.35s ease, opacity 0.35s ease;
 }
 
 .faq-item__answer--open {
   max-height: 300px;
+  opacity: 1;
   padding: 0 22px 18px;
 }
 
@@ -610,7 +612,7 @@ body {
    ══════════════════════════════════════════════════════ */
 .planes-cta {
   padding: 5rem 2rem;
-  background: var(--navy-mid);
+  background: var(--white);
   position: relative;
   overflow: hidden;
   text-align: center;
@@ -637,14 +639,14 @@ body {
 .planes-cta__title {
   font-size: clamp(1.6rem, 3vw, 2.2rem);
   font-weight: 800;
-  color: var(--white);
+  color: var(--navy);
   margin-bottom: 1rem;
   line-height: 1.2;
 }
 
 .planes-cta__sub {
   font-size: 1rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--gray-dark);
   margin-bottom: 2rem;
   line-height: 1.65;
 }
@@ -686,13 +688,13 @@ body {
 
 .planes-cta__btn--ghost {
   background: transparent;
-  color: var(--white);
-  border-color: rgba(255, 255, 255, 0.3);
+  color: var(--navy);
+  border-color: rgba(10, 22, 40, 0.3);
 }
 
 .planes-cta__btn--ghost:hover {
-  border-color: var(--white);
-  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--navy);
+  background: rgba(10, 22, 40, 0.06);
   transform: translateY(-2px);
 }
 
