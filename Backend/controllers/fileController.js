@@ -122,12 +122,34 @@ const getResumeUrl = async (req, res) => {
       return res.status(404).json({ success: false, message: 'No se encontró una hoja de vida para este usuario.' });
     }
 
+    // Si la URL ya es un enlace completo, retornarla directamente
+    if (user.cv_url.startsWith('http')) {
+      return res.status(200).json({
+        success: true,
+        url: user.cv_url
+      });
+    }
+
     // 2. Crear una Signed URL (enlace temporal de 60 segundos)
     const { data, error } = await supabase.storage
       .from('hojas-de-vida')
       .createSignedUrl(user.cv_url, 60); // 60 segundos de validez
 
-    if (error) throw error;
+    if (error) {
+      console.error('⚠️ Error al crear Signed URL (¿Bucket público? Intentando getPublicUrl):', error.message);
+      // Fallback: intentar obtener la URL pública si la Signed URL falla
+      const { data: publicData } = supabase.storage
+        .from('hojas-de-vida')
+        .getPublicUrl(user.cv_url);
+        
+      if (publicData && publicData.publicUrl) {
+         return res.status(200).json({
+           success: true,
+           url: publicData.publicUrl
+         });
+      }
+      throw error;
+    }
 
     return res.status(200).json({
       success: true,
@@ -136,7 +158,7 @@ const getResumeUrl = async (req, res) => {
 
   } catch (error) {
     console.error('💥 Error en getResumeUrl:', error.message);
-    return res.status(500).json({ success: false, message: 'Error al generar el enlace del CV.' });
+    return res.status(500).json({ success: false, message: 'Error al generar el enlace del CV: ' + error.message });
   }
 };
 
