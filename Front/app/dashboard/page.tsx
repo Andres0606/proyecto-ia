@@ -54,9 +54,12 @@ function DashboardGauge({ pct }: { pct: number }) {
 export default function Dashboard() {
   const [greeting, setGreeting] = useState('Buenos días');
   const [userName, setUserName] = useState('Egresado');
+  const [userPhoto, setUserPhoto] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
-  
+  const [showCamera, setShowCamera] = useState(false);
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+
   useEffect(() => {
     const hour = new Date().getHours();
     if (hour >= 12 && hour < 18) setGreeting('Buenas tardes');
@@ -66,14 +69,15 @@ export default function Dashboard() {
     if (savedUser) {
       const userData = JSON.parse(savedUser);
       setUserId(userData.id);
+      // Intentamos sacar la foto de varias fuentes posibles
+      setUserPhoto(userData.foto_url || userData.profile?.foto_url || userData.user_metadata?.avatar_url || null);
       const name = userData.profile?.nombre_completo || userData.user_metadata?.full_name || 'Egresado';
       setUserName(name.split(' ')[0]);
     }
   }, []);
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'cv') => {
-    const file = e.target.files?.[0];
-    if (!file || !userId) return;
+  const handleFileUpload = async (file: File, type: 'avatar' | 'cv') => {
+    if (!userId) return;
 
     setUploading(true);
     const formData = new FormData();
@@ -93,8 +97,11 @@ export default function Dashboard() {
       if (data.success) {
         alert(type === 'avatar' ? '¡Foto de perfil actualizada!' : '¡Hoja de vida subida con éxito!');
         if (type === 'avatar') {
-          // Actualizar localmente si es necesario
-          window.location.reload(); 
+          setUserPhoto(data.url);
+          // Actualizar localStorage para que persista el cambio sin recargar todo
+          const savedUser = JSON.parse(localStorage.getItem('ucc_user') || '{}');
+          savedUser.foto_url = data.url;
+          localStorage.setItem('ucc_user', JSON.stringify(savedUser));
         }
       } else {
         throw new Error(data.message);
@@ -103,6 +110,40 @@ export default function Dashboard() {
       alert("Error al subir archivo: " + err.message);
     } finally {
       setUploading(false);
+      setShowCamera(false);
+    }
+  };
+
+  const startCamera = async () => {
+    setShowCamera(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (err) {
+      alert("No se pudo acceder a la cámara. Por favor verifica los permisos.");
+      setShowCamera(false);
+    }
+  };
+
+  const capturePhoto = () => {
+    if (videoRef.current) {
+      const canvas = document.createElement('canvas');
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx?.drawImage(videoRef.current, 0, 0);
+      
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const file = new File([blob], "capture.jpg", { type: "image/jpeg" });
+          handleFileUpload(file, 'avatar');
+          // Detener la cámara después de capturar
+          const stream = videoRef.current?.srcObject as MediaStream;
+          stream?.getTracks().forEach(track => track.stop());
+        }
+      }, 'image/jpeg');
     }
   };
 
@@ -133,41 +174,87 @@ export default function Dashboard() {
         id="upload-avatar" 
         hidden 
         accept="image/*" 
-        onChange={(e) => handleFileUpload(e, 'avatar')} 
+        onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'avatar')} 
       />
       <input 
         type="file" 
         id="upload-cv" 
         hidden 
         accept=".pdf" 
-        onChange={(e) => handleFileUpload(e, 'cv')} 
+        onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'cv')} 
       />
 
       <main className="db-main" style={{ paddingTop: '100px' }}>
         {/* Header Section */}
         <header className="db-header">
-          <div className="db-header__welcome">
-            <p className="db-header__date">{new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-              <h1>{greeting}, {userName}</h1>
-              <div style={{ display: 'flex', gap: '10px' }}>
+          <div className="db-header__welcome" style={{ display: 'flex', alignItems: 'center', gap: '25px' }}>
+            {/* Foto de Perfil / Avatar */}
+            <div style={{ position: 'relative' }}>
+              <div style={{ 
+                width: '90px', 
+                height: '90px', 
+                borderRadius: '50%', 
+                background: userPhoto ? `url(${userPhoto}) center/cover` : 'var(--ucc-navy)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '2rem',
+                color: 'white',
+                border: '3px solid white',
+                boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+                overflow: 'hidden'
+              }}>
+                {!userPhoto && userName[0]}
+              </div>
+              <button 
+                onClick={() => document.getElementById('upload-avatar')?.click()}
+                style={{ position: 'absolute', bottom: '0', right: '0', background: 'var(--ucc-red)', border: 'none', borderRadius: '50%', width: '28px', height: '28px', color: 'white', cursor: 'pointer', fontSize: '0.8rem' }}
+                title="Subir foto"
+              >
+                📷
+              </button>
+            </div>
+
+            <div>
+              <p className="db-header__date">{new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                <h1>{greeting}, {userName}</h1>
+              </div>
+              <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
                 <button 
-                  onClick={() => document.getElementById('upload-avatar')?.click()}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--ucc-blue)', textDecoration: 'underline' }}
+                  onClick={startCamera}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--ucc-blue)', textDecoration: 'underline', padding: 0 }}
                 >
-                  {uploading ? 'Subiendo...' : 'Cambiar foto'}
+                  Tomar foto con cámara
                 </button>
                 <button 
                   onClick={handleViewResume}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--ucc-green)', textDecoration: 'underline' }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--ucc-green)', textDecoration: 'underline', padding: 0 }}
                 >
                   📄 Ver CV actual
                 </button>
               </div>
             </div>
-            <p>Aquí tienes el resumen de tu carrera hoy.</p>
           </div>
         </header>
+
+        {/* Modal de Cámara Estilizado */}
+        {showCamera && (
+          <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,40,85,0.9)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 2000, backdropFilter: 'blur(5px)' }}>
+            <div style={{ background: 'white', padding: '20px', borderRadius: '20px', boxShadow: '0 20px 50px rgba(0,0,0,0.3)', textAlign: 'center' }}>
+              <h2 style={{ marginBottom: '15px', color: 'var(--ucc-navy)' }}>Captura tu mejor perfil</h2>
+              <video ref={videoRef} autoPlay style={{ width: '100%', maxWidth: '400px', borderRadius: '15px', marginBottom: '20px', transform: 'scaleX(-1)' }} />
+              <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
+                <button onClick={capturePhoto} className="btn" style={{ background: 'var(--ucc-green)', color: 'white', padding: '10px 30px' }}>
+                  {uploading ? 'Subiendo...' : '📸 Capturar'}
+                </button>
+                <button onClick={() => setShowCamera(false)} className="btn" style={{ background: 'var(--ucc-red)', color: 'white', padding: '10px 30px' }}>
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="db-grid">
           {/* Main Hero Widget */}
