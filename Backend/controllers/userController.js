@@ -131,34 +131,41 @@ const loginUser = async (req, res) => {
 const getFullProfile = async (req, res) => {
   try {
     const { userId } = req.params;
-    console.log('🔍 Obteniendo perfil completo para userId:', userId);
+    console.log('🔍 Iniciando recuperación de perfil para:', userId);
 
-    const { data, error } = await supabase
+    // PASO 1: Obtener el usuario base
+    const { data: user, error: userError } = await supabase
       .from('users')
-      .select(`
-        *,
-        perfiles_usuarios (*)
-      `)
+      .select('*')
       .eq('id', userId)
       .single();
 
-    if (error) {
-      console.error('❌ Error de Supabase en getFullProfile:', error.message);
-      throw error;
-    }
-
-    if (!data) {
+    if (userError || !user) {
+      console.error('❌ Error obteniendo usuario:', userError?.message);
       return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
     }
 
-    // Mapeo inverso para el Frontend (Sincronización con Diagnóstico)
-    if (data.perfiles_usuarios && data.perfiles_usuarios.length > 0) {
-      const p = data.perfiles_usuarios[0];
+    // PASO 2: Obtener el perfil profesional por separado (Garantiza que no falle el join)
+    const { data: profileEntries, error: profileError } = await supabase
+      .from('perfiles_usuarios')
+      .select('*')
+      .eq('user_id', userId);
+
+    if (profileError) {
+      console.error('⚠️ Error obteniendo perfiles_usuarios:', profileError.message);
+    }
+
+    // Unir los datos
+    const profileData = user;
+    profileData.perfiles_usuarios = profileEntries || [];
+
+    // Mapeo inverso (Sincronización con Diagnóstico)
+    if (profileData.perfiles_usuarios.length > 0) {
+      const p = profileData.perfiles_usuarios[0];
       const estratoReverse = { 1: "Uno", 2: "Dos", 3: "Tres", 4: "Cuatro", 5: "Cinco", 6: "Seis" };
       const hijosReverse = { 0: "Cero", 1: "Uno", 2: "Dos", 3: "Tres", 4: "Cuatro", 5: "Cinco" };
       const ingresoReverse = { 1: "1 SML o menos", 2.5: "2-3 SML", 4: "3-5 SML", 6: "5 SML o mas" };
 
-      // Aplicar mapeo solo si existe el valor en el diccionario, de lo contrario mantener original o string
       if (p.estrato !== null) p.estrato = estratoReverse[p.estrato] || String(p.estrato);
       if (p.numero_hijos !== null) p.numero_hijos = hijosReverse[p.numero_hijos] || String(p.numero_hijos);
       if (p.ingreso_mensual !== null) p.ingreso_mensual = ingresoReverse[p.ingreso_mensual] || String(p.ingreso_mensual);
@@ -167,12 +174,10 @@ const getFullProfile = async (req, res) => {
         p.emprendimiento = p.emprendimiento ? "Si" : "No";
       }
       
-      console.log('✅ Perfil profesional mapeado:', p);
-    } else {
-      console.log('⚠️ El usuario no tiene entrada en perfiles_usuarios');
+      console.log('✅ Datos profesionales encontrados y mapeados:', p);
     }
 
-    return res.status(200).json({ success: true, profile: data });
+    return res.status(200).json({ success: true, profile: profileData });
   } catch (error) {
     console.error('❌ Error crítico en getFullProfile:', error.message);
     return res.status(500).json({ success: false, message: error.message });
