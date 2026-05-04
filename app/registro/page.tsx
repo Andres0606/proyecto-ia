@@ -479,6 +479,7 @@ export default function RegistroPage() {
         data: {
           full_name: nombre,
           role: rol,
+          phone: formData.telefono,
         }
       }
     });
