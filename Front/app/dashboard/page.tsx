@@ -127,6 +127,15 @@ export default function Dashboard() {
     }
   };
 
+  const stopCamera = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach(track => track.stop());
+      videoRef.current.srcObject = null;
+    }
+    setShowCamera(false);
+  };
+
   const capturePhoto = () => {
     if (videoRef.current) {
       const canvas = document.createElement('canvas');
@@ -139,8 +148,7 @@ export default function Dashboard() {
         if (blob) {
           const file = new File([blob], "capture.jpg", { type: "image/jpeg" });
           handleFileUpload(file, 'avatar');
-          const stream = videoRef.current?.srcObject as MediaStream;
-          stream?.getTracks().forEach(track => track.stop());
+          stopCamera(); // Usamos la nueva función centralizada
         }
       }, 'image/jpeg');
     }
@@ -286,7 +294,7 @@ export default function Dashboard() {
                 <button onClick={capturePhoto} className="btn" style={{ background: 'var(--ucc-green)', color: 'var(--ucc-navy)', padding: '10px 30px', fontWeight: 'bold' }}>
                   {uploading ? 'Subiendo...' : '📸 Capturar'}
                 </button>
-                <button onClick={() => setShowCamera(false)} className="btn" style={{ background: 'var(--ucc-red)', color: 'white', padding: '10px 30px' }}>
+                <button onClick={stopCamera} className="btn" style={{ background: 'var(--ucc-red)', color: 'white', padding: '10px 30px' }}>
                   Cancelar
                 </button>
               </div>
