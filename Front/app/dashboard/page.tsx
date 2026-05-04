@@ -53,23 +53,34 @@ function DashboardGauge({ pct }: { pct: number }) {
 
 export default function Dashboard() {
   const [greeting, setGreeting] = useState('Buenos días');
+  const [userName, setUserName] = useState('Egresado');
   
   useEffect(() => {
+    // Saludo según la hora
     const hour = new Date().getHours();
     if (hour >= 12 && hour < 18) setGreeting('Buenas tardes');
     if (hour >= 18 || hour < 5) setGreeting('Buenas noches');
+
+    // Cargar nombre real del usuario
+    const savedUser = localStorage.getItem('ucc_user');
+    if (savedUser) {
+      const userData = JSON.parse(savedUser);
+      // Intentamos sacar el nombre del perfil o de la metadata de auth
+      const name = userData.profile?.nombre_completo || userData.user_metadata?.full_name || 'Egresado';
+      setUserName(name.split(' ')[0]);
+    }
   }, []);
 
   return (
     <div className="db-page">
       <Header />
       
-      <main className="db-main">
+      <main className="db-main" style={{ paddingTop: '100px' }}>
         {/* Header Section */}
         <header className="db-header">
           <div className="db-header__welcome">
-            <p className="db-header__date">Domingo, 4 de Mayo, 2026</p>
-            <h1>{greeting}, Andrés</h1>
+            <p className="db-header__date">{new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+            <h1>{greeting}, {userName}</h1>
             <p>Aquí tienes el resumen de tu carrera hoy.</p>
           </div>
         </header>

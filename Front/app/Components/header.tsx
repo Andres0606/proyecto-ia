@@ -62,7 +62,9 @@ export default function Header() {
                 border: '1px solid rgba(0, 102, 204, 0.2)',
                 transition: 'all 0.3s ease'
               }}>
-                Mi Perfil: <span style={{ color: 'var(--ucc-red)' }}>{user.profile?.nombre_completo.split(' ')[0]}</span>
+                Mi Perfil: <span style={{ color: 'var(--ucc-red)' }}>
+                  {(user.profile?.nombre_completo || user.user_metadata?.full_name || 'Egresado').split(' ')[0]}
+                </span>
               </a>
               
               {/* Botón Cerrar Sesión con Estilo */}
