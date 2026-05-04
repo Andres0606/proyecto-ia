@@ -18,24 +18,14 @@ const DIAG_OPTIONS = {
     "Medicina", "Psicologia", "Odontologia", "Enfermeria", "Ingenieria de Sistemas",
     "Medicina Veterinaria y Zootecnia", "Especializacion", "Tecnico Auxiliar en Enfermeria"
   ],
-  Genero: ["M", "F"],
-  Edad: [
-    { val: "1", label: "21 - 25" }, { val: "2", label: "26 - 30" }, { val: "3", label: "31 - 35" },
-    { val: "4", label: "36 - 40" }, { val: "5", label: "41 - 45" }, { val: "6", label: "46 - 50" },
-    { val: "7", label: "51 - 55" }, { val: "8", label: "56 - 60" }, { val: "9", label: "61 - 69" }
-  ],
   Estrato: ["Uno", "Dos", "Tres", "Cuatro", "Cinco", "Seis"],
   EstadoCivil: ["Casado", "Union libre", "Soltero", "Separado", "Viudo"],
   Hijos: ["Cero", "Uno", "Dos", "Tres", "Cuatro", "Cinco"],
   Formacion: ["Profesional", "Especialista", "Magister", "Doctorado", "Tecnico Profesional"],
   Emprendimiento: ["Si", "No"],
-  TipoOrg: ["Privada", "Publica", "Solidaria", "Trabaja Independiente"],
   Area: [
     "Servicios", "Administrativa", "Salud", "Financiera", "Industrial",
     "Economica", "Gestion Humana", "Educacion", "Comercial", "Contable", "Sistemas"
-  ],
-  Tamano: [
-    "10 o menos empleados", "11 y 50 empleados", "51 y 200 empleados", "Mas de 200 empleados"
   ],
   Sector: ["Servicios", "Comercial", "Industrial"],
   Ingreso: ["1 SML o menos", "2-3 SML", "3-5 SML", "5 SML o mas"]
@@ -54,9 +44,6 @@ export default function Dashboard() {
   const [fullProfile, setFullProfile] = useState<any>(null);
   const [formData, setFormData] = useState({
     telefono: '',
-    // Campos sincronizados con Diagnóstico
-    genero: '',
-    edad: '',
     nivel_formacion: '',
     programa_academico: '',
     estrato: '',
@@ -65,9 +52,7 @@ export default function Dashboard() {
     ingreso_mensual: '',
     sector_economico: '',
     area_desempeno: '',
-    emprendimiento: '',
-    tipo_organizacion: '',
-    tamano_organizacion: ''
+    emprendimiento: ''
   });
 
   const videoRef = React.useRef<HTMLVideoElement>(null);
@@ -100,8 +85,6 @@ export default function Dashboard() {
         const p = data.profile.perfiles_usuarios?.[0] || {};
         setFormData({
           telefono: data.profile.telefono || '',
-          genero: p.genero || '',
-          edad: p.edad || '',
           nivel_formacion: p.nivel_formacion || '',
           programa_academico: p.programa_academico || '',
           estrato: p.estrato || '',
@@ -110,9 +93,7 @@ export default function Dashboard() {
           ingreso_mensual: p.ingreso_mensual || '',
           sector_economico: p.sector_economico || '',
           area_desempeno: p.area_desempeno || '',
-          emprendimiento: p.emprendimiento || '',
-          tipo_organizacion: p.tipo_organizacion || '',
-          tamano_organizacion: p.tamano_organizacion || ''
+          emprendimiento: p.emprendimiento || ''
         });
       }
     } catch (err) {
@@ -131,8 +112,6 @@ export default function Dashboard() {
         body: JSON.stringify({
           userData: { telefono: formData.telefono },
           profileData: {
-            genero: formData.genero,
-            edad: formData.edad,
             nivel_formacion: formData.nivel_formacion,
             programa_academico: formData.programa_academico,
             estrato: formData.estrato,
@@ -141,16 +120,14 @@ export default function Dashboard() {
             ingreso_mensual: formData.ingreso_mensual,
             sector_economico: formData.sector_economico,
             area_desempeno: formData.area_desempeno,
-            emprendimiento: formData.emprendimiento,
-            tipo_organizacion: formData.tipo_organizacion,
-            tamano_organizacion: formData.tamano_organizacion
+            emprendimiento: formData.emprendimiento
           }
         }),
       });
 
       const data = await res.json();
       if (data.success) {
-        alert("¡Perfil sincronizado y actualizado!");
+        alert("¡Perfil actualizado con éxito!");
         setActiveSection('none');
         fetchFullProfile(userId);
       }
@@ -287,7 +264,7 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Sección: Datos Personales */}
+        {/* Datos Personales */}
         {activeSection === 'personal' && fullProfile && (
           <div className="db-card" style={{ marginBottom: '30px', padding: '30px', animation: 'fadeIn 0.3s' }}>
             <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '25px', borderBottom: '2px solid #f1f5f9' }}>👤 Datos Personales</h2>
@@ -313,31 +290,16 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Sección: Perfil Profesional (Sincronizada con Diagnóstico) */}
+        {/* Perfil Profesional - SOLO CAMPOS DE LA BD */}
         {activeSection === 'professional' && fullProfile && (
           <div className="db-card" style={{ marginBottom: '30px', padding: '30px', animation: 'fadeIn 0.3s' }}>
-            <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '25px', borderBottom: '2px solid #f1f5f9' }}>💼 Perfil Profesional y Socioeconómico (IA UCC)</h2>
-            
+            <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '25px', borderBottom: '2px solid #f1f5f9' }}>💼 Perfil Profesional</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
               <div className="form-group">
-                <label style={{ fontSize: '0.8rem' }}>Programa</label>
+                <label style={{ fontSize: '0.8rem' }}>Programa Académico</label>
                 <select value={formData.programa_academico} onChange={(e) => setFormData({...formData, programa_academico: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
                   <option value="">Seleccione...</option>
                   {DIAG_OPTIONS.Programa.map(o => <option key={o} value={o}>{o}</option>)}
-                </select>
-              </div>
-              <div className="form-group">
-                <label style={{ fontSize: '0.8rem' }}>Género</label>
-                <select value={formData.genero} onChange={(e) => setFormData({...formData, genero: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                  <option value="">Seleccione...</option>
-                  {DIAG_OPTIONS.Genero.map(o => <option key={o} value={o}>{o}</option>)}
-                </select>
-              </div>
-              <div className="form-group">
-                <label style={{ fontSize: '0.8rem' }}>Rango de Edad</label>
-                <select value={formData.edad} onChange={(e) => setFormData({...formData, edad: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                  <option value="">Seleccione...</option>
-                  {DIAG_OPTIONS.Edad.map(o => <option key={o.val} value={o.val}>{o.label}</option>)}
                 </select>
               </div>
               <div className="form-group">
@@ -369,13 +331,6 @@ export default function Dashboard() {
                 </select>
               </div>
               <div className="form-group">
-                <label style={{ fontSize: '0.8rem' }}>Tipo de Organización</label>
-                <select value={formData.tipo_organizacion} onChange={(e) => setFormData({...formData, tipo_organizacion: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                  <option value="">Seleccione...</option>
-                  {DIAG_OPTIONS.TipoOrg.map(o => <option key={o} value={o}>{o}</option>)}
-                </select>
-              </div>
-              <div className="form-group">
                 <label style={{ fontSize: '0.8rem' }}>Área de Desempeño</label>
                 <select value={formData.area_desempeno} onChange={(e) => setFormData({...formData, area_desempeno: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
                   <option value="">Seleccione...</option>
@@ -383,14 +338,7 @@ export default function Dashboard() {
                 </select>
               </div>
               <div className="form-group">
-                <label style={{ fontSize: '0.8rem' }}>Tamaño Organización</label>
-                <select value={formData.tamano_organizacion} onChange={(e) => setFormData({...formData, tamano_organizacion: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                  <option value="">Seleccione...</option>
-                  {DIAG_OPTIONS.Tamano.map(o => <option key={o} value={o}>{o}</option>)}
-                </select>
-              </div>
-              <div className="form-group">
-                <label style={{ fontSize: '0.8rem' }}>Sector</label>
+                <label style={{ fontSize: '0.8rem' }}>Sector Económico</label>
                 <select value={formData.sector_economico} onChange={(e) => setFormData({...formData, sector_economico: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
                   <option value="">Seleccione...</option>
                   {DIAG_OPTIONS.Sector.map(o => <option key={o} value={o}>{o}</option>)}
@@ -411,14 +359,7 @@ export default function Dashboard() {
                 </select>
               </div>
             </div>
-            <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ width: '100%', marginTop: '30px', padding: '15px', background: 'var(--ucc-navy)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>{loadingProfile ? 'Guardando...' : '💾 Sincronizar Perfil con IA UCC'}</button>
-          </div>
-        )}
-
-        {activeSection === 'apps' && (
-          <div className="db-card" style={{ marginBottom: '30px', padding: '30px', animation: 'fadeIn 0.3s', textAlign: 'center' }}>
-            <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '20px' }}>📨 Mis Postulaciones</h2>
-            <p style={{ color: '#64748b' }}>Aún no tienes postulaciones activas. ¡Explora la bolsa de empleo para comenzar!</p>
+            <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ width: '100%', marginTop: '30px', padding: '15px', background: 'var(--ucc-navy)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>{loadingProfile ? 'Guardando...' : '💾 Guardar Perfil Profesional'}</button>
           </div>
         )}
 
