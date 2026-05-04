@@ -18,10 +18,10 @@ export default function Footer() {
           <div className="footer__col">
             <h4 className="footer__col-title">Portal</h4>
             <ul>
-              <li><a href="#funciones">Funciones</a></li>
-              <li><a href="#como-funciona">¿Cómo funciona?</a></li>
-              <li><a href="#estadisticas">Estadísticas</a></li>
-              <li><a href="#testimonios">Testimonios</a></li>
+              <li><a href="/#funciones">Funciones</a></li>
+              <li><a href="/#como-funciona">¿Cómo funciona?</a></li>
+              <li><a href="/#estadisticas">Estadísticas</a></li>
+              <li><a href="/#testimonios">Testimonios</a></li>
             </ul>
           </div>
           <div className="footer__col">
