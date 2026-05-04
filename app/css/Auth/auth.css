@@ -14,7 +14,7 @@
 }
 
 :root {
-  --red: #c8102e;
+  --red: var(--ucc-green);
   --red-dark: #a50d25;
   --navy: #0a1628;
   --navy-mid: #0d2050;
@@ -532,7 +532,7 @@ body {
 }
 
 .auth-role-card__icon--egresado {
-  background: linear-gradient(135deg, #c8102e, #e63950);
+  background: linear-gradient(135deg, var(--ucc-blue), #5ac8ed);
 }
 
 .auth-role-card__icon--externo {

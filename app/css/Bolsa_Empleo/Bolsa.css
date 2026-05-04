@@ -165,7 +165,7 @@
 .be-searchbar__input:focus {
   border-color: var(--ucc-green);
   background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.09);
+  box-shadow: 0 0 0 3px rgba(0, 169, 224, 0.1);
 }
 
 .be-searchbar__city {
@@ -173,7 +173,7 @@
 }
 
 .be-searchbar__btn {
-  background: #c8102e;
+  background: var(--ucc-blue);
   color: #ffffff;
   border: none;
   border-radius: 10px;
@@ -186,7 +186,7 @@
 }
 
 .be-searchbar__btn:hover {
-  background: #a50d25;
+  background: var(--ucc-navy);
   transform: translateY(-1px);
 }
 
@@ -417,7 +417,7 @@
 
 .be-card:hover {
   border-color: var(--ucc-green);
-  box-shadow: 0 8px 28px rgba(200, 16, 46, 0.1);
+  box-shadow: 0 8px 28px rgba(0, 169, 224, 0.12);
   transform: translateY(-2px);
 }
 
@@ -467,7 +467,7 @@
 }
 
 .be-card--featured .be-card__logo {
-  background: linear-gradient(135deg, #0a1628, #1a3a7c);
+  background: linear-gradient(135deg, var(--ucc-blue), #5ac8ed);
 }
 
 .be-card__heading {
@@ -593,7 +593,7 @@
 }
 
 .be-card__apply {
-  background: #c8102e;
+  background: var(--ucc-blue);
   color: #ffffff;
   border: none;
   border-radius: 50px;
@@ -635,7 +635,7 @@
 }
 
 .be-empty__btn {
-  background: #c8102e;
+  background: var(--ucc-blue);
   color: #ffffff;
   border: none;
   border-radius: 50px;

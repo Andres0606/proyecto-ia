@@ -147,7 +147,7 @@
   font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #c8102e;
+  color: var(--ucc-green);
 }
 
 .header__dropdown-header p {
