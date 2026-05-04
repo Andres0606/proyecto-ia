@@ -5,8 +5,17 @@ export default async function TestSupabase() {
   const cookieStore = await cookies()
   const supabase = createClient(cookieStore)
 
-  // Test connection by fetching from 'todos' table
-  const { data: todos, error } = await supabase.from('todos').select()
+  // Test connection
+  let todos: any[] | null = [];
+  let error: any = null;
+
+  if (!supabase) {
+    error = { message: "Supabase no está configurado (variables de entorno faltantes)." };
+  } else {
+    const response = await supabase.from('todos').select();
+    todos = response.data;
+    error = response.error;
+  }
 
   return (
     <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>

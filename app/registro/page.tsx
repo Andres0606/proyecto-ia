@@ -465,6 +465,12 @@ export default function RegistroPage() {
     setLoading(true);
     setErrorMsg("");
 
+    if (!supabase) {
+      setErrorMsg("Error: Supabase no está configurado correctamente.");
+      setLoading(false);
+      return;
+    }
+
     // 1. Auth Signup
     const { data, error } = await supabase.auth.signUp({
       email,

@@ -7,11 +7,12 @@ export const createClient = (cookieStore: Awaited<ReturnType<typeof cookies>>) =
 
   if (!supabaseUrl || !supabaseKey) {
     console.warn("Supabase environment variables are missing in server context!");
+    return null;
   }
 
   return createServerClient(
-    supabaseUrl || "",
-    supabaseKey || "",
+    supabaseUrl,
+    supabaseKey,
     {
       cookies: {
         getAll() {
