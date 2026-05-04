@@ -128,4 +128,57 @@ const loginUser = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser };
+const getFullProfile = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const { data, error } = await supabase
+      .from('users')
+      .select(`
+        *,
+        perfiles_usuarios (*)
+      `)
+      .eq('id', userId)
+      .single();
+
+    if (error) throw error;
+
+    return res.status(200).json({ success: true, profile: data });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const updateProfile = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { userData, profileData } = req.body;
+
+    // 1. Actualizar tabla users (campos permitidos)
+    const { error: userError } = await supabase
+      .from('users')
+      .update({
+        telefono: userData.telefono,
+        // Agrega aquí otros campos editables de la tabla users si los hay
+      })
+      .eq('id', userId);
+
+    if (userError) throw userError;
+
+    // 2. Actualizar o Insertar en tabla perfiles_usuarios
+    const { error: profileError } = await supabase
+      .from('perfiles_usuarios')
+      .upsert({
+        user_id: userId,
+        ...profileData
+      }, { onConflict: 'user_id' });
+
+    if (profileError) throw profileError;
+
+    return res.status(200).json({ success: true, message: 'Perfil actualizado con éxito.' });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+module.exports = { registerUser, loginUser, getFullProfile, updateProfile };

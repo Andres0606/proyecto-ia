@@ -7,19 +7,18 @@ import '../css/Dashboard/dashboard.css';
 
 // Mock data for the dashboard
 const RECOMMENDED_JOBS = [
-  { id: 1, title: 'Analista de Datos Senior', company: 'TechFlow Solutions', time: 'hace 2 horas', logo: 'TF' },
-  { id: 2, title: 'Gestor de Proyectos Sociales', company: 'Fundación UCC', time: 'hace 5 horas', logo: 'FU' },
-  { id: 3, title: 'Ingeniero de Software (Fullstack)', company: 'Nexus Digital', time: 'hace 1 día', logo: 'ND' },
+  { id: 1, title: 'Analista de Datos Senior', company: 'TechFlow Solutions', logo: 'TF' },
+  { id: 2, title: 'Gestor de Proyectos Sociales', company: 'Fundación UCC', logo: 'FU' },
+  { id: 3, title: 'Ingeniero de Software (Fullstack)', company: 'Nexus Digital', logo: 'ND' },
 ];
 
 const QUICK_ACTIONS = [
-  { title: 'Nuevo Diagnóstico', icon: '📊', link: '/diagnostico' },
-  { title: 'Ver Bolsa de Empleo', icon: '💼', link: '/Bolsa_Empleo' },
+  { title: 'Editar Perfil', icon: '👤', link: '#' },
   { title: 'Actualizar CV', icon: '📄', link: '#' },
   { title: 'Mis Postulaciones', icon: '📨', link: '#' },
 ];
 
-// Simple Gauge Component for the dashboard
+// Simple Gauge Component
 const GAUGE_TOTAL = 251;
 function DashboardGauge({ pct }: { pct: number }) {
   const offset = GAUGE_TOTAL * (1 - pct / 100);
@@ -58,6 +57,23 @@ export default function Dashboard() {
   const [userId, setUserId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
+  const [activeSection, setActiveSection] = useState<'none' | 'profile' | 'applications'>('none');
+  const [loadingProfile, setLoadingProfile] = useState(false);
+  
+  const [fullProfile, setFullProfile] = useState<any>(null);
+  const [formData, setFormData] = useState({
+    telefono: '',
+    nivel_formacion: '',
+    programa_academico: '',
+    estrato: '',
+    estado_civil: '',
+    numero_hijos: '',
+    ingreso_mensual: '',
+    sector_economico: '',
+    area_desempeno: '',
+    emprendimiento: false
+  });
+
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const avatarInputRef = React.useRef<HTMLInputElement>(null);
   const cvInputRef = React.useRef<HTMLInputElement>(null);
@@ -74,26 +90,86 @@ export default function Dashboard() {
       setUserPhoto(userData.foto_url || userData.profile?.foto_url || userData.user_metadata?.avatar_url || null);
       const name = userData.profile?.nombre_completo || userData.user_metadata?.full_name || 'Egresado';
       setUserName(name.split(' ')[0]);
+      fetchFullProfile(userData.id);
     }
   }, []);
 
+  const fetchFullProfile = async (id: string) => {
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
+      const res = await fetch(`${backendUrl}/api/users/profile/${id}`);
+      const data = await res.json();
+      if (data.success) {
+        setFullProfile(data.profile);
+        const p = data.profile.perfiles_usuarios?.[0] || {};
+        setFormData({
+          telefono: data.profile.telefono || '',
+          nivel_formacion: p.nivel_formacion || '',
+          programa_academico: p.programa_academico || '',
+          estrato: p.estrato?.toString() || '',
+          estado_civil: p.estado_civil || '',
+          numero_hijos: p.numero_hijos?.toString() || '',
+          ingreso_mensual: p.ingreso_mensual?.toString() || '',
+          sector_economico: p.sector_economico || '',
+          area_desempeno: p.area_desempeno || '',
+          emprendimiento: !!p.emprendimiento
+        });
+      }
+    } catch (err) {
+      console.error("Error cargando perfil completo:", err);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    if (!userId) return;
+    setLoadingProfile(true);
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
+      const res = await fetch(`${backendUrl}/api/users/profile/${userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userData: { telefono: formData.telefono },
+          profileData: {
+            nivel_formacion: formData.nivel_formacion,
+            programa_academico: formData.programa_academico,
+            estrato: parseInt(formData.estrato) || 0,
+            estado_civil: formData.estado_civil,
+            numero_hijos: parseInt(formData.numero_hijos) || 0,
+            ingreso_mensual: parseFloat(formData.ingreso_mensual) || 0,
+            sector_economico: formData.sector_economico,
+            area_desempeno: formData.area_desempeno,
+            emprendimiento: formData.emprendimiento
+          }
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        alert("¡Perfil actualizado con éxito!");
+        setActiveSection('none');
+        fetchFullProfile(userId);
+      } else {
+        throw new Error(data.message);
+      }
+    } catch (err: any) {
+      alert("Error al guardar: " + err.message);
+    } finally {
+      setLoadingProfile(false);
+    }
+  };
+
   const handleFileUpload = async (file: File, type: 'avatar' | 'cv') => {
     if (!userId) return;
-
     setUploading(true);
-    const formData = new FormData();
-    formData.append(type === 'avatar' ? 'image' : 'cv', file);
-    formData.append('userId', userId);
+    const formDataFile = new FormData();
+    formDataFile.append(type === 'avatar' ? 'image' : 'cv', file);
+    formDataFile.append('userId', userId);
 
     try {
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
       const endpoint = type === 'avatar' ? '/api/users/upload-avatar' : '/api/users/upload-cv';
-      
-      const res = await fetch(`${backendUrl}${endpoint}`, {
-        method: 'POST',
-        body: formData,
-      });
-
+      const res = await fetch(`${backendUrl}${endpoint}`, { method: 'POST', body: formDataFile });
       const data = await res.json();
       if (data.success) {
         alert(type === 'avatar' ? '¡Foto de perfil actualizada!' : '¡Hoja de vida subida con éxito!');
@@ -103,26 +179,11 @@ export default function Dashboard() {
           savedUser.foto_url = data.url;
           localStorage.setItem('ucc_user', JSON.stringify(savedUser));
         }
-      } else {
-        throw new Error(data.message);
       }
     } catch (err: any) {
-      alert("Error al subir archivo: " + err.message);
+      alert("Error al subir: " + err.message);
     } finally {
       setUploading(false);
-      setShowCamera(false);
-    }
-  };
-
-  const startCamera = async () => {
-    setShowCamera(true);
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
-    } catch (err) {
-      alert("No se pudo acceder a la cámara. Por favor verifica los permisos.");
       setShowCamera(false);
     }
   };
@@ -136,19 +197,27 @@ export default function Dashboard() {
     setShowCamera(false);
   };
 
+  const startCamera = async () => {
+    setShowCamera(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      if (videoRef.current) videoRef.current.srcObject = stream;
+    } catch (err) {
+      alert("Error cámara.");
+      setShowCamera(false);
+    }
+  };
+
   const capturePhoto = () => {
     if (videoRef.current) {
       const canvas = document.createElement('canvas');
       canvas.width = videoRef.current.videoWidth;
       canvas.height = videoRef.current.videoHeight;
-      const ctx = canvas.getContext('2d');
-      ctx?.drawImage(videoRef.current, 0, 0);
-      
+      canvas.getContext('2d')?.drawImage(videoRef.current, 0, 0);
       canvas.toBlob((blob) => {
         if (blob) {
-          const file = new File([blob], "capture.jpg", { type: "image/jpeg" });
-          handleFileUpload(file, 'avatar');
-          stopCamera(); // Usamos la nueva función centralizada
+          handleFileUpload(new File([blob], "capture.jpg", { type: "image/jpeg" }), 'avatar');
+          stopCamera();
         }
       }, 'image/jpeg');
     }
@@ -160,237 +229,126 @@ export default function Dashboard() {
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
       const res = await fetch(`${backendUrl}/api/users/get-cv-url/${userId}`);
       const data = await res.json();
-      
-      if (data.success) {
-        window.open(data.url, '_blank');
-      } else {
-        alert(data.message);
-      }
+      if (data.success) window.open(data.url, '_blank');
+      else alert(data.message);
     } catch (err: any) {
-      alert("Error al obtener el CV: " + err.message);
+      alert("Error CV: " + err.message);
     }
   };
 
   return (
     <div className="db-page">
       <Header />
-      
-      {/* Inputs ocultos para subida */}
-      <input 
-        type="file" 
-        ref={avatarInputRef}
-        hidden 
-        accept="image/*" 
-        onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'avatar')} 
-      />
-      <input 
-        type="file" 
-        ref={cvInputRef}
-        hidden 
-        accept=".pdf" 
-        onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'cv')} 
-      />
+      <input type="file" ref={avatarInputRef} hidden accept="image/*" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'avatar')} />
+      <input type="file" ref={cvInputRef} hidden accept=".pdf" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'cv')} />
 
       <main className="db-main" style={{ paddingTop: '100px' }}>
-        {/* Header Section */}
         <header className="db-header">
           <div className="db-header__welcome" style={{ display: 'flex', alignItems: 'center', gap: '25px' }}>
-            {/* Foto de Perfil / Avatar clickable */}
-            <div 
-              style={{ position: 'relative', cursor: 'pointer' }}
-              onClick={() => avatarInputRef.current?.click()}
-            >
-              <div style={{ 
-                width: '90px', 
-                height: '90px', 
-                borderRadius: '50%', 
-                background: userPhoto ? `url(${userPhoto}) center/cover` : 'var(--ucc-navy)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '2rem',
-                color: 'white',
-                border: '3px solid white',
-                boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
-                overflow: 'hidden',
-                transition: 'transform 0.3s ease'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-              >
+            <div style={{ position: 'relative', cursor: 'pointer' }} onClick={() => avatarInputRef.current?.click()}>
+              <div style={{ width: '90px', height: '90px', borderRadius: '50%', background: userPhoto ? `url(${userPhoto}) center/cover` : 'var(--ucc-navy)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', color: 'white', border: '3px solid white', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
                 {!userPhoto && userName[0]}
               </div>
-              <div style={{ position: 'absolute', bottom: '0', right: '0', background: 'var(--ucc-red)', border: 'none', borderRadius: '50%', width: '28px', height: '28px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', boxShadow: '0 2px 5px rgba(0,0,0,0.2)' }}>
-                📷
-              </div>
+              <div style={{ position: 'absolute', bottom: '0', right: '0', background: 'var(--ucc-red)', borderRadius: '50%', width: '28px', height: '28px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem' }}>📷</div>
             </div>
-
             <div>
               <p className="db-header__date">{new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                <h1>{greeting}, {userName}</h1>
-              </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '12px' }}>
-                <button 
-                  onClick={startCamera}
-                  style={{ 
-                    background: 'var(--ucc-blue)', 
-                    color: 'white', 
-                    border: 'none', 
-                    borderRadius: '20px', 
-                    padding: '6px 15px', 
-                    fontSize: '0.85rem', 
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                    fontWeight: '600'
-                  }}
-                >
-                  📷 Cámara
-                </button>
-                <button 
-                  onClick={() => avatarInputRef.current?.click()}
-                  style={{ 
-                    background: '#f1f5f9', 
-                    color: 'var(--ucc-navy)', 
-                    border: '1px solid #e2e8f0', 
-                    borderRadius: '20px', 
-                    padding: '6px 15px', 
-                    fontSize: '0.85rem', 
-                    cursor: 'pointer',
-                    fontWeight: '600'
-                  }}
-                >
-                  📁 Subir foto
-                </button>
-                <button 
-                  onClick={handleViewResume}
-                  style={{ 
-                    background: 'var(--ucc-green)', 
-                    color: 'var(--ucc-navy)', 
-                    border: 'none', 
-                    borderRadius: '20px', 
-                    padding: '6px 15px', 
-                    fontSize: '0.85rem', 
-                    cursor: 'pointer',
-                    fontWeight: '700'
-                  }}
-                >
-                  📄 Ver CV Actual
-                </button>
+              <h1>{greeting}, {userName}</h1>
+              <div style={{ display: 'flex', gap: '10px', marginTop: '12px' }}>
+                <button onClick={startCamera} style={{ background: 'var(--ucc-blue)', color: 'white', border: 'none', borderRadius: '20px', padding: '6px 15px', cursor: 'pointer' }}>📷 Cámara</button>
+                <button onClick={() => avatarInputRef.current?.click()} style={{ background: '#f1f5f9', color: 'var(--ucc-navy)', border: '1px solid #e2e8f0', borderRadius: '20px', padding: '6px 15px', cursor: 'pointer' }}>📁 Subir foto</button>
+                <button onClick={handleViewResume} style={{ background: 'var(--ucc-green)', color: 'var(--ucc-navy)', border: 'none', borderRadius: '20px', padding: '6px 15px', cursor: 'pointer', fontWeight: 'bold' }}>📄 Ver CV Actual</button>
               </div>
             </div>
           </div>
         </header>
 
-        {/* Modal de Cámara Estilizado */}
         {showCamera && (
           <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,40,85,0.9)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 2000, backdropFilter: 'blur(5px)' }}>
-            <div style={{ background: 'white', padding: '20px', borderRadius: '20px', boxShadow: '0 20px 50px rgba(0,0,0,0.3)', textAlign: 'center', maxWidth: '90%' }}>
-              <h2 style={{ marginBottom: '15px', color: 'var(--ucc-navy)' }}>Captura tu mejor perfil</h2>
+            <div style={{ background: 'white', padding: '20px', borderRadius: '20px', textAlign: 'center', maxWidth: '90%' }}>
               <video ref={videoRef} autoPlay style={{ width: '100%', maxWidth: '400px', borderRadius: '15px', marginBottom: '20px', transform: 'scaleX(-1)' }} />
               <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
-                <button onClick={capturePhoto} className="btn" style={{ background: 'var(--ucc-green)', color: 'var(--ucc-navy)', padding: '12px 30px', fontWeight: '800', border: 'none', borderRadius: '10px', cursor: 'pointer' }}>
-                  {uploading ? 'Subiendo...' : '📸 Capturar'}
-                </button>
-                <button onClick={stopCamera} className="btn" style={{ background: '#f1f5f9', color: '#002855', padding: '12px 30px', fontWeight: '800', border: '1px solid #cbd5e1', borderRadius: '10px', cursor: 'pointer' }}>
-                  Cancelar
-                </button>
+                <button onClick={capturePhoto} className="btn" style={{ background: 'var(--ucc-green)', color: 'var(--ucc-navy)', padding: '12px 30px', fontWeight: '800' }}>{uploading ? '...' : '📸 Capturar'}</button>
+                <button onClick={stopCamera} className="btn" style={{ background: '#f1f5f9', color: '#002855', padding: '12px 30px' }}>Cancelar</button>
               </div>
             </div>
           </div>
         )}
 
+        <div className="db-actions" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', margin: '30px 0' }}>
+          {QUICK_ACTIONS.map((action, idx) => (
+            <div key={idx} className="db-action-card" style={{ cursor: 'pointer', padding: '20px', textAlign: 'center', background: 'white', borderRadius: '15px', border: (activeSection === 'profile' && action.title === 'Editar Perfil') ? '2px solid var(--ucc-blue)' : '1px solid #e2e8f0' }} 
+              onClick={() => {
+                if (action.title === 'Actualizar CV') cvInputRef.current?.click();
+                if (action.title === 'Editar Perfil') setActiveSection(activeSection === 'profile' ? 'none' : 'profile');
+                if (action.title === 'Mis Postulaciones') setActiveSection(activeSection === 'applications' ? 'none' : 'applications');
+              }}>
+              <div style={{ fontSize: '2.5rem', marginBottom: '10px' }}>{action.icon}</div>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--ucc-navy)' }}>{action.title}</h3>
+            </div>
+          ))}
+        </div>
+
+        {activeSection === 'profile' && fullProfile && (
+          <div className="db-card" style={{ marginBottom: '30px', padding: '30px' }}>
+            <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '25px', borderBottom: '2px solid #f1f5f9' }}>👤 Editar Perfil</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                <h3 style={{ fontSize: '1rem', color: '#64748b' }}>Datos de Cuenta (Protegidos)</h3>
+                <label style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Nombre Completo</label>
+                <input type="text" value={fullProfile.nombre_completo} disabled style={{ background: '#334155', color: '#cbd5e1', padding: '10px', borderRadius: '8px', border: 'none' }} />
+                <label style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Correo</label>
+                <input type="text" value={fullProfile.correo} disabled style={{ background: '#334155', color: '#cbd5e1', padding: '10px', borderRadius: '8px', border: 'none' }} />
+                <label style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Cédula</label>
+                <input type="text" value={fullProfile.cedula || 'N/A'} disabled style={{ background: '#334155', color: '#cbd5e1', padding: '10px', borderRadius: '8px', border: 'none' }} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                <h3 style={{ fontSize: '1rem', color: 'var(--ucc-blue)' }}>Datos Editables</h3>
+                <label style={{ fontSize: '0.8rem' }}>Teléfono</label>
+                <input type="text" value={formData.telefono} onChange={(e) => setFormData({...formData, telefono: e.target.value})} style={{ padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }} />
+                <label style={{ fontSize: '0.8rem' }}>Nivel de Formación</label>
+                <select value={formData.nivel_formacion} onChange={(e) => setFormData({...formData, nivel_formacion: e.target.value})} style={{ padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                  <option value="">Seleccione...</option>
+                  <option value="Pregrado">Pregrado</option><option value="Especialización">Especialización</option><option value="Maestría">Maestría</option><option value="Doctorado">Doctorado</option>
+                </select>
+                <label style={{ fontSize: '0.8rem' }}>Programa Académico</label>
+                <input type="text" value={formData.programa_academico} onChange={(e) => setFormData({...formData, programa_academico: e.target.value})} style={{ padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }} />
+              </div>
+            </div>
+            <div style={{ marginTop: '30px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', paddingTop: '20px', borderTop: '1px solid #f1f5f9' }}>
+              <div><label style={{ fontSize: '0.8rem' }}>Estrato</label><input type="number" value={formData.estrato} onChange={(e) => setFormData({...formData, estrato: e.target.value})} style={{ width: '100%', padding: '10px', border: '1px solid #e2e8f0', borderRadius: '8px' }} /></div>
+              <div><label style={{ fontSize: '0.8rem' }}>Estado Civil</label><select value={formData.estado_civil} onChange={(e) => setFormData({...formData, estado_civil: e.target.value})} style={{ width: '100%', padding: '10px', border: '1px solid #e2e8f0', borderRadius: '8px' }}><option value="">Sel...</option><option value="Soltero">Soltero/a</option><option value="Casado">Casado/a</option></select></div>
+              <div><label style={{ fontSize: '0.8rem' }}>Hijos</label><input type="number" value={formData.numero_hijos} onChange={(e) => setFormData({...formData, numero_hijos: e.target.value})} style={{ width: '100%', padding: '10px', border: '1px solid #e2e8f0', borderRadius: '8px' }} /></div>
+              <div><label style={{ fontSize: '0.8rem' }}>Ingreso</label><input type="number" value={formData.ingreso_mensual} onChange={(e) => setFormData({...formData, ingreso_mensual: e.target.value})} style={{ width: '100%', padding: '10px', border: '1px solid #e2e8f0', borderRadius: '8px' }} /></div>
+              <div><label style={{ fontSize: '0.8rem' }}>Sector</label><input type="text" value={formData.sector_economico} onChange={(e) => setFormData({...formData, sector_economico: e.target.value})} style={{ width: '100%', padding: '10px', border: '1px solid #e2e8f0', borderRadius: '8px' }} /></div>
+              <div><label style={{ fontSize: '0.8rem' }}>Área</label><input type="text" value={formData.area_desempeno} onChange={(e) => setFormData({...formData, area_desempeno: e.target.value})} style={{ width: '100%', padding: '10px', border: '1px solid #e2e8f0', borderRadius: '8px' }} /></div>
+              <div style={{ gridColumn: 'span 3', display: 'flex', alignItems: 'center', gap: '10px' }}><input type="checkbox" checked={formData.emprendimiento} onChange={(e) => setFormData({...formData, emprendimiento: e.target.checked})} /> <label>¿Emprendimiento?</label></div>
+            </div>
+            <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ width: '100%', marginTop: '30px', padding: '15px', background: 'var(--ucc-navy)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>{loadingProfile ? 'Guardando...' : '💾 Actualizar Perfil'}</button>
+          </div>
+        )}
+
         <div className="db-grid">
-          {/* Main Hero Widget */}
           <div className="db-card db-hero-widget">
             <div className="db-hero-widget__content">
               <span className="db-hero-widget__tag">Estatus Actual</span>
-              <h2>¡Tu perfil está destacando!</h2>
-              <p>
-                Tu última medición de estabilidad laboral es superior al promedio de tu sector. 
-                Sigue así y revisa las 3 nuevas ofertas que coinciden con tu perfil.
-              </p>
-              
-              <div className="db-progress" style={{ maxWidth: '300px' }}>
-                <div className="db-progress__label">
-                  <span>Perfil completo</span>
-                  <span>85%</span>
-                </div>
-                <div className="db-progress__bar">
-                  <div className="db-progress__fill" style={{ width: '85%' }}></div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="db-hero-widget__visual">
+              <h2>¡Perfil destacado!</h2>
               <DashboardGauge pct={78} />
             </div>
           </div>
-
-          {/* Quick Actions Grid */}
-          <div style={{ gridColumn: 'span 2' }}>
-            <div className="db-actions">
-              {QUICK_ACTIONS.map((action, idx) => {
-                const isCV = action.title === 'Actualizar CV';
-                return (
-                  <a 
-                    key={idx} 
-                    href={isCV ? undefined : action.link} 
-                    className="db-action-card" 
-                    style={{ textDecoration: 'none', cursor: 'pointer' }}
-                    onClick={isCV ? () => cvInputRef.current?.click() : undefined}
-                  >
-                    <div className="db-action-card__icon">{action.icon}</div>
-                    <h3>{action.title}</h3>
-                  </a>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Jobs Widget */}
           <div className="db-card">
-            <div className="db-card__title">
-              Ofertas recomendadas
-              <a href="/Bolsa_Empleo" style={{ fontSize: '0.8rem', color: 'var(--ucc-blue)', textDecoration: 'none' }}>Ver todas →</a>
-            </div>
+            <div className="db-card__title">Ofertas</div>
             <div className="db-jobs-list">
               {RECOMMENDED_JOBS.map(job => (
-                <a key={job.id} href="#" className="db-job-item">
+                <div key={job.id} className="db-job-item">
                   <div className="db-job-item__logo">{job.logo}</div>
-                  <div className="db-job-item__info">
-                    <div className="db-job-item__title">{job.title}</div>
-                    <div className="db-job-item__meta">{job.company} • {job.time}</div>
-                  </div>
-                  <span style={{ fontSize: '1.2rem', color: '#cbd5e1' }}>›</span>
-                </a>
+                  <div className="db-job-item__info"><div className="db-job-item__title">{job.title}</div><div className="db-job-item__meta">{job.company}</div></div>
+                </div>
               ))}
             </div>
           </div>
-
-          {/* Notifications/Tips Widget */}
-          <div className="db-card" style={{ background: 'var(--ucc-navy)', color: '#fff' }}>
-            <div className="db-card__title" style={{ color: '#fff' }}>Tip de Carrera</div>
-            <p style={{ fontSize: '0.95rem', lineHeight: '1.6', opacity: 0.8 }}>
-              Las empresas del sector TI están valorando un 15% más a los candidatos con certificaciones en 
-              <strong> Inteligencia Artificial Aplicada</strong>. Considera actualizar tu formación en esta área.
-            </p>
-            <button className="btn" style={{ 
-              marginTop: '1.5rem', 
-              background: 'var(--ucc-green)', 
-              color: 'var(--ucc-navy)', 
-              fontWeight: 700,
-              padding: '10px 20px',
-              width: '100%'
-            }}>
-              Ver cursos recomendados
-            </button>
-          </div>
         </div>
       </main>
-
       <Footer />
     </div>
   );

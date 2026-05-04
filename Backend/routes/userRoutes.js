@@ -17,4 +17,8 @@ router.post('/upload-avatar', upload.single('image'), fileController.uploadProfi
 router.post('/upload-cv', upload.single('cv'), fileController.uploadResume);
 router.get('/get-cv-url/:userId', fileController.getResumeUrl);
 
+// Rutas de gestión de perfil completo
+router.get('/profile/:userId', userController.getFullProfile);
+router.put('/profile/:userId', userController.updateProfile);
+
 module.exports = router;
