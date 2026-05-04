@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "../css/Auth/auth.css";
 
 import { createClient } from "@/utils/supabase/client";
@@ -11,8 +11,16 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
   const supabase = createClient();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("registered")) {
+      setSuccessMsg("¡Registro exitoso! Por favor, inicia sesión.");
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,6 +74,12 @@ export default function LoginPage() {
 
         {/* Form */}
         <form className="auth-form" onSubmit={handleLogin}>
+          {successMsg && (
+            <div style={{ background: '#dcfce7', color: '#166534', padding: '12px', borderRadius: '8px', marginBottom: '20px', fontSize: '0.9rem', border: '1px solid #bbf7d0', textAlign: 'center' }}>
+              {successMsg}
+            </div>
+          )}
+
           {errorMsg && (
             <div style={{ color: '#e53e3e', background: '#fff5f5', padding: '0.8rem', borderRadius: '8px', fontSize: '0.85rem', border: '1px solid #feb2b2' }}>
               ⚠ {errorMsg}

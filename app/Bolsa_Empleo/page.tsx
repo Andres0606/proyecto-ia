@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Header from "../Components/header";
 import Footer from "../Components/footer";
 import "../css/Bolsa_Empleo/Bolsa.css";
@@ -157,12 +157,12 @@ const ALL_JOBS: Job[] = [
 
 const AREAS = ["Todas", "Ingeniería", "Salud", "Derecho", "Administración", "Contaduría", "Educación"];
 const MODOS = ["Todas", "Presencial", "Remoto", "Híbrido"];
-const EXPS  = ["Todas", "Sin exp.", "1-3 años", "3+ años"];
+const EXPS = ["Todas", "Sin exp.", "1-3 años", "3+ años"];
 
 const MODE_BADGE: Record<string, string> = {
   Presencial: "be-badge--presencial",
-  Remoto:     "be-badge--remoto",
-  Híbrido:    "be-badge--hibrido",
+  Remoto: "be-badge--remoto",
+  Híbrido: "be-badge--hibrido",
 };
 
 // ── Chip ───────────────────────────────────────────────
@@ -178,12 +178,12 @@ function Chip({ label, active, onClick }: { label: string; active: boolean; onCl
 function Filters({
   area, setArea,
   mode, setMode,
-  exp,  setExp,
+  exp, setExp,
   onClear,
 }: {
   area: string; setArea: (v: string) => void;
   mode: string; setMode: (v: string) => void;
-  exp:  string; setExp:  (v: string) => void;
+  exp: string; setExp: (v: string) => void;
   onClear: () => void;
 }) {
   return (
@@ -258,13 +258,36 @@ function JobCard({ job }: { job: Job }) {
 }
 
 // ── Page ───────────────────────────────────────────────
+import { createClient } from "@/utils/supabase/client";
+
 export default function BolsaPage() {
   const [search, setSearch] = useState("");
-  const [city,   setCity]   = useState("");
-  const [area,   setArea]   = useState("Todas");
-  const [mode,   setMode]   = useState("Todas");
-  const [exp,    setExp]    = useState("Todas");
-  const [sort,   setSort]   = useState("recent");
+  const [city, setCity] = useState("");
+  const [area, setArea] = useState("Todas");
+  const [mode, setMode] = useState("Todas");
+  const [exp, setExp] = useState("Todas");
+  const [sort, setSort] = useState("recent");
+  const [authLoading, setAuthLoading] = useState(true);
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  const supabase = createClient();
+
+  useEffect(() => {
+    async function checkUser() {
+      if (!supabase) return;
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        window.location.href = "/login";
+        return;
+      }
+
+      const role = user.user_metadata?.role;
+      setUserRole(role);
+      setAuthLoading(false);
+    }
+    checkUser();
+  }, []);
 
   const filtered = useMemo(() => {
     let list = ALL_JOBS.filter((j) => {
@@ -275,11 +298,11 @@ export default function BolsaPage() {
         (!c || j.city.toLowerCase().includes(c)) &&
         (area === "Todas" || j.area === area) &&
         (mode === "Todas" || j.mode === mode) &&
-        (exp  === "Todas" || j.exp  === exp)
+        (exp === "Todas" || j.exp === exp)
       );
     });
 
-    if (sort === "salary")    list = [...list].sort((a, b) => b.salaryMin - a.salaryMin);
+    if (sort === "salary") list = [...list].sort((a, b) => b.salaryMin - a.salaryMin);
     if (sort === "relevance") list = [...list].sort((a, b) => Number(b.featured) - Number(a.featured));
 
     return list;
@@ -287,6 +310,36 @@ export default function BolsaPage() {
 
   function clearAll() {
     setSearch(""); setCity(""); setArea("Todas"); setMode("Todas"); setExp("Todas");
+  }
+
+  if (authLoading) {
+    return (
+      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--ucc-navy)', color: 'white' }}>
+        <p>Cargando portal de empleo...</p>
+      </div>
+    );
+  }
+
+  // Paywall para Externos
+  if (userRole === "externo") {
+    return (
+      <div className="be-page">
+        <Header />
+        <div style={{ padding: '100px 20px', textAlign: 'center', minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>💼</div>
+          <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '1rem' }}>Contenido Exclusivo</h2>
+          <p style={{ maxWidth: '500px', fontSize: '1.1rem', color: '#64748b' }}>
+            Para acceder a las vacantes de empresas aliadas y postularte a las ofertas, necesitas una suscripción activa.
+          </p>
+          <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem' }}>
+            <a href="/planes" className="btn" style={{ background: 'var(--ucc-green)', color: 'var(--ucc-navy)', fontWeight: 800, textDecoration: 'none', padding: '12px 24px', borderRadius: '8px' }}>
+              Suscribirse ahora
+            </a>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
   }
 
   return (
@@ -300,9 +353,18 @@ export default function BolsaPage() {
           <h1 className="be-hero__title">
             Bolsa de <em>empleo</em>
           </h1>
-          <p className="be-hero__sub">
-            Vacantes reales de empresas aliadas, filtradas por tu área, ciudad y experiencia.
-          </p>
+          {userRole === "empresa" ? (
+            <div style={{ marginTop: '1rem' }}>
+              <p className="be-hero__sub">Gestiona las vacantes de tu organización y conecta con el mejor talento de la UCC.</p>
+              <button className="btn" style={{ marginTop: '1.5rem', background: 'var(--ucc-green)', color: 'var(--ucc-navy)', fontWeight: 700, padding: '12px 30px', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
+                + Publicar nueva vacante
+              </button>
+            </div>
+          ) : (
+            <p className="be-hero__sub">
+              Vacantes reales de empresas aliadas, filtradas por tu área, ciudad y experiencia.
+            </p>
+          )}
           <div className="be-hero__kpis">
             <div>
               <span className="be-hero__kpi-val">{ALL_JOBS.length}</span>
@@ -359,7 +421,7 @@ export default function BolsaPage() {
           <Filters
             area={area} setArea={setArea}
             mode={mode} setMode={setMode}
-            exp={exp}   setExp={setExp}
+            exp={exp} setExp={setExp}
             onClear={clearAll}
           />
 

@@ -500,11 +500,16 @@ export default function RegistroPage() {
 
       if (profileError) {
         console.error("Error creating profile:", profileError.message);
-        // We continue even if profile creation fails, as auth was successful
+        setErrorMsg("Tu cuenta se creó, pero hubo un error al crear tu perfil: " + profileError.message);
+        setLoading(false);
+        return;
       }
     }
 
-    window.location.href = '/dashboard';
+    // 3. Success!
+    setLoading(false);
+    // Redirect to login after registration
+    window.location.href = "/login?registered=true";
   };
 
   const totalSteps = rol === "empresa" ? 3 : 2;

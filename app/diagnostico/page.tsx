@@ -218,13 +218,89 @@ function ResultCard({ resultado }: { resultado: ResultadoAPI }) {
   );
 }
 
+import { createClient } from "@/utils/supabase/client";
+
 export default function DiagnosticoPage() {
   const [form, setForm] = useState<FormData>(INITIAL);
   const [loading, setLoading] = useState(false);
   const [resultado, setResultado] = useState<ResultadoAPI | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  const supabase = createClient();
+
+  useEffect(() => {
+    async function checkUser() {
+      if (!supabase) return;
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        window.location.href = "/login";
+        return;
+      }
+
+      const role = user.user_metadata?.role;
+      setUserRole(role);
+      setAuthLoading(false);
+    }
+    checkUser();
+  }, []);
 
   const update = (k: keyof FormData, val: string) => setForm(f => ({ ...f, [k]: val }));
+
+  if (authLoading) {
+    return (
+      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--ucc-navy)', color: 'white' }}>
+        <p>Verificando credenciales...</p>
+      </div>
+    );
+  }
+
+  // Si es Empresa, no puede usar el diagnóstico
+  if (userRole === "empresa") {
+    return (
+      <div className="diag-page">
+        <Header />
+        <div style={{ padding: '100px 20px', textAlign: 'center', minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '1rem' }}>Acceso Restringido</h2>
+          <p style={{ maxWidth: '500px', fontSize: '1.1rem', color: '#64748b' }}>
+            Como <strong>Empresa</strong>, tu perfil está habilitado únicamente para la publicación y gestión de ofertas laborales. 
+            El diagnóstico de estabilidad está reservado para egresados y profesionales.
+          </p>
+          <a href="/Bolsa_Empleo" className="btn" style={{ marginTop: '2rem', background: 'var(--ucc-blue)', color: 'white', textDecoration: 'none', padding: '12px 24px', borderRadius: '8px' }}>
+            Ir a Bolsa de Empleo
+          </a>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Si es Externo, debe pagar (Simulación de paywall)
+  if (userRole === "externo") {
+    return (
+      <div className="diag-page">
+        <Header />
+        <div style={{ padding: '100px 20px', textAlign: 'center', minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>💎</div>
+          <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '1rem' }}>Módulo Premium</h2>
+          <p style={{ maxWidth: '500px', fontSize: '1.1rem', color: '#64748b' }}>
+            El Diagnóstico de Estabilidad por IA es una herramienta exclusiva para la comunidad UCC y usuarios con suscripción activa.
+          </p>
+          <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem' }}>
+            <a href="/planes" className="btn" style={{ background: 'var(--ucc-green)', color: 'var(--ucc-navy)', fontWeight: 800, textDecoration: 'none', padding: '12px 24px', borderRadius: '8px' }}>
+              Ver Planes de Suscripción
+            </a>
+            <a href="/" className="btn" style={{ background: '#f1f5f9', color: '#64748b', textDecoration: 'none', padding: '12px 24px', borderRadius: '8px' }}>
+              Volver al Inicio
+            </a>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

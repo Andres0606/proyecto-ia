@@ -24,11 +24,15 @@ const DIAGNOSTICO_ITEMS = [
   },
 ];
 
+import { createClient } from "@/utils/supabase/client";
+
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [dropOpen, setDropOpen] = useState(false);
-  const dropRef = useRef<HTMLLIElement>(null);
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  const supabase = createClient();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -36,16 +40,21 @@ export default function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Cerrar dropdown al hacer click fuera
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (dropRef.current && !dropRef.current.contains(e.target as Node)) {
-        setDropOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    async function getUser() {
+      if (!supabase) return;
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      setLoading(false);
+    }
+    getUser();
   }, []);
+
+  const handleLogout = async () => {
+    if (!supabase) return;
+    await supabase.auth.signOut();
+    window.location.href = "/";
+  };
 
   return (
     <nav className={`header ${scrolled ? "header--scrolled" : ""}`}>
@@ -72,19 +81,42 @@ export default function Header() {
           <li>
             <a href="/planes">Planes</a>
           </li>
-          <li>
-            <a href="/dashboard" style={{ color: 'var(--ucc-green)', fontWeight: 'bold' }}>Mi Dashboard</a>
-          </li>
+          
+          {user && (
+            <li>
+              <a href="/dashboard" style={{ color: 'var(--ucc-green)', fontWeight: 'bold' }}>Mi Dashboard</a>
+            </li>
+          )}
         </ul>
 
         {/* Actions */}
         <div className="header__actions">
-          <a href="/login" className="header__btn header__btn--ghost">
-            Ingresar
-          </a>
-          <a href="/registro" className="header__btn header__btn--red">
-            Registrarse
-          </a>
+          {loading ? (
+             <div style={{ width: '100px' }} /> 
+          ) : user ? (
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              <a href="/perfil" className="header__btn header__btn--ghost" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '1.2rem' }}>👤</span> Mi Perfil
+              </a>
+              <button 
+                onClick={handleLogout} 
+                className="header__btn header__btn--red"
+                style={{ cursor: 'pointer', padding: '8px 15px', minWidth: 'auto' }}
+                title="Cerrar Sesión"
+              >
+                ✕
+              </button>
+            </div>
+          ) : (
+            <>
+              <a href="/login" className="header__btn header__btn--ghost">
+                Ingresar
+              </a>
+              <a href="/registro" className="header__btn header__btn--red">
+                Registrarse
+              </a>
+            </>
+          )}
         </div>
 
         {/* Hamburgereeeee */}
