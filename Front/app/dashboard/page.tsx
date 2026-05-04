@@ -319,7 +319,7 @@ export default function Dashboard() {
 
       <main className="db-main" style={{ paddingTop: '100px', minHeight: '80vh' }}>
         
-        <div className="db-card" style={{ margin: '0 auto 40px', maxWidth: '1100px', padding: '30px 40px', display: 'flex', alignItems: 'center', gap: '40px', background: 'white', borderRadius: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+        <div className="db-card responsive-hero" style={{ margin: '0 auto 40px', maxWidth: '1100px', padding: '30px 40px', background: 'white', borderRadius: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
           <div style={{ position: 'relative', width: '130px', height: '130px', flexShrink: 0 }}>
             <svg viewBox="0 0 36 36" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)', position: 'absolute' }}>
               <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#f1f5f9" strokeWidth="2" />
@@ -354,7 +354,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="db-actions" style={{ display: 'grid', gridTemplateColumns: `repeat(${getQuickActions(userRole).length}, 1fr)`, gap: '25px', margin: '40px auto', maxWidth: '1100px' }}>
+        <div className="db-actions responsive-grid-4" style={{ margin: '40px auto', maxWidth: '1100px' }}>
           {getQuickActions(userRole).map((action) => (
             <div key={action.id} className="db-action-card" style={{ cursor: 'pointer', padding: '30px', textAlign: 'center', background: 'white', borderRadius: '24px', border: activeSection === action.id ? '2px solid var(--ucc-blue)' : '1px solid #f1f5f9', boxShadow: '0 8px 20px rgba(0,0,0,0.03)', transition: 'all 0.3s ease' }} 
               onClick={() => setActiveSection(activeSection === action.id ? 'none' : action.id as any)}>
@@ -367,7 +367,7 @@ export default function Dashboard() {
         <div style={{ maxWidth: '1100px', margin: '0 auto 60px' }}>
           {activeSection === 'personal' && userRole !== 'empresa' && (
             <div className="db-card" style={{ padding: '45px', borderRadius: '28px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '35px' }}>
+              <div className="responsive-flex-between">
                 <h2 style={{ color: 'var(--ucc-navy)', margin: 0, fontWeight: 800 }}>👤 Datos Personales</h2>
                 <button 
                   onClick={() => setIsEditingPersonal(!isEditingPersonal)} 
@@ -383,7 +383,7 @@ export default function Dashboard() {
                 </button>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '35px' }}>
+              <div className="responsive-grid-2">
                 <div className="form-group">
                   <label style={labelStyle}>Nombre Completo</label>
                   <input type="text" value={formData.nombre_completo} onChange={(e) => setFormData({...formData, nombre_completo: e.target.value})} disabled={!isEditingPersonal} style={isEditingPersonal ? {...baseInputStyle, border: '1px solid var(--ucc-blue)'} : disabledInputStyle} />
@@ -420,7 +420,7 @@ export default function Dashboard() {
 
           {activeSection === 'professional' && (
             <div className="db-card" style={{ padding: '45px', borderRadius: '28px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+              <div className="responsive-flex-between" style={{ marginBottom: '40px' }}>
                 <h2 style={{ color: 'var(--ucc-navy)', margin: 0, fontWeight: 800 }}>
                   {userRole === 'empresa' ? '🏢 Perfil de Empresa' : '💼 Perfil Profesional'}
                 </h2>
@@ -438,7 +438,7 @@ export default function Dashboard() {
                 </button>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '35px' }}>
+              <div className="responsive-grid-2">
                 {/* Egresado Fields */}
                 {[
                   { label: 'Programa Académico', key: 'programa_academico', options: DIAG_OPTIONS.Programa },
