@@ -86,16 +86,12 @@ export default function Dashboard() {
       
       if (data.success && data.profile) {
         const u = data.profile;
-        const p = (data.profile.perfiles_usuarios && data.profile.perfiles_usuarios.length > 0) 
-                  ? data.profile.perfiles_usuarios[0] 
-                  : {};
+        const p = (u.perfiles_usuarios && u.perfiles_usuarios.length > 0) ? u.perfiles_usuarios[0] : {};
         
-        console.log("📥 Datos procesados:", { user: u, profile: p });
-
         setUserName(u.nombre_completo ? u.nombre_completo.split(' ')[0] : 'Egresado');
         if (u.foto_url) setUserPhoto(u.foto_url);
 
-        const updatedData = {
+        setFormData({
           nombre_completo: u.nombre_completo || '',
           correo: u.correo || '',
           telefono: u.telefono || '',
@@ -111,29 +107,22 @@ export default function Dashboard() {
           sector_economico: p.sector_economico || '',
           area_desempeno: p.area_desempeno || '',
           emprendimiento: p.emprendimiento || ''
-        };
+        });
 
-        setFormData(updatedData);
-
-        // Calcular progreso
+        // Cálculo de progreso
         let pct = 0;
         if (u.foto_url || userPhoto) pct += 15;
         if (u.cv_url) pct += 25;
         if (u.telefono && u.nombre_completo) pct += 20;
         const profFields = [p.nivel_formacion, p.programa_academico, p.estrato, p.estado_civil, p.ingreso_mensual];
-        const filled = profFields.filter(f => f && f !== '').length;
+        const filled = profFields.filter(f => f && String(f).trim() !== '').length;
         pct += (filled / profFields.length) * 40;
         setCompletionPct(Math.round(pct));
 
-        // Decidir si mostrar edición o resumen
-        if (p.programa_academico || p.nivel_formacion || p.estrato) {
-          setIsEditingProf(false);
-        } else {
-          setIsEditingProf(true);
-        }
+        setIsEditingProf(!p.programa_academico);
       }
     } catch (err) {
-      console.error("Error cargando perfil:", err);
+      console.error(err);
     }
   };
 
@@ -146,23 +135,18 @@ export default function Dashboard() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userData: { 
-            nombre_completo: formData.nombre_completo, 
-            correo: formData.correo, 
-            telefono: formData.telefono 
-          },
+          userData: { nombre_completo: formData.nombre_completo, correo: formData.correo, telefono: formData.telefono },
           profileData: formData
         }),
       });
       const data = await res.json();
       if (data.success) {
-        alert("¡Perfil actualizado con éxito! ✨");
+        alert("¡Datos actualizados!");
         setIsEditingProf(false);
-        // Pequeña espera para asegurar que la DB procesó el cambio
-        setTimeout(() => fetchFullProfile(userId), 500);
+        setTimeout(() => fetchFullProfile(userId), 600);
       }
     } catch (err: any) {
-      alert("Error al guardar: " + err.message);
+      alert(err.message);
     } finally {
       setLoadingProfile(false);
     }
@@ -189,35 +173,14 @@ export default function Dashboard() {
     }
   };
 
-  const startCamera = async () => {
-    setShowCamera(true);
+  const handleViewResume = async () => {
+    if (!userId) return;
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      if (videoRef.current) videoRef.current.srcObject = stream;
-    } catch (err) { setShowCamera(false); }
-  };
-
-  const stopCamera = () => {
-    if (videoRef.current?.srcObject) {
-      (videoRef.current.srcObject as MediaStream).getTracks().forEach(t => t.stop());
-      videoRef.current.srcObject = null;
-    }
-    setShowCamera(false);
-  };
-
-  const capturePhoto = () => {
-    if (videoRef.current) {
-      const canvas = document.createElement('canvas');
-      canvas.width = videoRef.current.videoWidth;
-      canvas.height = videoRef.current.videoHeight;
-      canvas.getContext('2d')?.drawImage(videoRef.current, 0, 0);
-      canvas.toBlob((blob) => {
-        if (blob) {
-          handleFileUpload(new File([blob], "capture.jpg", { type: "image/jpeg" }), 'avatar');
-          stopCamera();
-        }
-      }, 'image/jpeg');
-    }
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
+      const res = await fetch(`${backendUrl}/api/users/get-cv-url/${userId}`);
+      const data = await res.json();
+      if (data.success) window.open(data.url, '_blank');
+    } catch (err) { alert("No se pudo cargar el CV"); }
   };
 
   const InfoCard = ({ label, value, detail }: { label: string, value: any, detail?: string }) => (
@@ -237,6 +200,7 @@ export default function Dashboard() {
 
       <main className="db-main" style={{ paddingTop: '80px', minHeight: '80vh' }}>
         
+        {/* CABECERA CON FOTO, PROGRESO Y BOTONES COMPLETOS */}
         <div className="db-card" style={{ margin: '20px auto 40px', maxWidth: '1100px', padding: '30px 40px', display: 'flex', alignItems: 'center', gap: '40px', background: 'white', borderRadius: '24px', border: 'none', boxShadow: '0 15px 40px rgba(0,0,0,0.08)' }}>
           <div style={{ position: 'relative', width: '130px', height: '130px', flexShrink: 0 }}>
             <svg viewBox="0 0 36 36" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)', position: 'absolute', top: 0, left: 0, zIndex: 1 }}>
@@ -248,12 +212,14 @@ export default function Dashboard() {
             </div>
             <div style={{ position: 'absolute', bottom: '-5px', left: '50%', transform: 'translateX(-50%)', background: 'var(--ucc-navy)', color: 'white', borderRadius: '12px', padding: '2px 10px', fontSize: '0.8rem', fontWeight: 800, zIndex: 3 }}>{completionPct}%</div>
           </div>
+          
           <div style={{ flex: 1 }}>
             <h3 style={{ margin: 0, color: 'var(--ucc-navy)', fontSize: '2rem', fontWeight: 800 }}>{greeting}, {userName} ✨</h3>
-            <p style={{ margin: '10px 0 0', color: '#64748b', fontSize: '1.1rem' }}>Tu perfil está al {completionPct}%. ¡Sigue así para mejores oportunidades!</p>
-            <div style={{ display: 'flex', gap: '15px', marginTop: '20px' }}>
-               <button onClick={startCamera} style={{ background: 'var(--ucc-blue)', color: 'white', border: 'none', borderRadius: '14px', padding: '12px 25px', cursor: 'pointer', fontWeight: 700 }}>📸 Cámara</button>
-               <button onClick={() => avatarInputRef.current?.click()} style={{ background: '#f8fafc', color: 'var(--ucc-navy)', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '12px 25px', cursor: 'pointer', fontWeight: 700 }}>📁 Foto</button>
+            <p style={{ margin: '10px 0 0', color: '#64748b', fontSize: '1.1rem' }}>Tienes el {completionPct}% de tu perfil configurado. {completionPct < 100 ? '¡Casi llegas a la meta!' : '¡Perfil perfecto!'}</p>
+            <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+               <button onClick={() => setShowCamera(true)} style={{ background: 'var(--ucc-blue)', color: 'white', border: 'none', borderRadius: '14px', padding: '12px 25px', cursor: 'pointer', fontWeight: 700 }}>📷 Cámara</button>
+               <button onClick={() => avatarInputRef.current?.click()} style={{ background: '#f8fafc', color: 'var(--ucc-navy)', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '12px 25px', cursor: 'pointer', fontWeight: 700 }}>📁 Subir Foto</button>
+               <button onClick={handleViewResume} style={{ background: 'var(--ucc-green)', color: 'var(--ucc-navy)', border: 'none', borderRadius: '14px', padding: '12px 25px', cursor: 'pointer', fontWeight: 700 }}>📄 Ver CV Actual</button>
             </div>
           </div>
         </div>
