@@ -60,12 +60,19 @@ export default function Dashboard() {
       const res = await fetch(`${backendUrl}/api/users/profile/${id}`);
       const data = await res.json();
       
+      console.log('📡 Respuesta del Backend:', data);
+
       if (data.success && data.profile) {
         const u = data.profile;
         const p = (u.perfiles_usuarios && u.perfiles_usuarios.length > 0) ? u.perfiles_usuarios[0] : {};
         
+        console.log('💼 Datos Perfil Profesional (p):', p);
+
         setUserName(u.nombre_completo ? u.nombre_completo.split(' ')[0] : 'Egresado');
         if (u.foto_url) setUserPhoto(u.foto_url);
+
+        // Función auxiliar para evitar que el 0 se pierda
+        const val = (v: any) => (v !== null && v !== undefined && v !== '') ? String(v) : '';
 
         setFormData({
           nombre_completo: u.nombre_completo || '',
@@ -74,27 +81,31 @@ export default function Dashboard() {
           cedula: u.cedula || 'N/A',
           fecha_nacimiento: u.fecha_nacimiento ? u.fecha_nacimiento.split('T')[0] : 'No definida',
           genero: u.genero || 'No definido',
-          nivel_formacion: p.nivel_formacion || '',
-          programa_academico: p.programa_academico || '',
-          estrato: String(p.estrato || ''),
-          estado_civil: p.estado_civil || '',
-          numero_hijos: String(p.numero_hijos || ''),
-          ingreso_mensual: p.ingreso_mensual || '',
-          sector_economico: p.sector_economico || '',
-          area_desempeno: p.area_desempeno || '',
-          emprendimiento: p.emprendimiento || ''
+          nivel_formacion: val(p.nivel_formacion),
+          programa_academico: val(p.programa_academico),
+          estrato: val(p.estrato),
+          estado_civil: val(p.estado_civil),
+          numero_hijos: val(p.numero_hijos),
+          ingreso_mensual: val(p.ingreso_mensual),
+          sector_economico: val(p.sector_economico),
+          area_desempeno: val(p.area_desempeno),
+          emprendimiento: val(p.emprendimiento)
         });
 
+        // Calcular progreso
         let pct = 0;
         if (u.foto_url || userPhoto) pct += 15;
         if (u.cv_url) pct += 25;
         if (u.telefono && u.nombre_completo) pct += 20;
+        
         const profFields = [p.nivel_formacion, p.programa_academico, p.estrato, p.estado_civil, p.ingreso_mensual];
-        const filled = profFields.filter(f => f && String(f).trim() !== '').length;
+        const filled = profFields.filter(f => f !== null && f !== undefined && String(f).trim() !== '').length;
         pct += (filled / profFields.length) * 40;
         setCompletionPct(Math.round(pct));
       }
-    } catch (err) { console.error(err); }
+    } catch (err) { 
+      console.error('❌ Error cargando perfil:', err);
+    }
   };
 
   const handleFileUpload = async (file: File, type: 'avatar' | 'cv') => {

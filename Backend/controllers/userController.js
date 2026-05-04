@@ -131,6 +131,7 @@ const loginUser = async (req, res) => {
 const getFullProfile = async (req, res) => {
   try {
     const { userId } = req.params;
+    console.log('🔍 Obteniendo perfil completo para userId:', userId);
 
     const { data, error } = await supabase
       .from('users')
@@ -141,7 +142,14 @@ const getFullProfile = async (req, res) => {
       .eq('id', userId)
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ Error de Supabase en getFullProfile:', error.message);
+      throw error;
+    }
+
+    if (!data) {
+      return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+    }
 
     // Mapeo inverso para el Frontend (Sincronización con Diagnóstico)
     if (data.perfiles_usuarios && data.perfiles_usuarios.length > 0) {
@@ -150,14 +158,23 @@ const getFullProfile = async (req, res) => {
       const hijosReverse = { 0: "Cero", 1: "Uno", 2: "Dos", 3: "Tres", 4: "Cuatro", 5: "Cinco" };
       const ingresoReverse = { 1: "1 SML o menos", 2.5: "2-3 SML", 4: "3-5 SML", 6: "5 SML o mas" };
 
-      p.estrato = estratoReverse[p.estrato] || p.estrato;
-      p.numero_hijos = hijosReverse[p.numero_hijos] || p.numero_hijos;
-      p.ingreso_mensual = ingresoReverse[p.ingreso_mensual] || p.ingreso_mensual;
-      p.emprendimiento = p.emprendimiento ? "Si" : "No";
+      // Aplicar mapeo solo si existe el valor en el diccionario, de lo contrario mantener original o string
+      if (p.estrato !== null) p.estrato = estratoReverse[p.estrato] || String(p.estrato);
+      if (p.numero_hijos !== null) p.numero_hijos = hijosReverse[p.numero_hijos] || String(p.numero_hijos);
+      if (p.ingreso_mensual !== null) p.ingreso_mensual = ingresoReverse[p.ingreso_mensual] || String(p.ingreso_mensual);
+      
+      if (typeof p.emprendimiento === 'boolean') {
+        p.emprendimiento = p.emprendimiento ? "Si" : "No";
+      }
+      
+      console.log('✅ Perfil profesional mapeado:', p);
+    } else {
+      console.log('⚠️ El usuario no tiene entrada en perfiles_usuarios');
     }
 
     return res.status(200).json({ success: true, profile: data });
   } catch (error) {
+    console.error('❌ Error crítico en getFullProfile:', error.message);
     return res.status(500).json({ success: false, message: error.message });
   }
 };
