@@ -148,7 +148,7 @@ export default function Dashboard() {
     setLoadingProfile(true);
     setUploadStatus({ msg: '⏳ Guardando perfil profesional...', type: 'info' });
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
+      const backendUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000').replace(/\/$/, '');
       const res = await fetch(`${backendUrl}/api/users/profile/${userId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -179,7 +179,7 @@ export default function Dashboard() {
     fd.append('userId', userId);
     
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
+      const backendUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000').replace(/\/$/, '');
       const res = await fetch(`${backendUrl}/api/users/upload-${type === 'avatar' ? 'avatar' : 'cv'}`, { method: 'POST', body: fd });
       const data = await res.json();
       
@@ -204,7 +204,7 @@ export default function Dashboard() {
     if (!userId) return;
     setUploadStatus({ msg: '⏳ Preparando documento para visualización...', type: 'info' });
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
+      const backendUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000').replace(/\/$/, '');
       const res = await fetch(`${backendUrl}/api/users/get-cv-url/${userId}`);
       const data = await res.json();
       if (data.success) {
