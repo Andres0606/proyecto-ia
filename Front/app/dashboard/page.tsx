@@ -216,7 +216,7 @@ export default function Dashboard() {
     } catch (err) { 
       setUploadStatus({ msg: '❌ Error al recuperar el archivo', type: 'error' }); 
     }
-    setTimeout(() => setUploadStatus({ msg: '', type: 'none' }), 3500);
+    setTimeout(() => setUploadStatus({ msg: '', type: 'none' }), 2000);
   };
 
   const baseInputStyle = {
