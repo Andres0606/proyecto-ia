@@ -143,6 +143,19 @@ const getFullProfile = async (req, res) => {
 
     if (error) throw error;
 
+    // Mapeo inverso para el Frontend (Sincronización con Diagnóstico)
+    if (data.perfiles_usuarios && data.perfiles_usuarios.length > 0) {
+      const p = data.perfiles_usuarios[0];
+      const estratoReverse = { 1: "Uno", 2: "Dos", 3: "Tres", 4: "Cuatro", 5: "Cinco", 6: "Seis" };
+      const hijosReverse = { 0: "Cero", 1: "Uno", 2: "Dos", 3: "Tres", 4: "Cuatro", 5: "Cinco" };
+      const ingresoReverse = { 1: "1 SML o menos", 2.5: "2-3 SML", 4: "3-5 SML", 6: "5 SML o mas" };
+
+      p.estrato = estratoReverse[p.estrato] || p.estrato;
+      p.numero_hijos = hijosReverse[p.numero_hijos] || p.numero_hijos;
+      p.ingreso_mensual = ingresoReverse[p.ingreso_mensual] || p.ingreso_mensual;
+      p.emprendimiento = p.emprendimiento ? "Si" : "No";
+    }
+
     return res.status(200).json({ success: true, profile: data });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
@@ -154,37 +167,42 @@ const updateProfile = async (req, res) => {
     const { userId } = req.params;
     const { userData, profileData } = req.body;
 
-    // 1. Actualizar tabla users (campos permitidos)
+    // 1. Mapeo de valores de texto a tipos de la BD (Sincronización con Diagnóstico)
+    const estratoMap = { "Uno": 1, "Dos": 2, "Tres": 3, "Cuatro": 4, "Cinco": 5, "Seis": 6 };
+    const hijosMap = { "Cero": 0, "Uno": 1, "Dos": 2, "Tres": 3, "Cuatro": 4, "Cinco": 5 };
+    const ingresoMap = { "1 SML o menos": 1, "2-3 SML": 2.5, "3-5 SML": 4, "5 SML o mas": 6 };
+
+    // 2. Actualizar tabla users
     const { error: userError } = await supabase
       .from('users')
-      .update({
-        telefono: userData.telefono,
-        // Agrega aquí otros campos editables de la tabla users si los hay
-      })
+      .update({ telefono: userData.telefono })
       .eq('id', userId);
 
     if (userError) throw userError;
 
-    // 2. Actualizar o Insertar en tabla perfiles_usuarios
+    // 3. Preparar datos para perfiles_usuarios
+    const dbProfileData = {
+      user_id: userId,
+      nivel_formacion: profileData.nivel_formacion,
+      programa_academico: profileData.programa_academico,
+      estrato: estratoMap[profileData.estrato] || null,
+      estado_civil: profileData.estado_civil,
+      numero_hijos: hijosMap[profileData.numero_hijos] || 0,
+      ingreso_mensual: ingresoMap[profileData.ingreso_mensual] || null,
+      sector_economico: profileData.sector_economico,
+      area_desempeno: profileData.area_desempeno,
+      emprendimiento: profileData.emprendimiento === 'Si'
+    };
+
     const { error: profileError } = await supabase
       .from('perfiles_usuarios')
-      .upsert({
-        user_id: userId,
-        nivel_formacion: profileData.nivel_formacion,
-        programa_academico: profileData.programa_academico,
-        estrato: profileData.estrato,
-        estado_civil: profileData.estado_civil,
-        numero_hijos: profileData.numero_hijos,
-        ingreso_mensual: profileData.ingreso_mensual,
-        sector_economico: profileData.sector_economico,
-        area_desempeno: profileData.area_desempeno,
-        emprendimiento: profileData.emprendimiento
-      }, { onConflict: 'user_id' });
+      .upsert(dbProfileData, { onConflict: 'user_id' });
 
     if (profileError) throw profileError;
 
     return res.status(200).json({ success: true, message: 'Perfil actualizado con éxito.' });
   } catch (error) {
+    console.error("❌ Error actualizando perfil:", error);
     return res.status(500).json({ success: false, message: error.message });
   }
 };
