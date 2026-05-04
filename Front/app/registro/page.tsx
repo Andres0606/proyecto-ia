@@ -463,10 +463,53 @@ export default function RegistroPage() {
 
   const handleRegister = async () => {
     setLoading(true);
-    // Simulación de registro exitoso (vieja escuela)
-    setTimeout(() => {
+    setErrorMsg("");
+
+    try {
+      // 1. Crear usuario en Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: nombre,
+            role: rol
+          }
+        }
+      });
+
+      if (authError) throw authError;
+
+      if (authData.user) {
+        // 2. Enviar datos al NUESTRO BACKEND para guardar el perfil completo
+        const backendRes = await fetch('http://localhost:4000/api/users/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: authData.user.id,
+            nombre_completo: nombre,
+            correo: email,
+            telefono: formData.telefono,
+            rol_id: rol === "empresa" ? 2 : 1,
+            extraData: formData // Enviamos todo el objeto formData que tiene los campos específicos
+          })
+        });
+
+        const backendData = await backendRes.json();
+        if (!backendData.success) {
+          throw new Error(backendData.message || 'Error al guardar el perfil en el servidor.');
+        }
+      }
+
+      // 3. ¡Éxito!
+      setLoading(false);
       window.location.href = "/login?registered=true";
-    }, 1000);
+
+    } catch (err: any) {
+      console.error("Error en el registro:", err);
+      setErrorMsg(err.message || "Ocurrió un error inesperado.");
+      setLoading(false);
+    }
   };
 
   const totalSteps = rol === "empresa" ? 3 : 2;
