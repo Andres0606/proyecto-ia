@@ -213,14 +213,23 @@ export default function Dashboard() {
     </div>
   );
 
+  const baseInputStyle = {
+    padding: '16px 24px',
+    borderRadius: '14px',
+    border: '1px solid #e2e8f0',
+    width: '100%',
+    fontSize: '1rem',
+    outline: 'none',
+    transition: 'all 0.2s ease'
+  };
+
   const disabledInputStyle = {
+    ...baseInputStyle,
     background: '#f8fafc',
     color: '#64748b',
-    padding: '14px',
-    borderRadius: '12px',
-    border: '1px solid #e2e8f0',
     cursor: 'not-allowed',
-    fontWeight: 500
+    fontWeight: 500,
+    border: '1px solid #e2e8f0'
   };
 
   return (
@@ -267,9 +276,9 @@ export default function Dashboard() {
             <div className="db-card" style={{ padding: '45px', borderRadius: '28px' }}>
               <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '35px', fontWeight: 800 }}>👤 Datos Personales</h2>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
-                <div className="form-group"><label>Nombre Completo</label><input type="text" value={formData.nombre_completo} onChange={(e) => setFormData({...formData, nombre_completo: e.target.value})} style={{ padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }} /></div>
-                <div className="form-group"><label>Correo Electrónico</label><input type="email" value={formData.correo} onChange={(e) => setFormData({...formData, correo: e.target.value})} style={{ padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }} /></div>
-                <div className="form-group"><label>Teléfono</label><input type="text" value={formData.telefono} onChange={(e) => setFormData({...formData, telefono: e.target.value})} style={{ padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }} /></div>
+                <div className="form-group"><label>Nombre Completo</label><input type="text" value={formData.nombre_completo} onChange={(e) => setFormData({...formData, nombre_completo: e.target.value})} style={baseInputStyle} /></div>
+                <div className="form-group"><label>Correo Electrónico</label><input type="email" value={formData.correo} onChange={(e) => setFormData({...formData, correo: e.target.value})} style={baseInputStyle} /></div>
+                <div className="form-group"><label>Teléfono</label><input type="text" value={formData.telefono} onChange={(e) => setFormData({...formData, telefono: e.target.value})} style={baseInputStyle} /></div>
                 <div className="form-group"><label>Cédula</label><input type="text" value={formData.cedula} disabled style={disabledInputStyle} /></div>
                 <div className="form-group"><label>Fecha de Nacimiento</label><input type="text" value={formData.fecha_nacimiento} disabled style={disabledInputStyle} /></div>
                 <div className="form-group"><label>Género</label><input type="text" value={formData.genero} disabled style={disabledInputStyle} /></div>
@@ -301,7 +310,7 @@ export default function Dashboard() {
                   ].map((field) => (
                     <div key={field.key} className="form-group">
                       <label style={{ fontSize: '0.85rem', fontWeight: 800, color: '#475569' }}>{field.label}</label>
-                      <select value={(formData as any)[field.key]} onChange={(e) => setFormData({...formData, [field.key]: e.target.value})} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                      <select value={(formData as any)[field.key]} onChange={(e) => setFormData({...formData, [field.key]: e.target.value})} style={baseInputStyle}>
                         <option value="">Seleccione...</option>
                         {field.options.map(o => <option key={o} value={o}>{o}</option>)}
                       </select>
