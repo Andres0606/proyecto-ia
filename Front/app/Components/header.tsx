@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import "../css/Components/header.css";
+import "../css/Header.css";
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
