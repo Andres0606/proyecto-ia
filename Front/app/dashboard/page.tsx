@@ -213,6 +213,16 @@ export default function Dashboard() {
     </div>
   );
 
+  const disabledInputStyle = {
+    background: '#f8fafc',
+    color: '#64748b',
+    padding: '14px',
+    borderRadius: '12px',
+    border: '1px solid #e2e8f0',
+    cursor: 'not-allowed',
+    fontWeight: 500
+  };
+
   return (
     <div className="db-page">
       <Header />
@@ -260,9 +270,9 @@ export default function Dashboard() {
                 <div className="form-group"><label>Nombre Completo</label><input type="text" value={formData.nombre_completo} onChange={(e) => setFormData({...formData, nombre_completo: e.target.value})} style={{ padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }} /></div>
                 <div className="form-group"><label>Correo Electrónico</label><input type="email" value={formData.correo} onChange={(e) => setFormData({...formData, correo: e.target.value})} style={{ padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }} /></div>
                 <div className="form-group"><label>Teléfono</label><input type="text" value={formData.telefono} onChange={(e) => setFormData({...formData, telefono: e.target.value})} style={{ padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }} /></div>
-                <div className="form-group"><label style={{ color: '#94a3b8' }}>Cédula (Bloqueado)</label><input type="text" value={formData.cedula} disabled style={{ background: '#334155', color: '#cbd5e1', padding: '14px', borderRadius: '12px', border: 'none' }} /></div>
-                <div className="form-group"><label style={{ color: '#94a3b8' }}>Fecha de Nacimiento (Bloqueado)</label><input type="text" value={formData.fecha_nacimiento} disabled style={{ background: '#334155', color: '#cbd5e1', padding: '14px', borderRadius: '12px', border: 'none' }} /></div>
-                <div className="form-group"><label style={{ color: '#94a3b8' }}>Género (Bloqueado)</label><input type="text" value={formData.genero} disabled style={{ background: '#334155', color: '#cbd5e1', padding: '14px', borderRadius: '12px', border: 'none' }} /></div>
+                <div className="form-group"><label>Cédula</label><input type="text" value={formData.cedula} disabled style={disabledInputStyle} /></div>
+                <div className="form-group"><label>Fecha de Nacimiento</label><input type="text" value={formData.fecha_nacimiento} disabled style={disabledInputStyle} /></div>
+                <div className="form-group"><label>Género</label><input type="text" value={formData.genero} disabled style={disabledInputStyle} /></div>
               </div>
               <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ width: '100%', marginTop: '40px', padding: '20px', background: 'var(--ucc-navy)', color: 'white', borderRadius: '16px', fontWeight: 800 }}>{loadingProfile ? 'Guardando...' : '💾 Guardar Datos'}</button>
             </div>
@@ -333,7 +343,7 @@ export default function Dashboard() {
               <video ref={videoRef} autoPlay style={{ width: '100%', borderRadius: '25px', marginBottom: '30px', transform: 'scaleX(-1)' }} />
               <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
                 <button onClick={capturePhoto} className="btn" style={{ background: 'var(--ucc-green)', color: 'var(--ucc-navy)', padding: '16px 40px', fontWeight: 800, borderRadius: '18px' }}>📸 Capturar</button>
-                <button onClick={stopCamera} className="btn" style={{ background: '#f1f5f9', color: '#002855', padding: '16px 40px', borderRadius: '18px' }}>Cancelar</button>
+                <button onClick={() => setShowCamera(false)} className="btn" style={{ background: '#f1f5f9', color: '#002855', padding: '16px 40px', borderRadius: '18px' }}>Cancelar</button>
               </div>
             </div>
           </div>
