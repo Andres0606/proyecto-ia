@@ -12,12 +12,33 @@ const QUICK_ACTIONS = [
   { title: 'Mis Postulaciones', icon: '📨', id: 'apps' },
 ];
 
+const DIAG_OPTIONS = {
+  Programa: [
+    "Derecho", "Contaduria Publica", "Ingenieria Civil", "Ciencias Economicas",
+    "Medicina", "Psicologia", "Odontologia", "Enfermeria", "Ingenieria de Sistemas",
+    "Medicina Veterinaria y Zootecnia", "Especializacion", "Tecnico Auxiliar en Enfermeria"
+  ],
+  Estrato: ["Uno", "Dos", "Tres", "Cuatro", "Cinco", "Seis"],
+  EstadoCivil: ["Casado", "Union libre", "Soltero", "Separado", "Viudo"],
+  Hijos: ["Cero", "Uno", "Dos", "Tres", "Cuatro", "Cinco"],
+  Formacion: ["Profesional", "Especialista", "Magister", "Doctorado", "Tecnico Profesional"],
+  Emprendimiento: ["Si", "No"],
+  Area: [
+    "Servicios", "Administrativa", "Salud", "Financiera", "Industrial",
+    "Economica", "Gestion Humana", "Educacion", "Comercial", "Contable", "Sistemas"
+  ],
+  Sector: ["Servicios", "Comercial", "Industrial"],
+  Ingreso: ["1 SML o menos", "2-3 SML", "3-5 SML", "5 SML o mas"]
+};
+
 export default function Dashboard() {
   const [greeting, setGreeting] = useState('Buenos días');
   const [userName, setUserName] = useState('Egresado');
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<'none' | 'personal' | 'professional' | 'apps' | 'cv'>('none');
+  const [isEditingProf, setIsEditingProf] = useState(false);
+  const [loadingProfile, setLoadingProfile] = useState(false);
   const [completionPct, setCompletionPct] = useState(0);
   
   const [formData, setFormData] = useState({
@@ -71,7 +92,6 @@ export default function Dashboard() {
         setUserName(u.nombre_completo ? u.nombre_completo.split(' ')[0] : 'Egresado');
         if (u.foto_url) setUserPhoto(u.foto_url);
 
-        // Función auxiliar para evitar que el 0 se pierda
         const val = (v: any) => (v !== null && v !== undefined && v !== '') ? String(v) : '';
 
         setFormData({
@@ -92,7 +112,6 @@ export default function Dashboard() {
           emprendimiento: val(p.emprendimiento)
         });
 
-        // Calcular progreso
         let pct = 0;
         if (u.foto_url || userPhoto) pct += 15;
         if (u.cv_url) pct += 25;
@@ -106,6 +125,28 @@ export default function Dashboard() {
     } catch (err) { 
       console.error('❌ Error cargando perfil:', err);
     }
+  };
+
+  const handleSaveProfile = async () => {
+    if (!userId) return;
+    setLoadingProfile(true);
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
+      const res = await fetch(`${backendUrl}/api/users/profile/${userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userData: { nombre_completo: formData.nombre_completo, correo: formData.correo, telefono: formData.telefono },
+          profileData: formData
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert("¡Perfil actualizado con éxito! ✨");
+        setIsEditingProf(false);
+        setTimeout(() => fetchFullProfile(userId), 600);
+      }
+    } catch (err: any) { alert(err.message); } finally { setLoadingProfile(false); }
   };
 
   const handleFileUpload = async (file: File, type: 'avatar' | 'cv') => {
@@ -223,25 +264,44 @@ export default function Dashboard() {
 
           {activeSection === 'professional' && (
             <div className="db-card" style={{ padding: '45px', borderRadius: '28px' }}>
-              <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '40px', fontWeight: 800 }}>💼 Perfil Profesional</h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+                <h2 style={{ color: 'var(--ucc-navy)', margin: 0, fontWeight: 800 }}>💼 Perfil Profesional</h2>
+                <button onClick={() => setIsEditingProf(!isEditingProf)} style={{ background: 'var(--ucc-blue)', color: 'white', border: 'none', borderRadius: '12px', padding: '10px 25px', cursor: 'pointer', fontWeight: 700 }}>
+                  {isEditingProf ? '❌ Cancelar' : '✏️ Actualizar Información'}
+                </button>
+              </div>
+
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '35px' }}>
                 {[
-                  { label: 'Programa Académico', value: formData.programa_academico },
-                  { label: 'Nivel de Formación', value: formData.nivel_formacion },
-                  { label: 'Estado Civil', value: formData.estado_civil },
-                  { label: 'Estrato', value: formData.estrato },
-                  { label: 'Rango de Ingreso', value: formData.ingreso_mensual },
-                  { label: '¿Emprendimiento?', value: formData.emprendimiento },
-                  { label: 'Área de Desempeño', value: formData.area_desempeno },
-                  { label: 'Sector Económico', value: formData.sector_economico },
-                  { label: 'Número de Hijos', value: formData.numero_hijos },
-                ].map((field, idx) => (
-                  <div key={idx} style={formGroupStyle}>
+                  { label: 'Programa Académico', key: 'programa_academico', options: DIAG_OPTIONS.Programa },
+                  { label: 'Nivel de Formación', key: 'nivel_formacion', options: DIAG_OPTIONS.Formacion },
+                  { label: 'Estado Civil', key: 'estado_civil', options: DIAG_OPTIONS.EstadoCivil },
+                  { label: 'Estrato', key: 'estrato', options: DIAG_OPTIONS.Estrato },
+                  { label: 'Rango de Ingreso', key: 'ingreso_mensual', options: DIAG_OPTIONS.Ingreso },
+                  { label: '¿Emprendimiento?', key: 'emprendimiento', options: DIAG_OPTIONS.Emprendimiento },
+                  { label: 'Área de Desempeño', key: 'area_desempeno', options: DIAG_OPTIONS.Area },
+                  { label: 'Sector Económico', key: 'sector_economico', options: DIAG_OPTIONS.Sector },
+                  { label: 'Número de Hijos', key: 'numero_hijos', options: DIAG_OPTIONS.Hijos },
+                ].map((field) => (
+                  <div key={field.key} style={formGroupStyle}>
                     <label style={labelStyle}>{field.label}</label>
-                    <input type="text" value={field.value || 'No completado'} disabled style={disabledInputStyle} />
+                    {isEditingProf ? (
+                      <select value={(formData as any)[field.key]} onChange={(e) => setFormData({...formData, [field.key]: e.target.value})} style={baseInputStyle}>
+                        <option value="">Seleccione...</option>
+                        {field.options.map(o => <option key={o} value={o}>{o}</option>)}
+                      </select>
+                    ) : (
+                      <input type="text" value={(formData as any)[field.key] || 'No completado'} disabled style={disabledInputStyle} />
+                    )}
                   </div>
                 ))}
               </div>
+
+              {isEditingProf && (
+                <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ width: '100%', marginTop: '40px', padding: '20px', background: 'var(--ucc-navy)', color: 'white', borderRadius: '16px', fontWeight: 800 }}>
+                  {loadingProfile ? 'Guardando...' : '💾 Guardar Perfil Profesional'}
+                </button>
+              )}
             </div>
           )}
 
