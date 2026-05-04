@@ -1,6 +1,12 @@
 const supabase = require('../config/supabase');
 
+// Ruta de prueba
+const healthCheck = (req, res) => {
+  res.json({ status: 'ok', version: '1.0.2', message: 'Backend UCC Egresados funcionando 🚀' });
+};
+
 const registerUser = async (req, res) => {
+  console.log('📥 Datos recibidos en el registro:', req.body);
   const { email, password, nombre_completo, telefono, rol_id, extraData, cedula, fecha_nacimiento, genero } = req.body;
 
   try {
