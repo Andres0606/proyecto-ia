@@ -6,13 +6,6 @@ import Footer from '../Components/footer';
 import '../css/Dashboard/dashboard.css';
 
 const getQuickActions = (role: string | null) => {
-  if (role === 'empresa') {
-    return [
-      { title: 'Perfil Empresa', icon: '🏢', id: 'professional' },
-      { title: 'Publicar Vacante', icon: '📢', id: 'cv' }, // Reusing CV icon/id logic for now
-      { title: 'Candidatos', icon: '👥', id: 'apps' },
-    ];
-  }
   return [
     { title: 'Datos Personales', icon: '👤', id: 'personal' },
     { title: 'Perfil Profesional', icon: '💼', id: 'professional' },
@@ -447,59 +440,33 @@ export default function Dashboard() {
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '35px' }}>
-                {userRole === 'empresa' ? (
-                  // Empresa Fields
-                  <>
-                    <div className="form-group">
-                      <label style={labelStyle}>Razón Social</label>
-                      <input type="text" value={(formData as any).razon_social || ''} disabled style={disabledInputStyle} />
-                    </div>
-                    <div className="form-group">
-                      <label style={labelStyle}>NIT</label>
-                      <input type="text" value={(formData as any).nit || ''} disabled style={disabledInputStyle} />
-                    </div>
-                    <div className="form-group">
-                      <label style={labelStyle}>Sector Económico</label>
-                      <input type="text" value={(formData as any).sector_economico || ''} disabled style={disabledInputStyle} />
-                    </div>
-                    <div className="form-group">
-                      <label style={labelStyle}>Ciudad</label>
-                      <input type="text" value={(formData as any).ciudad || ''} disabled style={disabledInputStyle} />
-                    </div>
-                    <div className="form-group">
-                      <label style={labelStyle}>Tamaño Empresa</label>
-                      <input type="text" value={(formData as any).tamano_empresa || ''} disabled style={disabledInputStyle} />
-                    </div>
-                  </>
-                ) : (
-                  // Egresado/Externo Fields
-                  [
-                    { label: 'Programa Académico', key: 'programa_academico', options: DIAG_OPTIONS.Programa },
-                    { label: 'Nivel de Formación', key: 'nivel_formacion', options: DIAG_OPTIONS.Formacion },
-                    { label: 'Estado Civil', key: 'estado_civil', options: DIAG_OPTIONS.EstadoCivil },
-                    { label: 'Estrato', key: 'estrato', options: DIAG_OPTIONS.Estrato },
-                    { label: 'Rango de Ingreso', key: 'ingreso_mensual', options: DIAG_OPTIONS.Ingreso },
-                    { label: '¿Emprendimiento?', key: 'emprendimiento', options: DIAG_OPTIONS.Emprendimiento },
-                    { label: 'Área de Desempeño', key: 'area_desempeno', options: DIAG_OPTIONS.Area },
-                    { label: 'Sector Económico', key: 'sector_economico', options: DIAG_OPTIONS.Sector },
-                    { label: 'Número de Hijos', key: 'numero_hijos', options: DIAG_OPTIONS.Hijos },
-                  ].map((field) => (
-                    <div key={field.key} className="form-group">
-                      <label style={labelStyle}>{field.label}</label>
-                      {isEditingProf ? (
-                        <select value={(formData as any)[field.key]} onChange={(e) => setFormData({...formData, [field.key]: e.target.value})} style={{...baseInputStyle, border: '1px solid var(--ucc-blue)'}}>
-                          <option value="">Seleccione...</option>
-                          {field.options.map(o => <option key={o} value={o}>{o}</option>)}
-                        </select>
-                      ) : (
-                        <input type="text" value={(formData as any)[field.key] || 'No completado'} disabled style={disabledInputStyle} />
-                      )}
-                    </div>
-                  ))
-                )}
+                {/* Egresado Fields */}
+                {[
+                  { label: 'Programa Académico', key: 'programa_academico', options: DIAG_OPTIONS.Programa },
+                  { label: 'Nivel de Formación', key: 'nivel_formacion', options: DIAG_OPTIONS.Formacion },
+                  { label: 'Estado Civil', key: 'estado_civil', options: DIAG_OPTIONS.EstadoCivil },
+                  { label: 'Estrato', key: 'estrato', options: DIAG_OPTIONS.Estrato },
+                  { label: 'Rango de Ingreso', key: 'ingreso_mensual', options: DIAG_OPTIONS.Ingreso },
+                  { label: '¿Emprendimiento?', key: 'emprendimiento', options: DIAG_OPTIONS.Emprendimiento },
+                  { label: 'Área de Desempeño', key: 'area_desempeno', options: DIAG_OPTIONS.Area },
+                  { label: 'Sector Económico', key: 'sector_economico', options: DIAG_OPTIONS.Sector },
+                  { label: 'Número de Hijos', key: 'numero_hijos', options: DIAG_OPTIONS.Hijos },
+                ].map((field) => (
+                  <div key={field.key} className="form-group">
+                    <label style={labelStyle}>{field.label}</label>
+                    {isEditingProf ? (
+                      <select value={(formData as any)[field.key]} onChange={(e) => setFormData({...formData, [field.key]: e.target.value})} style={{...baseInputStyle, border: '1px solid var(--ucc-blue)'}}>
+                        <option value="">Seleccione...</option>
+                        {field.options.map(o => <option key={o} value={o}>{o}</option>)}
+                      </select>
+                    ) : (
+                      <input type="text" value={(formData as any)[field.key] || 'No completado'} disabled style={disabledInputStyle} />
+                    )}
+                  </div>
+                ))}
               </div>
 
-              {isEditingProf && userRole !== 'empresa' && (
+              {isEditingProf && (
                 <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ width: '100%', marginTop: '40px', padding: '18px', background: 'var(--ucc-navy)', color: 'white', borderRadius: '16px', fontWeight: 800, cursor: loadingProfile ? 'not-allowed' : 'pointer', transition: 'all 0.3s ease', boxShadow: '0 8px 25px rgba(30, 58, 95, 0.2)' }}>
                   {loadingProfile ? 'Guardando...' : '💾 Guardar Perfil Profesional'}
                 </button>
@@ -507,7 +474,7 @@ export default function Dashboard() {
             </div>
           )}
 
-          {activeSection === 'cv' && userRole !== 'empresa' && (
+          {activeSection === 'cv' && (
             <div className="db-card" style={{ padding: '60px 45px', borderRadius: '28px', textAlign: 'center', background: 'white', position: 'relative' }}>
               <div style={{ maxWidth: '600px', margin: '0 auto' }}>
                 <div style={{ fontSize: '4.5rem', marginBottom: '20px', animation: 'float 3s ease-in-out infinite' }}>📄</div>
@@ -547,22 +514,6 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-
-          {activeSection === 'cv' && userRole === 'empresa' && (
-            <div className="db-card" style={{ padding: '60px 45px', borderRadius: '28px', textAlign: 'center' }}>
-              <div style={{ fontSize: '4rem', marginBottom: '20px' }}>📢</div>
-              <h2 style={{ color: 'var(--ucc-navy)', fontWeight: 800 }}>Publicar Vacante</h2>
-              <p style={{ color: '#64748b' }}>Próximamente: Crea y gestiona ofertas laborales para egresados de la UCC.</p>
-            </div>
-          )}
-
-          {activeSection === 'apps' && userRole === 'empresa' && (
-            <div className="db-card" style={{ padding: '60px 45px', borderRadius: '28px', textAlign: 'center' }}>
-              <div style={{ fontSize: '4rem', marginBottom: '20px' }}>👥</div>
-              <h2 style={{ color: 'var(--ucc-navy)', fontWeight: 800 }}>Candidatos</h2>
-              <p style={{ color: '#64748b' }}>Próximamente: Revisa los perfiles y hojas de vida de los candidatos interesados.</p>
             </div>
           )}
         </div>

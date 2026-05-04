@@ -36,8 +36,17 @@ export default function LoginPage() {
       sessionStorage.setItem('ucc_session', JSON.stringify(data.session));
       sessionStorage.setItem('ucc_user', JSON.stringify(data.user));
 
-      // Redirigir al dashboard
-      window.location.href = "/dashboard";
+      // Redirigir según el rol
+      const rolId = data.user.profile?.rol_id;
+      if (rolId === 4) {
+        window.location.href = "/dashboard-admin";
+      } else if (rolId === 2) {
+        window.location.href = "/dashboard-externo";
+      } else if (rolId === 3) {
+        window.location.href = "/dashboard-empresa";
+      } else {
+        window.location.href = "/dashboard";
+      }
 
     } catch (err: any) {
       console.error("Error en login:", err);
