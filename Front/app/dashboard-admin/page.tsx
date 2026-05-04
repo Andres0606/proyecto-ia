@@ -21,7 +21,7 @@ export default function DashboardAdmin() {
     const savedUser = sessionStorage.getItem('ucc_user');
     if (savedUser) {
       const userData = JSON.parse(savedUser);
-      const rolId = userData.profile?.rol_id;
+      const rolId = Number(userData.profile?.rol_id);
 
       // Route Guard
       if (rolId === 2) window.location.href = "/dashboard-externo";

@@ -52,9 +52,9 @@ export default function Header() {
             <div className="header__profile-container" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
               {/* Botón Mi Perfil Estilo Cápsula */}
               <a href={
-                user.profile?.rol_id === 4 ? "/dashboard-admin" :
-                user.profile?.rol_id === 2 ? "/dashboard-externo" :
-                user.profile?.rol_id === 3 ? "/dashboard-empresa" :
+                Number(user.profile?.rol_id) === 4 ? "/dashboard-admin" :
+                Number(user.profile?.rol_id) === 2 ? "/dashboard-externo" :
+                Number(user.profile?.rol_id) === 3 ? "/dashboard-empresa" :
                 "/dashboard"
               } className="header__profile-badge" style={{ 
                 textDecoration: 'none',

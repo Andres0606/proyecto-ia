@@ -81,7 +81,7 @@ export default function Dashboard() {
         const rawId = userData.id || userData.profile?.id || userData.user_id;
         if (rawId) {
           const cleanId = String(rawId).trim().split(':')[0];
-          const rolId = userData.profile?.rol_id;
+          const rolId = Number(userData.profile?.rol_id);
           
           // Route Guard
           if (rolId === 4) window.location.href = "/dashboard-admin";
