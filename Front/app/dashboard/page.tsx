@@ -70,17 +70,36 @@ export default function Dashboard() {
     if (hour >= 12 && hour < 18) setGreeting('Buenas tardes');
     if (hour >= 18 || hour < 5) setGreeting('Buenas noches');
 
-    const savedUser = localStorage.getItem('ucc_user');
+    const savedUser = sessionStorage.getItem('ucc_user');
     if (savedUser) {
-      const userData = JSON.parse(savedUser);
-      setUserId(userData.id);
-      fetchFullProfile(userData.id);
+      try {
+        const userData = JSON.parse(savedUser);
+        const rawId = userData.id || userData.profile?.id || userData.user_id;
+        if (rawId) {
+          const cleanId = String(rawId).trim().split(':')[0];
+          setUserId(cleanId);
+          
+          // Fallback
+          const meta = userData.profile || userData.user_metadata || {};
+          setUserName(meta.full_name?.split(' ')[0] || meta.nombre_completo?.split(' ')[0] || 'Karen');
+          setFormData(prev => ({
+            ...prev,
+            nombre_completo: meta.full_name || meta.nombre_completo || '',
+            correo: userData.email || meta.correo || '',
+            telefono: meta.telefono || ''
+          }));
+
+          fetchFullProfile(cleanId);
+        }
+      } catch (e) {
+        console.error(e);
+      }
     }
   }, []);
 
   const fetchFullProfile = async (id: string) => {
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
+      const backendUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000').replace(/\/$/, '');
       const res = await fetch(`${backendUrl}/api/users/profile/${id}`);
       const data = await res.json();
       

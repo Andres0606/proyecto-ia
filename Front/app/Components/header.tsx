@@ -13,8 +13,8 @@ export default function Header() {
     const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", onScroll);
 
-    // Cargar usuario de localStorage
-    const savedUser = localStorage.getItem("ucc_user");
+    // Cargar usuario de sessionStorage
+    const savedUser = sessionStorage.getItem("ucc_user");
     if (savedUser) {
       setUser(JSON.parse(savedUser));
     }
@@ -23,8 +23,8 @@ export default function Header() {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("ucc_session");
-    localStorage.removeItem("ucc_user");
+    sessionStorage.removeItem("ucc_session");
+    sessionStorage.removeItem("ucc_user");
     setUser(null);
     window.location.href = "/";
   };

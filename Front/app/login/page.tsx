@@ -33,8 +33,8 @@ export default function LoginPage() {
       }
 
       // Guardar sesión y datos del usuario
-      localStorage.setItem('ucc_session', JSON.stringify(data.session));
-      localStorage.setItem('ucc_user', JSON.stringify(data.user));
+      sessionStorage.setItem('ucc_session', JSON.stringify(data.session));
+      sessionStorage.setItem('ucc_user', JSON.stringify(data.user));
 
       // Redirigir al dashboard
       window.location.href = "/dashboard";
