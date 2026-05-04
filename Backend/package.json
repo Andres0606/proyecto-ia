@@ -1,0 +1,17 @@
+{
+  "name": "ucc-egresados-backend",
+  "version": "1.0.0",
+  "description": "Backend para el Portal del Egresado UCC",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node --watch app.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.105.1",
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.1",
+    "morgan": "^1.10.1"
+  }
+}
