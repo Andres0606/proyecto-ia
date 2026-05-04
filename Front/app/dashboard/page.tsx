@@ -38,7 +38,7 @@ export default function Dashboard() {
   const [userId, setUserId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
-  const [activeSection, setActiveSection] = useState<'none' | 'personal' | 'professional' | 'apps'>('none');
+  const [activeSection, setActiveSection] = useState<'none' | 'personal' | 'professional' | 'apps' | 'cv'>('none');
   const [isEditingProf, setIsEditingProf] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [completionPct, setCompletionPct] = useState(0);
@@ -173,6 +173,37 @@ export default function Dashboard() {
     } catch (err) { alert("Error cargando CV"); }
   };
 
+  const startCamera = async () => {
+    setShowCamera(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      if (videoRef.current) videoRef.current.srcObject = stream;
+    } catch (err) { setShowCamera(false); }
+  };
+
+  const stopCamera = () => {
+    if (videoRef.current?.srcObject) {
+      (videoRef.current.srcObject as MediaStream).getTracks().forEach(t => t.stop());
+      videoRef.current.srcObject = null;
+    }
+    setShowCamera(false);
+  };
+
+  const capturePhoto = () => {
+    if (videoRef.current) {
+      const canvas = document.createElement('canvas');
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      canvas.getContext('2d')?.drawImage(videoRef.current, 0, 0);
+      canvas.toBlob((blob) => {
+        if (blob) {
+          handleFileUpload(new File([blob], "capture.jpg", { type: "image/jpeg" }), 'avatar');
+          stopCamera();
+        }
+      }, 'image/jpeg');
+    }
+  };
+
   const InfoCard = ({ label, value, detail }: { label: string, value: any, detail?: string }) => (
     <div style={{ background: 'white', padding: '22px', borderRadius: '18px', border: '1px solid #f1f5f9', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
       <p style={{ margin: '0 0 8px 0', fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700 }}>{label}</p>
@@ -204,7 +235,7 @@ export default function Dashboard() {
             <h1 style={{ margin: 0, color: 'var(--ucc-navy)', fontSize: '2rem' }}>{greeting}, {userName} ✨</h1>
             <p style={{ color: '#64748b' }}>Tu perfil profesional está al {completionPct}%</p>
             <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
-              <button onClick={() => setShowCamera(true)} style={{ background: 'var(--ucc-blue)', color: 'white', border: 'none', borderRadius: '12px', padding: '10px 20px', cursor: 'pointer', fontWeight: 600 }}>📸 Cámara</button>
+              <button onClick={startCamera} style={{ background: 'var(--ucc-blue)', color: 'white', border: 'none', borderRadius: '12px', padding: '10px 20px', cursor: 'pointer', fontWeight: 600 }}>📸 Cámara</button>
               <button onClick={() => avatarInputRef.current?.click()} style={{ background: '#f8fafc', color: 'var(--ucc-navy)', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '10px 20px', cursor: 'pointer', fontWeight: 600 }}>📁 Foto</button>
               <button onClick={handleViewResume} style={{ background: 'var(--ucc-green)', color: 'var(--ucc-navy)', border: 'none', borderRadius: '12px', padding: '10px 20px', cursor: 'pointer', fontWeight: 700 }}>📄 Ver CV Actual</button>
             </div>
@@ -226,30 +257,12 @@ export default function Dashboard() {
             <div className="db-card" style={{ padding: '45px', borderRadius: '28px' }}>
               <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '35px', fontWeight: 800 }}>👤 Datos Personales</h2>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
-                <div className="form-group">
-                  <label>Nombre Completo</label>
-                  <input type="text" value={formData.nombre_completo} onChange={(e) => setFormData({...formData, nombre_completo: e.target.value})} style={{ padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }} />
-                </div>
-                <div className="form-group">
-                  <label>Correo Electrónico</label>
-                  <input type="email" value={formData.correo} onChange={(e) => setFormData({...formData, correo: e.target.value})} style={{ padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }} />
-                </div>
-                <div className="form-group">
-                  <label>Teléfono</label>
-                  <input type="text" value={formData.telefono} onChange={(e) => setFormData({...formData, telefono: e.target.value})} style={{ padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }} />
-                </div>
-                <div className="form-group">
-                  <label style={{ color: '#94a3b8' }}>Cédula (Bloqueado)</label>
-                  <input type="text" value={formData.cedula} disabled style={{ background: '#334155', color: '#cbd5e1', padding: '14px', borderRadius: '12px', border: 'none' }} />
-                </div>
-                <div className="form-group">
-                  <label style={{ color: '#94a3b8' }}>Fecha de Nacimiento (Bloqueado)</label>
-                  <input type="text" value={formData.fecha_nacimiento} disabled style={{ background: '#334155', color: '#cbd5e1', padding: '14px', borderRadius: '12px', border: 'none' }} />
-                </div>
-                <div className="form-group">
-                  <label style={{ color: '#94a3b8' }}>Género (Bloqueado)</label>
-                  <input type="text" value={formData.genero} disabled style={{ background: '#334155', color: '#cbd5e1', padding: '14px', borderRadius: '12px', border: 'none' }} />
-                </div>
+                <div className="form-group"><label>Nombre Completo</label><input type="text" value={formData.nombre_completo} onChange={(e) => setFormData({...formData, nombre_completo: e.target.value})} style={{ padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }} /></div>
+                <div className="form-group"><label>Correo Electrónico</label><input type="email" value={formData.correo} onChange={(e) => setFormData({...formData, correo: e.target.value})} style={{ padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }} /></div>
+                <div className="form-group"><label>Teléfono</label><input type="text" value={formData.telefono} onChange={(e) => setFormData({...formData, telefono: e.target.value})} style={{ padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }} /></div>
+                <div className="form-group"><label style={{ color: '#94a3b8' }}>Cédula (Bloqueado)</label><input type="text" value={formData.cedula} disabled style={{ background: '#334155', color: '#cbd5e1', padding: '14px', borderRadius: '12px', border: 'none' }} /></div>
+                <div className="form-group"><label style={{ color: '#94a3b8' }}>Fecha de Nacimiento (Bloqueado)</label><input type="text" value={formData.fecha_nacimiento} disabled style={{ background: '#334155', color: '#cbd5e1', padding: '14px', borderRadius: '12px', border: 'none' }} /></div>
+                <div className="form-group"><label style={{ color: '#94a3b8' }}>Género (Bloqueado)</label><input type="text" value={formData.genero} disabled style={{ background: '#334155', color: '#cbd5e1', padding: '14px', borderRadius: '12px', border: 'none' }} /></div>
               </div>
               <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ width: '100%', marginTop: '40px', padding: '20px', background: 'var(--ucc-navy)', color: 'white', borderRadius: '16px', fontWeight: 800 }}>{loadingProfile ? 'Guardando...' : '💾 Guardar Datos'}</button>
             </div>
@@ -320,7 +333,7 @@ export default function Dashboard() {
               <video ref={videoRef} autoPlay style={{ width: '100%', borderRadius: '25px', marginBottom: '30px', transform: 'scaleX(-1)' }} />
               <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
                 <button onClick={capturePhoto} className="btn" style={{ background: 'var(--ucc-green)', color: 'var(--ucc-navy)', padding: '16px 40px', fontWeight: 800, borderRadius: '18px' }}>📸 Capturar</button>
-                <button onClick={() => setShowCamera(false)} className="btn" style={{ background: '#f1f5f9', color: '#002855', padding: '16px 40px', borderRadius: '18px' }}>Cancelar</button>
+                <button onClick={stopCamera} className="btn" style={{ background: '#f1f5f9', color: '#002855', padding: '16px 40px', borderRadius: '18px' }}>Cancelar</button>
               </div>
             </div>
           </div>
