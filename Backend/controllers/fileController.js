@@ -107,4 +107,37 @@ const uploadResume = async (req, res) => {
   }
 };
 
-module.exports = { uploadProfileImage, uploadResume };
+const getResumeUrl = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // 1. Buscar la ruta del CV en la tabla users
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('cv_url')
+      .eq('id', userId)
+      .single();
+
+    if (userError || !user?.cv_url) {
+      return res.status(404).json({ success: false, message: 'No se encontró una hoja de vida para este usuario.' });
+    }
+
+    // 2. Crear una Signed URL (enlace temporal de 60 segundos)
+    const { data, error } = await supabase.storage
+      .from('hojas-de-vida')
+      .createSignedUrl(user.cv_url, 60); // 60 segundos de validez
+
+    if (error) throw error;
+
+    return res.status(200).json({
+      success: true,
+      url: data.signedUrl
+    });
+
+  } catch (error) {
+    console.error('💥 Error en getResumeUrl:', error.message);
+    return res.status(500).json({ success: false, message: 'Error al generar el enlace del CV.' });
+  }
+};
+
+module.exports = { uploadProfileImage, uploadResume, getResumeUrl };

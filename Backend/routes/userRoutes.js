@@ -15,5 +15,6 @@ router.post('/login', userController.loginUser);
 // Rutas para subida de archivos
 router.post('/upload-avatar', upload.single('image'), fileController.uploadProfileImage);
 router.post('/upload-cv', upload.single('cv'), fileController.uploadResume);
+router.get('/get-cv-url/:userId', fileController.getResumeUrl);
 
 module.exports = router;

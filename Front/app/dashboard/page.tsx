@@ -106,6 +106,23 @@ export default function Dashboard() {
     }
   };
 
+  const handleViewResume = async () => {
+    if (!userId) return;
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
+      const res = await fetch(`${backendUrl}/api/users/get-cv-url/${userId}`);
+      const data = await res.json();
+      
+      if (data.success) {
+        window.open(data.url, '_blank');
+      } else {
+        alert(data.message);
+      }
+    } catch (err: any) {
+      alert("Error al obtener el CV: " + err.message);
+    }
+  };
+
   return (
     <div className="db-page">
       <Header />
@@ -133,12 +150,20 @@ export default function Dashboard() {
             <p className="db-header__date">{new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
               <h1>{greeting}, {userName}</h1>
-              <button 
-                onClick={() => document.getElementById('upload-avatar')?.click()}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--ucc-blue)', textDecoration: 'underline' }}
-              >
-                {uploading ? 'Subiendo...' : 'Cambiar foto'}
-              </button>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button 
+                  onClick={() => document.getElementById('upload-avatar')?.click()}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--ucc-blue)', textDecoration: 'underline' }}
+                >
+                  {uploading ? 'Subiendo...' : 'Cambiar foto'}
+                </button>
+                <button 
+                  onClick={handleViewResume}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--ucc-green)', textDecoration: 'underline' }}
+                >
+                  📄 Ver CV actual
+                </button>
+              </div>
             </div>
             <p>Aquí tienes el resumen de tu carrera hoy.</p>
           </div>
