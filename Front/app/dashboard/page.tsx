@@ -39,7 +39,9 @@ export default function Dashboard() {
   const [uploading, setUploading] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [activeSection, setActiveSection] = useState<'none' | 'personal' | 'professional' | 'apps'>('none');
+  const [isEditingProf, setIsEditingProf] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(false);
+  const [completionPct, setCompletionPct] = useState(0);
   
   const [fullProfile, setFullProfile] = useState<any>(null);
   const [formData, setFormData] = useState({
@@ -78,6 +80,19 @@ export default function Dashboard() {
     }
   }, []);
 
+  const calculateProgress = (u: any, p: any, photo: any) => {
+    let pct = 0;
+    if (photo) pct += 15;
+    if (u.cv_url) pct += 25;
+    if (u.telefono && u.nombre_completo && u.correo) pct += 20;
+    
+    const profFields = [p.nivel_formacion, p.programa_academico, p.estrato, p.estado_civil, p.ingreso_mensual];
+    const filled = profFields.filter(f => !!f).length;
+    pct += (filled / profFields.length) * 40;
+    
+    setCompletionPct(Math.round(pct));
+  };
+
   const fetchFullProfile = async (id: string) => {
     try {
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
@@ -105,6 +120,10 @@ export default function Dashboard() {
           area_desempeno: p.area_desempeno || '',
           emprendimiento: p.emprendimiento || ''
         });
+        calculateProgress(u, p, userPhoto);
+        // Si no hay perfil profesional, poner modo edición por defecto
+        if (!p.id) setIsEditingProf(true);
+        else setIsEditingProf(false);
       }
     } catch (err) {
       console.error("Error cargando perfil:", err);
@@ -124,7 +143,6 @@ export default function Dashboard() {
             nombre_completo: formData.nombre_completo,
             correo: formData.correo,
             telefono: formData.telefono
-            // No enviamos cedula, fecha_nacimiento ni genero porque son read-only
           },
           profileData: {
             nivel_formacion: formData.nivel_formacion,
@@ -142,7 +160,7 @@ export default function Dashboard() {
 
       const data = await res.json();
       if (data.success) {
-        alert("¡Datos actualizados!");
+        alert("¡Datos actualizados correctamente!");
         setActiveSection('none');
         fetchFullProfile(userId);
       }
@@ -173,6 +191,7 @@ export default function Dashboard() {
           saved.foto_url = data.url;
           localStorage.setItem('ucc_user', JSON.stringify(saved));
         }
+        fetchFullProfile(userId);
       }
     } catch (err: any) {
       alert("Error: " + err.message);
@@ -236,20 +255,35 @@ export default function Dashboard() {
 
       <main className="db-main" style={{ paddingTop: '100px', minHeight: '80vh' }}>
         <header className="db-header">
-          <div className="db-header__welcome" style={{ display: 'flex', alignItems: 'center', gap: '25px' }}>
+          <div className="db-header__welcome" style={{ display: 'flex', alignItems: 'center', gap: '25px', width: '100%' }}>
             <div style={{ position: 'relative', cursor: 'pointer' }} onClick={() => avatarInputRef.current?.click()}>
-              <div style={{ width: '90px', height: '90px', borderRadius: '50%', background: userPhoto ? `url(${userPhoto}) center/cover` : 'var(--ucc-navy)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', color: 'white', border: '3px solid white', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+              <div style={{ width: '110px', height: '110px', borderRadius: '50%', background: userPhoto ? `url(${userPhoto}) center/cover` : 'var(--ucc-navy)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', color: 'white', border: '4px solid white', boxShadow: '0 8px 20px rgba(0,0,0,0.15)', overflow: 'hidden' }}>
                 {!userPhoto && userName[0]}
               </div>
-              <div style={{ position: 'absolute', bottom: '0', right: '0', background: 'var(--ucc-red)', borderRadius: '50%', width: '28px', height: '28px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem' }}>📷</div>
+              <div style={{ position: 'absolute', bottom: '5px', right: '5px', background: 'var(--ucc-red)', borderRadius: '50%', width: '32px', height: '32px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem' }}>📷</div>
             </div>
-            <div>
+            <div style={{ flex: 1 }}>
               <p className="db-header__date">{new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-              <h1>{greeting}, {userName}</h1>
-              <div style={{ display: 'flex', gap: '10px', marginTop: '12px' }}>
-                <button onClick={startCamera} style={{ background: 'var(--ucc-blue)', color: 'white', border: 'none', borderRadius: '20px', padding: '6px 15px', cursor: 'pointer' }}>📷 Cámara</button>
-                <button onClick={() => avatarInputRef.current?.click()} style={{ background: '#f1f5f9', color: 'var(--ucc-navy)', border: '1px solid #e2e8f0', borderRadius: '20px', padding: '6px 15px', cursor: 'pointer' }}>📁 Subir foto</button>
-                <button onClick={handleViewResume} style={{ background: 'var(--ucc-green)', color: 'var(--ucc-navy)', border: 'none', borderRadius: '20px', padding: '6px 15px', cursor: 'pointer', fontWeight: 'bold' }}>📄 Ver CV Actual</button>
+              <h1 style={{ fontSize: '2.2rem' }}>{greeting}, {userName}</h1>
+              
+              {/* Barra de Progreso */}
+              <div style={{ marginTop: '15px', maxWidth: '500px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600, color: 'var(--ucc-navy)' }}>
+                  <span>Progreso del Perfil</span>
+                  <span>{completionPct}%</span>
+                </div>
+                <div style={{ width: '100%', height: '10px', background: '#e2e8f0', borderRadius: '10px', overflow: 'hidden', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)' }}>
+                  <div style={{ width: `${completionPct}%`, height: '100%', background: 'linear-gradient(90deg, var(--ucc-blue), var(--ucc-green))', transition: 'width 1s ease-in-out' }} />
+                </div>
+                <p style={{ fontSize: '0.75rem', marginTop: '6px', color: '#64748b' }}>
+                  {completionPct < 100 ? `💡 Tip: ${completionPct < 40 ? 'Sube tu CV para un gran salto' : 'Completa tu perfil profesional para ser más visible'}` : '✨ ¡Perfil estelar! Estás listo para las mejores vacantes.'}
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                <button onClick={startCamera} style={{ background: 'var(--ucc-blue)', color: 'white', border: 'none', borderRadius: '20px', padding: '8px 20px', cursor: 'pointer', fontWeight: 600 }}>📷 Cámara</button>
+                <button onClick={() => avatarInputRef.current?.click()} style={{ background: '#f1f5f9', color: 'var(--ucc-navy)', border: '1px solid #e2e8f0', borderRadius: '20px', padding: '8px 20px', cursor: 'pointer', fontWeight: 600 }}>📁 Subir foto</button>
+                <button onClick={handleViewResume} style={{ background: 'var(--ucc-green)', color: 'var(--ucc-navy)', border: 'none', borderRadius: '20px', padding: '8px 20px', cursor: 'pointer', fontWeight: 'bold' }}>📄 Ver CV Actual</button>
               </div>
             </div>
           </div>
@@ -297,7 +331,6 @@ export default function Dashboard() {
                 <label style={{ fontSize: '0.8rem' }}>Teléfono de Contacto</label>
                 <input type="text" value={formData.telefono} onChange={(e) => setFormData({...formData, telefono: e.target.value})} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', width: '100%' }} />
               </div>
-              {/* Campos de Solo Lectura (Gris Oscuro) */}
               <div className="form-group">
                 <label style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Cédula</label>
                 <input type="text" value={formData.cedula} disabled style={{ background: '#334155', color: '#cbd5e1', padding: '12px', borderRadius: '8px', border: 'none', width: '100%' }} />
@@ -315,76 +348,39 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Sección: Perfil Profesional */}
+        {/* Sección: Perfil Profesional (DINÁMICA) */}
         {activeSection === 'professional' && (
           <div className="db-card" style={{ marginBottom: '30px', padding: '30px', animation: 'fadeIn 0.3s' }}>
-            <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '25px', borderBottom: '2px solid #f1f5f9' }}>💼 Perfil Profesional</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
-              <div className="form-group">
-                <label style={{ fontSize: '0.8rem' }}>Programa Académico</label>
-                <select value={formData.programa_academico} onChange={(e) => setFormData({...formData, programa_academico: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                  <option value="">Seleccione...</option>
-                  {DIAG_OPTIONS.Programa.map(o => <option key={o} value={o}>{o}</option>)}
-                </select>
-              </div>
-              <div className="form-group">
-                <label style={{ fontSize: '0.8rem' }}>Estrato</label>
-                <select value={formData.estrato} onChange={(e) => setFormData({...formData, estrato: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                  <option value="">Seleccione...</option>
-                  {DIAG_OPTIONS.Estrato.map(o => <option key={o} value={o}>{o}</option>)}
-                </select>
-              </div>
-              <div className="form-group">
-                <label style={{ fontSize: '0.8rem' }}>Estado Civil</label>
-                <select value={formData.estado_civil} onChange={(e) => setFormData({...formData, estado_civil: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                  <option value="">Seleccione...</option>
-                  {DIAG_OPTIONS.EstadoCivil.map(o => <option key={o} value={o}>{o}</option>)}
-                </select>
-              </div>
-              <div className="form-group">
-                <label style={{ fontSize: '0.8rem' }}>Número de Hijos</label>
-                <select value={formData.numero_hijos} onChange={(e) => setFormData({...formData, numero_hijos: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                  <option value="">Seleccione...</option>
-                  {DIAG_OPTIONS.Hijos.map(o => <option key={o} value={o}>{o}</option>)}
-                </select>
-              </div>
-              <div className="form-group">
-                <label style={{ fontSize: '0.8rem' }}>Nivel de Formación</label>
-                <select value={formData.nivel_formacion} onChange={(e) => setFormData({...formData, nivel_formacion: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                  <option value="">Seleccione...</option>
-                  {DIAG_OPTIONS.Formacion.map(o => <option key={o} value={o}>{o}</option>)}
-                </select>
-              </div>
-              <div className="form-group">
-                <label style={{ fontSize: '0.8rem' }}>Área de Desempeño</label>
-                <select value={formData.area_desempeno} onChange={(e) => setFormData({...formData, area_desempeno: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                  <option value="">Seleccione...</option>
-                  {DIAG_OPTIONS.Area.map(o => <option key={o} value={o}>{o}</option>)}
-                </select>
-              </div>
-              <div className="form-group">
-                <label style={{ fontSize: '0.8rem' }}>Sector Económico</label>
-                <select value={formData.sector_economico} onChange={(e) => setFormData({...formData, sector_economico: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                  <option value="">Seleccione...</option>
-                  {DIAG_OPTIONS.Sector.map(o => <option key={o} value={o}>{o}</option>)}
-                </select>
-              </div>
-              <div className="form-group">
-                <label style={{ fontSize: '0.8rem' }}>Rango de Ingreso</label>
-                <select value={formData.ingreso_mensual} onChange={(e) => setFormData({...formData, ingreso_mensual: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                  <option value="">Seleccione...</option>
-                  {DIAG_OPTIONS.Ingreso.map(o => <option key={o} value={o}>{o}</option>)}
-                </select>
-              </div>
-              <div className="form-group">
-                <label style={{ fontSize: '0.8rem' }}>¿Emprendimiento?</label>
-                <select value={formData.emprendimiento} onChange={(e) => setFormData({...formData, emprendimiento: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                  <option value="">Seleccione...</option>
-                  {DIAG_OPTIONS.Emprendimiento.map(o => <option key={o} value={o}>{o}</option>)}
-                </select>
-              </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', borderBottom: '2px solid #f1f5f9', pb: '10px' }}>
+              <h2 style={{ color: 'var(--ucc-navy)', margin: 0 }}>💼 Perfil Profesional</h2>
+              {!isEditingProf && (
+                <button onClick={() => setIsEditingProf(true)} style={{ background: 'var(--ucc-blue)', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 15px', cursor: 'pointer', fontWeight: 600 }}>✏️ Actualizar Información</button>
+              )}
             </div>
-            <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ width: '100%', marginTop: '30px', padding: '15px', background: 'var(--ucc-navy)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>{loadingProfile ? 'Guardando...' : '💾 Guardar Perfil Profesional'}</button>
+
+            {isEditingProf ? (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+                <div className="form-group"><label style={{ fontSize: '0.8rem' }}>Programa Académico</label><select value={formData.programa_academico} onChange={(e) => setFormData({...formData, programa_academico: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}><option value="">Seleccione...</option>{DIAG_OPTIONS.Programa.map(o => <option key={o} value={o}>{o}</option>)}</select></div>
+                <div className="form-group"><label style={{ fontSize: '0.8rem' }}>Estrato</label><select value={formData.estrato} onChange={(e) => setFormData({...formData, estrato: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}><option value="">Seleccione...</option>{DIAG_OPTIONS.Estrato.map(o => <option key={o} value={o}>{o}</option>)}</select></div>
+                <div className="form-group"><label style={{ fontSize: '0.8rem' }}>Estado Civil</label><select value={formData.estado_civil} onChange={(e) => setFormData({...formData, estado_civil: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}><option value="">Seleccione...</option>{DIAG_OPTIONS.EstadoCivil.map(o => <option key={o} value={o}>{o}</option>)}</select></div>
+                <div className="form-group"><label style={{ fontSize: '0.8rem' }}>Número de Hijos</label><select value={formData.numero_hijos} onChange={(e) => setFormData({...formData, numero_hijos: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}><option value="">Seleccione...</option>{DIAG_OPTIONS.Hijos.map(o => <option key={o} value={o}>{o}</option>)}</select></div>
+                <div className="form-group"><label style={{ fontSize: '0.8rem' }}>Nivel de Formación</label><select value={formData.nivel_formacion} onChange={(e) => setFormData({...formData, nivel_formacion: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}><option value="">Seleccione...</option>{DIAG_OPTIONS.Formacion.map(o => <option key={o} value={o}>{o}</option>)}</select></div>
+                <div className="form-group"><label style={{ fontSize: '0.8rem' }}>Área de Desempeño</label><select value={formData.area_desempeno} onChange={(e) => setFormData({...formData, area_desempeno: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}><option value="">Seleccione...</option>{DIAG_OPTIONS.Area.map(o => <option key={o} value={o}>{o}</option>)}</select></div>
+                <div className="form-group"><label style={{ fontSize: '0.8rem' }}>Sector Económico</label><select value={formData.sector_economico} onChange={(e) => setFormData({...formData, sector_economico: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}><option value="">Seleccione...</option>{DIAG_OPTIONS.Sector.map(o => <option key={o} value={o}>{o}</option>)}</select></div>
+                <div className="form-group"><label style={{ fontSize: '0.8rem' }}>Rango de Ingreso</label><select value={formData.ingreso_mensual} onChange={(e) => setFormData({...formData, ingreso_mensual: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}><option value="">Seleccione...</option>{DIAG_OPTIONS.Ingreso.map(o => <option key={o} value={o}>{o}</option>)}</select></div>
+                <div className="form-group"><label style={{ fontSize: '0.8rem' }}>¿Emprendimiento?</label><select value={formData.emprendimiento} onChange={(e) => setFormData({...formData, emprendimiento: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}><option value="">Seleccione...</option>{DIAG_OPTIONS.Emprendimiento.map(o => <option key={o} value={o}>{o}</option>)}</select></div>
+                <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ gridColumn: 'span 3', marginTop: '10px', padding: '15px', background: 'var(--ucc-navy)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>{loadingProfile ? 'Guardando...' : '💾 Guardar Perfil Profesional'}</button>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '30px' }}>
+                <div style={{ borderLeft: '3px solid var(--ucc-blue)', paddingLeft: '15px' }}><p style={{ fontSize: '0.75rem', color: '#64748b', margin: 0 }}>Programa</p><p style={{ fontWeight: 600, color: 'var(--ucc-navy)' }}>{formData.programa_academico || 'No definido'}</p></div>
+                <div style={{ borderLeft: '3px solid var(--ucc-blue)', paddingLeft: '15px' }}><p style={{ fontSize: '0.75rem', color: '#64748b', margin: 0 }}>Nivel Formación</p><p style={{ fontWeight: 600, color: 'var(--ucc-navy)' }}>{formData.nivel_formacion || 'No definido'}</p></div>
+                <div style={{ borderLeft: '3px solid var(--ucc-blue)', paddingLeft: '15px' }}><p style={{ fontSize: '0.75rem', color: '#64748b', margin: 0 }}>Estado Civil</p><p style={{ fontWeight: 600, color: 'var(--ucc-navy)' }}>{formData.estado_civil || 'No definido'}</p></div>
+                <div style={{ borderLeft: '3px solid var(--ucc-blue)', paddingLeft: '15px' }}><p style={{ fontSize: '0.75rem', color: '#64748b', margin: 0 }}>Estrato</p><p style={{ fontWeight: 600, color: 'var(--ucc-navy)' }}>{formData.estrato || 'No definido'}</p></div>
+                <div style={{ borderLeft: '3px solid var(--ucc-blue)', paddingLeft: '15px' }}><p style={{ fontSize: '0.75rem', color: '#64748b', margin: 0 }}>Ingresos</p><p style={{ fontWeight: 600, color: 'var(--ucc-navy)' }}>{formData.ingreso_mensual || 'No definido'}</p></div>
+                <div style={{ borderLeft: '3px solid var(--ucc-blue)', paddingLeft: '15px' }}><p style={{ fontSize: '0.75rem', color: '#64748b', margin: 0 }}>Sector</p><p style={{ fontWeight: 600, color: 'var(--ucc-navy)' }}>{formData.sector_economico || 'No definido'}</p></div>
+              </div>
+            )}
           </div>
         )}
 
