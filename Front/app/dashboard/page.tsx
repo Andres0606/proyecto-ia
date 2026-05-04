@@ -380,13 +380,14 @@ export default function Dashboard() {
                 <button 
                   onClick={() => setIsEditingPersonal(!isEditingPersonal)} 
                   style={{ 
-                    background: isEditingPersonal ? '#f1f5f9' : 'var(--ucc-blue)', 
+                    background: isEditingPersonal ? 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)' : 'linear-gradient(135deg, var(--ucc-blue) 0%, #0056b3 100%)', 
                     color: isEditingPersonal ? '#475569' : 'white', 
-                    border: 'none', borderRadius: '12px', padding: '10px 20px', cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem',
-                    boxShadow: isEditingPersonal ? 'none' : '0 4px 12px rgba(0, 122, 255, 0.2)',
-                    transition: 'all 0.2s ease'
+                    border: 'none', borderRadius: '14px', padding: '12px 24px', cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem',
+                    boxShadow: isEditingPersonal ? '0 2px 4px rgba(0,0,0,0.05)' : '0 6px 16px rgba(0, 122, 255, 0.3)',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    display: 'flex', alignItems: 'center', gap: '8px'
                   }}>
-                  {isEditingPersonal ? '❌ Cancelar' : '✏️ Editar Datos'}
+                  {isEditingPersonal ? '✕ Cancelar' : '✎ Editar Datos'}
                 </button>
               </div>
 
@@ -405,24 +406,15 @@ export default function Dashboard() {
                 </div>
                 <div className="form-group">
                   <label style={labelStyle}>Cédula</label>
-                  <input type="text" value={formData.cedula} onChange={(e) => setFormData({...formData, cedula: e.target.value})} disabled={!isEditingPersonal} style={isEditingPersonal ? {...baseInputStyle, border: '1px solid var(--ucc-blue)'} : disabledInputStyle} />
+                  <input type="text" value={formData.cedula} disabled style={disabledInputStyle} title="Este campo no se puede editar" />
                 </div>
                 <div className="form-group">
                   <label style={labelStyle}>Fecha de Nacimiento</label>
-                  <input type="date" value={formData.fecha_nacimiento} onChange={(e) => setFormData({...formData, fecha_nacimiento: e.target.value})} disabled={!isEditingPersonal} style={isEditingPersonal ? {...baseInputStyle, border: '1px solid var(--ucc-blue)'} : disabledInputStyle} />
+                  <input type="text" value={formData.fecha_nacimiento} disabled style={disabledInputStyle} title="Este campo no se puede editar" />
                 </div>
                 <div className="form-group">
                   <label style={labelStyle}>Género</label>
-                  {isEditingPersonal ? (
-                    <select value={formData.genero} onChange={(e) => setFormData({...formData, genero: e.target.value})} style={{...baseInputStyle, border: '1px solid var(--ucc-blue)'}}>
-                      <option value="">Seleccione...</option>
-                      <option value="Masculino">Masculino</option>
-                      <option value="Femenino">Femenino</option>
-                      <option value="Otro">Otro</option>
-                    </select>
-                  ) : (
-                    <input type="text" value={formData.genero} disabled style={disabledInputStyle} />
-                  )}
+                  <input type="text" value={formData.genero} disabled style={disabledInputStyle} title="Este campo no se puede editar" />
                 </div>
               </div>
 
@@ -443,13 +435,14 @@ export default function Dashboard() {
                 <button 
                   onClick={() => setIsEditingProf(!isEditingProf)} 
                   style={{ 
-                    background: isEditingProf ? '#f1f5f9' : 'var(--ucc-blue)', 
+                    background: isEditingProf ? 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)' : 'linear-gradient(135deg, var(--ucc-blue) 0%, #0056b3 100%)', 
                     color: isEditingProf ? '#475569' : 'white', 
-                    border: 'none', borderRadius: '12px', padding: '10px 20px', cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem',
-                    transition: 'all 0.2s ease',
-                    boxShadow: isEditingProf ? 'none' : '0 4px 12px rgba(0, 122, 255, 0.2)'
+                    border: 'none', borderRadius: '14px', padding: '12px 24px', cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem',
+                    boxShadow: isEditingProf ? '0 2px 4px rgba(0,0,0,0.05)' : '0 6px 16px rgba(0, 122, 255, 0.3)',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    display: 'flex', alignItems: 'center', gap: '8px'
                   }}>
-                  {isEditingProf ? '❌ Cancelar' : '✏️ Actualizar Información'}
+                  {isEditingProf ? '✕ Cancelar' : '✎ Actualizar Información'}
                 </button>
               </div>
 
