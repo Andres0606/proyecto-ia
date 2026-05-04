@@ -534,9 +534,18 @@ body {
    ESTABILIDAD LABORAL
    ══════════════════════════════════════════════════════ */
 .estabilidad {
-  background: var(--gray-light);
-  padding: 6rem 2rem;
+  background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+  padding: 8rem 2rem;
   width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.estabilidad::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
 }
 
 .estabilidad__inner {
@@ -589,17 +598,20 @@ body {
 }
 
 .gauge-value {
-  font-size: 2.8rem;
+  font-size: 3rem;
   font-weight: 800;
-  color: var(--navy);
+  color: var(--ucc-navy);
   margin-top: -12px;
+  letter-spacing: -1.5px;
 }
 
 .gauge-label {
   font-size: 14px;
-  color: var(--gray-dark);
+  color: var(--ucc-green);
   margin-top: 6px;
-  font-weight: 500;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
 }
 
 .estabilidad__items {
@@ -625,7 +637,7 @@ body {
 
 .estabilidad__bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--red), #003f88);
+  background: linear-gradient(90deg, var(--red) 0%, var(--ucc-blue) 50%, var(--ucc-green) 100%);
   border-radius: 999px;
   transition: width 1s ease;
 }

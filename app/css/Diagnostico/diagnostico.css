@@ -231,9 +231,9 @@ body {
 .diag-score__fill {
   fill: none; stroke-width: 10; stroke-linecap: round;
 }
-.diag-score__fill--alta  { stroke: #16a34a; }
-.diag-score__fill--media { stroke: #f59e0b; }
 .diag-score__fill--baja  { stroke: var(--red); }
+.diag-score__fill--media { stroke: var(--ucc-blue); }
+.diag-score__fill--alta  { stroke: var(--ucc-green); }
 .diag-score__number {
   position: absolute; inset: 0;
   display: flex; flex-direction: column;
@@ -246,9 +246,9 @@ body {
   text-transform: uppercase; letter-spacing: 0.8px;
   padding: 5px 14px; border-radius: 50px;
 }
-.diag-score__label--alta  { background: #dcfce7; color: #15803d; }
-.diag-score__label--media { background: #fef3c7; color: #b45309; }
-.diag-score__label--baja  { background: #fee2e2; color: #b91c1c; }
+.diag-score__label--baja  { background: rgba(229, 62, 62, 0.12); color: var(--red); }
+.diag-score__label--media { background: rgba(0, 169, 224, 0.12); color: var(--ucc-blue); }
+.diag-score__label--alta  { background: rgba(141, 198, 63, 0.12); color: var(--ucc-green); }
 
 /* Info rows */
 .diag-result__info { display: flex; flex-direction: column; gap: 14px; }

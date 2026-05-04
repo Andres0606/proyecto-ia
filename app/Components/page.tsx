@@ -171,7 +171,8 @@ function Gauge({ pct, label }: { pct: number; label: string }) {
         <defs>
           <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="#e53e3e" />
-            <stop offset="100%" stopColor="#003f88" />
+            <stop offset="50%" stopColor="#00A9E0" />
+            <stop offset="100%" stopColor="#8DC63F" />
           </linearGradient>
         </defs>
         <path
