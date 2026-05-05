@@ -79,7 +79,11 @@ export default function DashboardExterno() {
           estado_civil: val(p.estado_civil), numero_hijos: val(p.numero_hijos), ingreso_mensual: val(p.ingreso_mensual),
           sector_economico: val(p.sector_economico), area_desempeno: val(p.area_desempeno), emprendimiento: p.emprendimiento ? 'Si' : 'No'
         });
-        if (u.suscripcion) setUserPlan(u.suscripcion.tipo_plan || 'Gratuito');
+        if (u.suscripciones?.[0]) {
+          setUserPlan(u.suscripciones[0].tipo_plan || 'Gratuito');
+        } else {
+          setUserPlan('Gratuito');
+        }
 
         let pct = 0;
         if (u.foto_url) pct += 10;
@@ -99,8 +103,31 @@ export default function DashboardExterno() {
     try {
       const r = await fetch(`${base()}/api/users/profile/${userId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userData: payload, profileData: payload }) });
       const d = await r.json();
-      if (d.success) { setToast({ msg: '¡Listo!', type: 'success' }); setIsEditingProf(false); setIsEditingPersonal(false); fetchProfile(userId); }
+      if (d.success) { setToast({ msg: '¡Datos Guardados!', type: 'success' }); setIsEditingProf(false); setIsEditingPersonal(false); fetchProfile(userId); }
     } catch { setToast({ msg: 'Error', type: 'error' }); } finally { setTimeout(() => setToast({ msg: '', type: 'none' }), 3000); }
+  };
+
+  const handleUpdatePlan = async (planName: string) => {
+    if (!userId) return;
+    setToast({ msg: `Activando ${planName}...`, type: 'info' });
+    try {
+      const r = await fetch(`${base()}/api/users/update-plan`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, tipoPlan: planName })
+      });
+      const d = await r.json();
+      if (d.success) {
+        setToast({ msg: `¡Plan ${planName} activado!`, type: 'success' });
+        setTimeout(() => fetchProfile(userId), 1000);
+      } else {
+        setToast({ msg: 'Error al actualizar plan', type: 'error' });
+      }
+    } catch {
+      setToast({ msg: 'Error de conexión', type: 'error' });
+    } finally {
+      setTimeout(() => setToast({ msg: '', type: 'none' }), 3000);
+    }
   };
 
   const handleUpload = async (file: File, type: 'avatar' | 'cv') => {
@@ -112,7 +139,7 @@ export default function DashboardExterno() {
     try {
       const r = await fetch(`${base()}/api/users/upload-${type === 'avatar' ? 'avatar' : 'cv'}`, { method: 'POST', body: fd });
       const d = await r.json();
-      if (d.success) { setToast({ msg: '¡Éxito!', type: 'success' }); setTimeout(() => fetchProfile(userId), 1500); }
+      if (d.success) { setToast({ msg: '¡Subido con éxito!', type: 'success' }); setTimeout(() => fetchProfile(userId), 1500); }
     } catch { setToast({ msg: 'Error', type: 'error' }); } finally { setTimeout(() => setToast({ msg: '', type: 'none' }), 3000); }
   };
 
@@ -170,7 +197,7 @@ export default function DashboardExterno() {
           </div>
         </div>
 
-        {/* Grid de Acciones */}
+        {/* Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '20px', marginBottom: '40px' }}>
           {ACTIONS.map(a => {
             const Icon = a.icon;
@@ -183,7 +210,7 @@ export default function DashboardExterno() {
           })}
         </div>
 
-        {/* Áreas de Contenido */}
+        {/* Contenido */}
         <div style={{ background: 'white', borderRadius: '32px', padding: '45px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)' }}>
           {activeSection === 'none' && <h2 style={{ textAlign: 'center' }}>Bienvenido al Portal Externo</h2>}
 
@@ -267,7 +294,10 @@ export default function DashboardExterno() {
                          <span style={{ color: '#10b981', fontWeight: 900 }}>✓</span> {f}
                        </li>)}
                      </ul>
-                     <button disabled={userPlan === p.name} style={{ width: '100%', padding: '15px', borderRadius: '16px', background: userPlan === p.name ? '#e2e8f0' : '#1e3a5f', color: userPlan === p.name ? '#94a3b8' : 'white', fontWeight: 800, border: 'none', cursor: userPlan === p.name ? 'default' : 'pointer' }}>
+                     <button 
+                       onClick={() => handleUpdatePlan(p.name)}
+                       disabled={userPlan === p.name} 
+                       style={{ width: '100%', padding: '15px', borderRadius: '16px', background: userPlan === p.name ? '#e2e8f0' : '#1e3a5f', color: userPlan === p.name ? '#94a3b8' : 'white', fontWeight: 800, border: 'none', cursor: userPlan === p.name ? 'default' : 'pointer' }}>
                        {userPlan === p.name ? 'Activo' : 'Seleccionar'}
                      </button>
                    </div>
