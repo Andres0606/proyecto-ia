@@ -22,7 +22,8 @@ const QUICK_ACTIONS = [
 ];
 
 const OPTIONS = {
-  Area: ["Administrativa", "Salud", "Financiera", "Industrial", "Educacion", "Sistemas", "Juridica", "Ventas", "Marketing"],
+  Area: ["Administracion de Empresas", "Contaduria Publica", "Derecho", "Ingenieria de Sistemas", "Ingenieria Civil", "Medicina", "Psicologia", "Odontologia", "Enfermeria", "Medicina Veterinaria y Zootecnia", "Comercio Internacional", "Mercadeo", "Comunicacion Social", "Educacion"],
+  Programas: ["Derecho", "Contaduria Publica", "Ingenieria Civil", "Ciencias Economicas", "Medicina", "Psicologia", "Odontologia", "Enfermeria", "Ingenieria de Sistemas", "Medicina Veterinaria y Zootecnia", "Especializacion", "Tecnico Auxiliar en Enfermeria"],
   Nivel: ["Profesional", "Especialista", "Magister", "Doctorado", "Tecnico"],
   Contrato: ["Termino Indefinido", "Termino Fijo", "Prestacion de Servicios", "Obra o Labor", "Aprendizaje"],
   Modalidad: ["Presencial", "Remoto", "Hibrido"],
@@ -35,7 +36,6 @@ export default function DashboardEmpresa() {
   const [companyLogo, setCompanyLogo] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<'none' | 'professional' | 'jobs' | 'candidates' | 'support'>('none');
-  const [isEditing, setIsEditing] = useState(false);
   const [toast, setToast] = useState<{ msg: string, type: 'info' | 'success' | 'error' | 'none' }>({ msg: '', type: 'none' });
   
   const [formData, setFormData] = useState({
@@ -44,8 +44,8 @@ export default function DashboardEmpresa() {
   });
 
   const [jobData, setJobData] = useState({
-    cargo: '', area_desempeno: '', programa_requerido: '', nivel_formacion: '',
-    salario: '', tipo_contato: '', duracion_contrato: '', modalidad: '',
+    cargo: '', area_desempeno: '', programa_requerido: [] as string[], nivel_formacion: '',
+    salario: '', tipo_contrato: '', duracion_contrato: '', modalidad: '',
     ubicacion: '', descripcion: ''
   });
 
@@ -99,21 +99,40 @@ export default function DashboardEmpresa() {
     } catch (err) { console.error(err); }
   };
 
+  const handleToggleProgram = (prog: string) => {
+    setJobData(prev => ({
+      ...prev,
+      programa_requerido: prev.programa_requerido.includes(prog)
+        ? prev.programa_requerido.filter(p => p !== prog)
+        : [...prev.programa_requerido, prog]
+    }));
+  };
+
   const handlePostJob = async () => {
     if (!userId) return;
+    if (!jobData.cargo || jobData.programa_requerido.length === 0) {
+      setToast({ msg: 'Completa los campos obligatorios', type: 'error' });
+      return;
+    }
+
     setToast({ msg: 'Publicando vacante...', type: 'info' });
     try {
+      const payload = { 
+        ...jobData, 
+        programa_requerido: jobData.programa_requerido.join(', '), 
+        userId 
+      };
       const res = await fetch(`${base()}/api/vacantes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...jobData, userId })
+        body: JSON.stringify(payload)
       });
       const d = await res.json();
       if (d.success) {
         setToast({ msg: '¡Vacante publicada con éxito!', type: 'success' });
         setJobData({
-          cargo: '', area_desempeno: '', programa_requerido: '', nivel_formacion: '',
-          salario: '', tipo_contato: '', duracion_contrato: '', modalidad: '',
+          cargo: '', area_desempeno: '', programa_requerido: [], nivel_formacion: '',
+          salario: '', tipo_contrato: '', duracion_contrato: '', modalidad: '',
           ubicacion: '', descripcion: ''
         });
         setActiveSection('none');
@@ -216,12 +235,21 @@ export default function DashboardEmpresa() {
               <div className="responsive-grid-2" style={{ gap: '20px' }}>
                 <div><label style={lbl}>Cargo / Título</label><input style={inp} value={jobData.cargo} onChange={e => setJobData({...jobData, cargo: e.target.value})} placeholder="Ej: Analista de Sistemas" /></div>
                 <div><label style={lbl}>Área de Desempeño</label><select style={inp} value={jobData.area_desempeno} onChange={e => setJobData({...jobData, area_desempeno: e.target.value})}><option value="">Seleccionar...</option>{OPTIONS.Area.map(o => <option key={o} value={o}>{o}</option>)}</select></div>
-                <div><label style={lbl}>Programa Requerido</label><input style={inp} value={jobData.programa_requerido} onChange={e => setJobData({...jobData, programa_requerido: e.target.value})} placeholder="Ej: Ingeniería de Sistemas" /></div>
+                
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <label style={lbl}>Programas Requeridos (Puedes seleccionar varios)</label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', padding: '15px', border: '1.5px solid #e2e8f0', borderRadius: '16px', background: '#f8fafc' }}>
+                    {OPTIONS.Programas.map(p => (
+                      <button key={p} onClick={() => handleToggleProgram(p)} style={{ padding: '8px 16px', borderRadius: '30px', border: '1.5px solid', borderColor: jobData.programa_requerido.includes(p) ? '#1e3a5f' : '#e2e8f0', background: jobData.programa_requerido.includes(p) ? '#1e3a5f' : 'white', color: jobData.programa_requerido.includes(p) ? 'white' : '#64748b', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }}>{p}</button>
+                    ))}
+                  </div>
+                </div>
+
                 <div><label style={lbl}>Nivel de Formación</label><select style={inp} value={jobData.nivel_formacion} onChange={e => setJobData({...jobData, nivel_formacion: e.target.value})}><option value="">Seleccionar...</option>{OPTIONS.Nivel.map(o => <option key={o} value={o}>{o}</option>)}</select></div>
-                <div><label style={lbl}>Salario Mensual</label><input style={inp} type="number" value={jobData.salario} onChange={e => setJobData({...jobData, salario: e.target.value})} placeholder="Ej: 3000000" /></div>
-                <div><label style={lbl}>Tipo de Contrato</label><select style={inp} value={jobData.tipo_contato} onChange={e => setJobData({...jobData, tipo_contato: e.target.value})}><option value="">Seleccionar...</option>{OPTIONS.Contrato.map(o => <option key={o} value={o}>{o}</option>)}</select></div>
+                <div><label style={lbl}>Salario Mensual</label><input style={inp} type="number" value={jobData.salario} onChange={e => setJobData({...jobData, salario: e.target.value})} placeholder="Ej: 2800000" /></div>
+                <div><label style={lbl}>Tipo de Contrato</label><select style={inp} value={jobData.tipo_contrato} onChange={e => setJobData({...jobData, tipo_contrato: e.target.value})}><option value="">Seleccionar...</option>{OPTIONS.Contrato.map(o => <option key={o} value={o}>{o}</option>)}</select></div>
                 <div><label style={lbl}>Modalidad</label><select style={inp} value={jobData.modalidad} onChange={e => setJobData({...jobData, modalidad: e.target.value})}><option value="">Seleccionar...</option>{OPTIONS.Modalidad.map(o => <option key={o} value={o}>{o}</option>)}</select></div>
-                <div><label style={lbl}>Ubicación</label><input style={inp} value={jobData.ubicacion} onChange={e => setJobData({...jobData, ubicacion: e.target.value})} placeholder="Ej: Bogotá D.C." /></div>
+                <div><label style={lbl}>Ubicación de la Empresa</label><input style={inp} value={jobData.ubicacion} onChange={e => setJobData({...jobData, ubicacion: e.target.value})} placeholder="Ej: Villavicencio" /></div>
                 <div style={{ gridColumn: '1 / -1' }}><label style={lbl}>Descripción de la Vacante</label><textarea style={{ ...inp, height: '120px', resize: 'none' }} value={jobData.descripcion} onChange={e => setJobData({...jobData, descripcion: e.target.value})} placeholder="Detalla los requisitos y responsabilidades..." /></div>
               </div>
               <button onClick={handlePostJob} style={{ width: '100%', marginTop: '30px', padding: '18px', background: '#1e3a5f', color: 'white', borderRadius: '16px', border: 'none', fontWeight: 800, cursor: 'pointer', fontSize: '1rem' }}>Publicar Vacante Ahora</button>
