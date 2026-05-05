@@ -47,6 +47,14 @@ export default function Dashboard() {
   
   const [uploadStatus, setUploadStatus] = useState<{msg: string, type: 'info' | 'success' | 'error' | 'none'}>({msg: '', type: 'none'});
   const [isUploading, setIsUploading] = useState(false);
+  const [toast, setToast] = useState<{ msg: string, type: 'info' | 'success' | 'error' | 'none' }>({ msg: '', type: 'none' });
+
+  const showToast = (msg: string, type: 'info' | 'success' | 'error') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: '', type: 'none' }), 3000);
+  };
+
+  const base = () => (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000').replace(/\/$/, '');
   
   const [formData, setFormData] = useState({
     nombre_completo: '',
@@ -191,30 +199,26 @@ export default function Dashboard() {
   const handleFileUpload = async (file: File, type: 'avatar' | 'cv') => {
     if (!userId) return;
     setIsUploading(true);
-    setUploadStatus({ msg: `⏳ Subiendo ${type === 'avatar' ? 'tu foto' : 'tu CV'}... No cierres esta ventana`, type: 'info' });
-
+    showToast(`Subiendo ${type === 'avatar' ? 'foto' : 'CV'}...`, 'info');
+    
     const fd = new FormData();
     fd.append(type === 'avatar' ? 'image' : 'cv', file);
     fd.append('userId', userId);
     
     try {
-      const backendUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000').replace(/\/$/, '');
-      const res = await fetch(`${backendUrl}/api/users/upload-${type === 'avatar' ? 'avatar' : 'cv'}`, { method: 'POST', body: fd });
-      const data = await res.json();
+      const r = await fetch(`${base()}/api/users/upload-${type === 'avatar' ? 'avatar' : 'cv'}`, { method: 'POST', body: fd });
+      const d = await r.json();
       
-      if (data.success) {
-        setUploadStatus({ msg: '✅ ¡Archivo subido y guardado con éxito!', type: 'success' });
-        if (type === 'avatar') setUserPhoto(data.url);
-        setTimeout(() => {
-          fetchFullProfile(userId);
-          setUploadStatus({ msg: '', type: 'none' });
-        }, 3000);
+      if (d.success) {
+        showToast('¡Subido con éxito!', 'success');
+        if (type === 'avatar') setUserPhoto(d.url);
+        setTimeout(() => fetchFullProfile(userId), 1500);
       } else {
-        const errorDetail = data.error ? ` (${data.error})` : '';
-        setUploadStatus({ msg: `❌ ${data.message || 'Error al procesar el archivo'}${errorDetail}`, type: 'error' });
+        const errorDetail = d.error ? ` (${d.error})` : '';
+        showToast(`${d.message || 'Error en la carga'}${errorDetail}`, 'error');
       }
-    } catch (err: any) { 
-      setUploadStatus({ msg: '❌ Error crítico en la carga', type: 'error' }); 
+    } catch { 
+      showToast('Error en la carga', 'error'); 
     } finally { 
       setIsUploading(false); 
     }
@@ -222,21 +226,11 @@ export default function Dashboard() {
 
   const handleViewResume = async () => {
     if (!userId) return;
-    setUploadStatus({ msg: 'Preparando documento...', type: 'info' });
     try {
-      const backendUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000').replace(/\/$/, '');
-      const res = await fetch(`${backendUrl}/api/users/get-cv-url/${userId}`);
-      const data = await res.json();
-      if (data.success) {
-        setUploadStatus({ msg: 'Abriendo hoja de vida...', type: 'success' });
-        window.open(data.url, '_blank');
-      } else {
-        setUploadStatus({ msg: 'Aún no has subido una hoja de vida', type: 'info' });
-      }
-    } catch (err) { 
-      setUploadStatus({ msg: 'Error al recuperar el archivo', type: 'error' }); 
-    }
-    setTimeout(() => setUploadStatus({ msg: '', type: 'none' }), 2000);
+      const r = await fetch(`${base()}/api/users/get-cv-url/${userId}`);
+      const d = await r.json();
+      if (d.success) window.open(d.url, '_blank'); else showToast('No hay CV subido', 'info');
+    } catch { showToast('Error al recuperar archivo', 'error'); }
   };
 
   const baseInputStyle = {
@@ -273,7 +267,7 @@ export default function Dashboard() {
       <input type="file" ref={cvInputRef} hidden accept=".pdf" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'cv')} />
 
       {/* Notificación Toast Moderna */}
-      {uploadStatus.type !== 'none' && (
+      {toast.type !== 'none' && (
         <div style={{
           position: 'fixed', bottom: '32px', right: '32px', zIndex: 9999,
           padding: '16px 22px',
@@ -292,29 +286,28 @@ export default function Dashboard() {
           backdropFilter: 'blur(12px)',
           animation: 'slideInRight 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
           background:
-            uploadStatus.type === 'success'
+            toast.type === 'success'
               ? 'linear-gradient(135deg, #059669 0%, #047857 100%)'
-              : uploadStatus.type === 'error'
+              : toast.type === 'error'
               ? 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)'
               : 'linear-gradient(135deg, #1e3a5f 0%, #0f2340 100%)'
         }}>
-          {/* Icono según tipo */}
-          {uploadStatus.type === 'info' && (
+          {toast.type === 'info' && (
             <div className="spinner-white" style={{ flexShrink: 0 }} />
           )}
-          {uploadStatus.type === 'success' && (
+          {toast.type === 'success' && (
             <svg style={{ flexShrink: 0 }} width="22" height="22" viewBox="0 0 24 24" fill="none">
               <circle cx="12" cy="12" r="10" fill="rgba(255,255,255,0.2)" />
               <path d="M7 12.5l3.5 3.5 6.5-7" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           )}
-          {uploadStatus.type === 'error' && (
+          {toast.type === 'error' && (
             <svg style={{ flexShrink: 0 }} width="22" height="22" viewBox="0 0 24 24" fill="none">
               <circle cx="12" cy="12" r="10" fill="rgba(255,255,255,0.2)" />
               <path d="M15 9l-6 6M9 9l6 6" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
             </svg>
           )}
-          <span>{uploadStatus.msg}</span>
+          <span>{toast.msg}</span>
         </div>
       )}
 
@@ -466,53 +459,22 @@ export default function Dashboard() {
                 ))}
               </div>
 
-              {isEditingProf && (
-                <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ width: '100%', marginTop: '40px', padding: '18px', background: 'var(--ucc-navy)', color: 'white', borderRadius: '16px', fontWeight: 800, cursor: loadingProfile ? 'not-allowed' : 'pointer', transition: 'all 0.3s ease', boxShadow: '0 8px 25px rgba(30, 58, 95, 0.2)' }}>
-                  {loadingProfile ? 'Guardando...' : '💾 Guardar Perfil Profesional'}
                 </button>
               )}
             </div>
           )}
 
           {activeSection === 'cv' && (
-            <div className="db-card" style={{ padding: '60px 45px', borderRadius: '28px', textAlign: 'center', background: 'white', position: 'relative' }}>
-              <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-                <div style={{ fontSize: '4.5rem', marginBottom: '20px', animation: 'float 3s ease-in-out infinite' }}>📄</div>
-                <h2 style={{ color: 'var(--ucc-navy)', marginBottom: '15px', fontWeight: 800, fontSize: '2.2rem' }}>Gestión de Hoja de Vida</h2>
-                <p style={{ color: '#64748b', marginBottom: '45px', fontSize: '1.1rem' }}>Sube tu último CV en formato PDF para que las empresas puedan contactarte.</p>
-                
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                  <button onClick={handleViewResume} style={{ width: '100%', padding: '22px', background: 'var(--ucc-green)', color: 'var(--ucc-navy)', borderRadius: '20px', fontWeight: 800, fontSize: '1.2rem', border: 'none', cursor: 'pointer', boxShadow: '0 8px 20px rgba(139, 195, 74, 0.25)' }}>
-                    📄 Ver mi Hoja de Vida Actual
-                  </button>
-                  
-                  <div style={{ display: 'flex', alignItems: 'center', margin: '25px 0' }}>
-                    <div style={{ flex: 1, height: '2px', background: '#f1f5f9' }} />
-                    <span style={{ padding: '0 20px', color: '#94a3b8', fontSize: '0.9rem', fontWeight: 700 }}>O ACTUALIZAR ARCHIVO</span>
-                    <div style={{ flex: 1, height: '2px', background: '#f1f5f9' }} />
-                  </div>
-
-                  <div 
-                    onClick={() => !isUploading && cvInputRef.current?.click()}
-                    style={{ 
-                      width: '100%', padding: '40px 20px', background: isUploading ? '#f8fafc' : '#ffffff', 
-                      color: 'var(--ucc-navy)', border: '2px dashed #cbd5e1', borderRadius: '20px', 
-                      fontWeight: 700, fontSize: '1.1rem', cursor: isUploading ? 'not-allowed' : 'pointer', 
-                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px'
-                    }}>
-                    {isUploading ? (
-                      <>
-                        <div className="spinner-blue" />
-                        <span style={{ color: 'var(--ucc-blue)' }}>Procesando archivo...</span>
-                      </>
-                    ) : (
-                      <>
-                        <span style={{ fontSize: '2rem' }}>⬆️</span>
-                        <span>Seleccionar nuevo CV (PDF)</span>
-                      </>
-                    )}
-                  </div>
-                </div>
+            <div style={{ background: 'white', borderRadius: '24px', padding: '50px 40px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', textAlign: 'center' }}>
+              <div style={{ width: '80px', height: '80px', borderRadius: '24px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', margin: '0 auto 24px' }}>📄</div>
+              <h2 style={{ color: 'var(--ucc-navy)', fontWeight: 800, fontSize: '1.6rem', marginBottom: '8px' }}>Tu Hoja de Vida</h2>
+              <p style={{ color: '#64748b', marginBottom: '32px' }}>Sube tu CV en formato PDF para que las empresas puedan verlo</p>
+              <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '32px' }}>
+                <button onClick={handleViewResume} style={{ padding: '14px 28px', background: 'var(--ucc-navy)', color: 'white', border: 'none', borderRadius: '14px', fontWeight: 700, cursor: 'pointer', fontSize: '0.95rem' }}>📄 Ver CV Actual</button>
+                <button onClick={() => cvInputRef.current?.click()} disabled={isUploading} style={{ padding: '14px 28px', background: '#e0f7ff', color: '#00A9E0', border: '1px solid #7dd3fc', borderRadius: '14px', fontWeight: 700, cursor: 'pointer', fontSize: '0.95rem' }}>{isUploading ? 'Subiendo...' : '⬆️ Subir Nuevo CV'}</button>
+              </div>
+              <div onClick={() => !isUploading && cvInputRef.current?.click()} style={{ border: '2px dashed #cbd5e1', padding: '40px', borderRadius: '20px', cursor: 'pointer', transition: 'all 0.2s' }} onMouseOver={e => (e.currentTarget.style.borderColor = 'var(--ucc-navy)')} onMouseOut={e => (e.currentTarget.style.borderColor = '#cbd5e1')}>
+                <p style={{ color: '#94a3b8', margin: 0 }}>{isUploading ? 'Procesando archivo...' : 'Arrastra tu PDF aquí o haz clic para seleccionarlo'}</p>
               </div>
             </div>
           )}
