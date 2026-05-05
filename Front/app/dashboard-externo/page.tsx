@@ -359,11 +359,11 @@ export default function DashboardExterno() {
         </div>
 
         {/* Content */}
-        <div style={{ maxWidth: '1200px', margin: '-40px auto 60px', padding: '0 20px', position: 'relative', zIndex: 10 }}>
+        <div style={{ maxWidth: '1200px', margin: '40px auto 60px', padding: '0 20px', position: 'relative', zIndex: 10 }}>
 
           {activeSection === 'none' && (
-            <div>
-              <div className="responsive-grid-4" style={{ marginBottom: '28px' }}>
+            <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
+              <div className="responsive-grid-4" style={{ marginBottom: '40px', gap: '28px' }}>
                 {[
                   { label: 'Perfil Completo', val: `${completionPct}%`, icon: '✅', color: 'var(--ucc-navy)', bg: '#eff6ff' },
                   { label: 'CVs Subidos', val: '1', icon: '📄', color: '#00A9E0', bg: '#e0f7ff' },
@@ -376,17 +376,6 @@ export default function DashboardExterno() {
                     <p style={{ margin: 0, fontSize: '0.8rem', color: '#94a3b8', fontWeight: 600 }}>{c.label}</p>
                   </div>
                 ))}
-              </div>
-              <div style={{ background: 'white', borderRadius: '24px', padding: '40px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', display: 'flex', gap: '30px', alignItems: 'center', flexWrap: 'wrap' }}>
-                <div style={{ fontSize: '4rem' }}>🌟</div>
-                <div style={{ flex: 1, minWidth: '240px' }}>
-                  <h2 style={{ color: 'var(--ucc-navy)', fontWeight: 800, margin: '0 0 8px' }}>Portal de Usuario Externo UCC</h2>
-                  <p style={{ color: '#64748b', lineHeight: 1.6, margin: '0 0 20px' }}>Actualiza tu perfil, sube tu CV y explora los planes disponibles para acceder a más beneficios.</p>
-                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                    <button onClick={() => setActiveSection('professional')} style={{ background: 'var(--ucc-navy)', color: 'white', border: 'none', borderRadius: '12px', padding: '12px 24px', fontWeight: 700, cursor: 'pointer' }}>Mi Perfil</button>
-                    <button onClick={() => setActiveSection('plans')} style={{ background: '#fff5f5', color: '#e53e3e', border: '1px solid #feb2b2', borderRadius: '12px', padding: '12px 24px', fontWeight: 700, cursor: 'pointer' }}>Ver Planes ⭐</button>
-                  </div>
-                </div>
               </div>
             </div>
           )}
