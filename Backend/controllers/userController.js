@@ -84,11 +84,18 @@ const registerUser = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Error en registerUser:', error.message);
+    console.error('❌ ERROR DETALLADO EN REGISTRO:', error);
+    
+    let userMessage = 'No se pudo completar el registro.';
+    if (error.message?.includes('users_correo_key')) userMessage = 'El correo electrónico ya está registrado.';
+    if (error.message?.includes('empresas_nit_key')) userMessage = 'El NIT ingresado ya pertenece a otra empresa.';
+    if (error.code === '23505') userMessage = 'Ya existe un registro con esos datos únicos (Email o NIT).';
+
     return res.status(500).json({
       success: false,
-      message: 'No se pudo completar el registro.',
-      error: error.message
+      message: userMessage,
+      error: error.message,
+      detail: error.details || error.hint || null
     });
   }
 };

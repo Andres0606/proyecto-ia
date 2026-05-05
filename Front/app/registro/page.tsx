@@ -345,9 +345,13 @@ function StepDatosPersonales({
 function StepDatosEmpresa({
   onBack,
   onSubmit,
+  formData,
+  setFormData,
 }: {
   onBack: () => void;
   onSubmit: () => void;
+  formData: any;
+  setFormData: (d: any) => void;
 }) {
   return (
     <div className="auth-step">
@@ -363,6 +367,9 @@ function StepDatosEmpresa({
               className="auth-field__input"
               type="text"
               placeholder="Mi Empresa S.A.S"
+              value={formData.razon_social || ''}
+              onChange={(e) => setFormData({ ...formData, razon_social: e.target.value })}
+              required
             />
           </div>
           <div className="auth-field">
@@ -374,6 +381,9 @@ function StepDatosEmpresa({
               className="auth-field__input"
               type="text"
               placeholder="900.123.456-7"
+              value={formData.nit || ''}
+              onChange={(e) => setFormData({ ...formData, nit: e.target.value })}
+              required
             />
           </div>
         </div>
@@ -383,7 +393,7 @@ function StepDatosEmpresa({
           <label className="auth-field__label" htmlFor="reg-sector">
             Sector económico
           </label>
-          <select id="reg-sector" className="auth-field__select">
+          <select id="reg-sector" className="auth-field__select" value={formData.sector_economico || ''} onChange={(e) => setFormData({ ...formData, sector_economico: e.target.value })}>
             {SECTORES.map((s) => (
               <option key={s.value} value={s.value}>
                 {s.label}
@@ -398,7 +408,7 @@ function StepDatosEmpresa({
             <label className="auth-field__label" htmlFor="reg-tamano">
               Tamaño de empresa
             </label>
-            <select id="reg-tamano" className="auth-field__select">
+            <select id="reg-tamano" className="auth-field__select" value={formData.tamano_empresa || ''} onChange={(e) => setFormData({ ...formData, tamano_empresa: e.target.value })}>
               {TAMANOS.map((t) => (
                 <option key={t.value} value={t.value}>
                   {t.label}
@@ -410,7 +420,7 @@ function StepDatosEmpresa({
             <label className="auth-field__label" htmlFor="reg-tipo-emp">
               Tipo de empresa
             </label>
-            <select id="reg-tipo-emp" className="auth-field__select">
+            <select id="reg-tipo-emp" className="auth-field__select" value={formData.tipo_empresa || ''} onChange={(e) => setFormData({ ...formData, tipo_empresa: e.target.value })}>
               <option value="">Seleccionar...</option>
               <option value="publica">Pública</option>
               <option value="privada">Privada</option>
@@ -430,6 +440,8 @@ function StepDatosEmpresa({
             className="auth-field__input"
             type="text"
             placeholder="Bogotá, Medellín, Cali..."
+            value={formData.ciudad || ''}
+            onChange={(e) => setFormData({ ...formData, ciudad: e.target.value })}
           />
         </div>
 
@@ -467,6 +479,13 @@ export default function RegistroPage() {
     cedula: "",
     fecha_nacimiento: "",
     genero: "",
+    // Empresa fields
+    razon_social: "",
+    nit: "",
+    sector_economico: "",
+    tamano_empresa: "",
+    tipo_empresa: "",
+    ciudad: "",
   });
 
   const email = formData.email;
@@ -586,7 +605,7 @@ export default function RegistroPage() {
         )}
 
         {step === 3 && rol === "empresa" && (
-          <StepDatosEmpresa onBack={handleBack} onSubmit={handleSubmit} />
+          <StepDatosEmpresa onBack={handleBack} onSubmit={handleSubmit} formData={formData} setFormData={setFormData} />
         )}
 
         {/* Divider + link */}
