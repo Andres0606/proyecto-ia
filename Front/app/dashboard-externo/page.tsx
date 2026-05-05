@@ -240,7 +240,7 @@ export default function DashboardExterno() {
       const d = await r.json();
       if (d.success) {
         showToast(`¡Ahora tienes el ${planName}!`, 'success');
-        setTimeout(() => fetchProfile(userId), 2000);
+        setTimeout(() => window.location.reload(), 2000);
       } else {
         showToast(d.message || 'Error al suscribirse', 'error');
       }
