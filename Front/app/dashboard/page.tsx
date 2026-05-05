@@ -313,7 +313,9 @@ export default function Dashboard() {
 
       <main className="db-main" style={{ paddingTop: '100px', minHeight: '80vh' }}>
         
-        <div className="db-card responsive-hero" style={{ margin: '0 auto 40px', maxWidth: '1100px', padding: '30px 40px', background: 'white', borderRadius: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+        <div className="db-card responsive-hero" style={{ margin: '0 auto 40px', maxWidth: '1100px', padding: '30px 40px', background: 'white', borderRadius: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', position: 'relative', overflow: 'hidden' }}>
+          {/* Elemento Decorativo (Sticker) */}
+          <div style={{ position: 'absolute', top: '-100px', right: '-100px', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%)', zIndex: 0 }} />
           <div style={{ position: 'relative', width: '130px', height: '130px', flexShrink: 0 }}>
             <svg viewBox="0 0 36 36" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)', position: 'absolute' }}>
               <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#f1f5f9" strokeWidth="2" />
