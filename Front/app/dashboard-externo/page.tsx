@@ -155,9 +155,9 @@ export default function DashboardExterno() {
   };
 
   const PLANS = [
-    { name: 'Gratuito', price: 'Gratis', icon: '🆓', features: ['Perfil Profesional', 'Subir Hoja de Vida', 'Acceso a Vacantes Básicas'] },
-    { name: 'Acceso al Modelo', price: '$25.000', icon: '🧠', features: ['Todo lo anterior', 'Diagnóstico IA Estabilidad', 'Reporte PDF'] },
-    { name: 'Plan Completo', price: '$45.000', icon: '🚀', features: ['Todo lo anterior', 'Bolsa de Empleo UCC', 'Alertas Prioritarias'] }
+    { name: 'Gratuito', price: 'Gratis', icon: <Icons.User />, features: ['Perfil Profesional', 'Subir Hoja de Vida', 'Acceso a Vacantes Básicas'] },
+    { name: 'Acceso al Modelo', price: '$25.000', icon: <Icons.Home />, features: ['Todo lo anterior', 'Diagnóstico IA Estabilidad', 'Reporte PDF'] },
+    { name: 'Plan Completo', price: '$45.000', icon: <Icons.Briefcase />, features: ['Todo lo anterior', 'Bolsa de Empleo UCC', 'Alertas Prioritarias'] }
   ];
 
   const ACTIONS = [
@@ -204,7 +204,7 @@ export default function DashboardExterno() {
               <span style={{ background: '#ecfdf5', color: '#059669', padding: '8px 18px', borderRadius: '30px', fontSize: '0.75rem', fontWeight: 800, border: '1px solid #d1fae5' }}>USUARIO EXTERNO</span>
             </div>
             <p style={{ color: '#64748b', margin: 0, fontSize: '1.05rem', fontWeight: 500 }}>Tu perfil profesional está al <span style={{ color: '#3b82f6', fontWeight: 800 }}>{completionPct}%</span></p>
-            <button onClick={() => avatarRef.current?.click()} style={{ background: '#f8fafc', color: '#1e3a5f', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '12px 24px', fontWeight: 700, cursor: 'pointer', marginTop: '15px' }}>📁 Cambiar Foto</button>
+            <button onClick={() => avatarRef.current?.click()} style={{ background: '#f8fafc', color: '#1e3a5f', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '12px 24px', fontWeight: 700, cursor: 'pointer', marginTop: '15px' }}>Cambiar Foto</button>
           </div>
         </div>
 
