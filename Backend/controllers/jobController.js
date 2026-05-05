@@ -65,7 +65,8 @@ const getVacancies = async (req, res) => {
         empresas (
           razon_social,
           ciudad,
-          nit
+          nit,
+          user_id
         )
       `)
       .order('created_at', { ascending: false });
