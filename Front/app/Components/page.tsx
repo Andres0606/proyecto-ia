@@ -1,9 +1,33 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Header from "../Components/header";
 import Footer from "../Components/footer";
 import "../css/Inicio/inicio.css";
+
+// ── Scroll Reveal Hook ───────────────────────────────────────────────────────
+function useScrollReveal() {
+  useEffect(() => {
+    const els = document.querySelectorAll('.reveal');
+    if (!els.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('reveal--visible');
+          } else {
+            entry.target.classList.remove('reveal--visible');
+          }
+        });
+      },
+      { threshold: 0.15, rootMargin: '0px 0px -60px 0px' }
+    );
+
+    els.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+}
 
 // ── Datos ────────────────────────────────────────────────────────────────────
 const FEATURES = [
@@ -112,7 +136,7 @@ function Hero() {
 function Features() {
   return (
     <section className="features" id="funciones">
-      <div className="section-header">
+      <div className="section-header reveal">
         <span className="section-tag">¿Qué ofrecemos?</span>
         <h2 className="section-title">
           Todo lo que necesitas para encontrar empleo
@@ -122,8 +146,8 @@ function Features() {
         </p>
       </div>
       <div className="features__grid">
-        {FEATURES.map((f) => (
-          <div className="feature-card" key={f.title}>
+        {FEATURES.map((f, i) => (
+          <div className="feature-card reveal" key={f.title} style={{ transitionDelay: `${i * 0.08}s` }}>
             <span className="feature-card__icon">{f.icon}</span>
             <h3 className="feature-card__title">{f.title}</h3>
             <p className="feature-card__desc">{f.desc}</p>
@@ -139,7 +163,7 @@ function ComoFunciona() {
   return (
     <section className="pasos" id="como-funciona">
       <div className="pasos__bg" />
-      <div className="section-header section-header--light">
+      <div className="section-header section-header--light reveal">
         <span className="section-tag section-tag--light">Proceso simple</span>
         <h2 className="section-title section-title--light">¿Cómo funciona?</h2>
         <p className="section-sub section-sub--light">
@@ -148,7 +172,7 @@ function ComoFunciona() {
       </div>
       <div className="pasos__grid">
         {PASOS.map((p, i) => (
-          <div className="paso-card" key={p.num}>
+          <div className="paso-card reveal" key={p.num} style={{ transitionDelay: `${i * 0.12}s` }}>
             <div className="paso-card__num">{p.num}</div>
             {i < PASOS.length - 1 && <div className="paso-card__line" />}
             <h3 className="paso-card__title">{p.titulo}</h3>
@@ -219,7 +243,7 @@ function EstabilidadSection() {
   return (
     <section className="estabilidad">
       <div className="estabilidad__inner">
-        <div className="estabilidad__content">
+        <div className="estabilidad__content reveal">
           <span className="section-tag">Funcionalidad exclusiva</span>
           <h2 className="section-title">Mide tu estabilidad laboral</h2>
           <p className="section-sub">
@@ -236,7 +260,7 @@ function EstabilidadSection() {
             Ver mi índice →
           </a>
         </div>
-        <div className="estabilidad__visual">
+        <div className="estabilidad__visual reveal" style={{ transitionDelay: '0.15s' }}>
           <div className="estabilidad__gauge-wrap">
             <Gauge pct={promedio} label={nivelLabel} />
           </div>
@@ -251,7 +275,7 @@ function CTAFinal() {
   return (
     <section className="cta-final" id="registro">
       <div className="cta-final__blob" />
-      <div className="cta-final__content">
+      <div className="cta-final__content reveal">
         <h2 className="cta-final__title">¿Listo para dar el siguiente paso?</h2>
         <p className="cta-final__sub">
           Únete a más de 12.000 egresados UCC que ya están usando el portal
@@ -275,6 +299,8 @@ function CTAFinal() {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function InicioPage() {
+  useScrollReveal();
+
   return (
     <div className="page-root">
       <Header />
