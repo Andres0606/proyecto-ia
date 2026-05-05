@@ -256,13 +256,67 @@ export default function DashboardExterno() {
           <div style={{ position: 'absolute', top: '-80px', right: '-80px', width: '320px', height: '320px', borderRadius: '50%', background: 'rgba(255,255,255,0.04)' }} />
           <div style={{ position: 'absolute', bottom: '-60px', left: '-60px', width: '240px', height: '240px', borderRadius: '50%', background: 'rgba(0,169,224,0.1)' }} />
           <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '28px', position: 'relative', flexWrap: 'wrap' }}>
-            <div style={{ position: 'relative' }}>
-              <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: userPhoto ? `url(${userPhoto}) center/cover` : 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', border: '3px solid rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.4rem', fontWeight: 800, color: 'white', flexShrink: 0 }}>
+            <div style={{ position: 'relative', group: 'true' } as any}>
+              <div style={{ 
+                width:'110px', height:'110px', borderRadius:'50%', 
+                background: userPhoto ? `url(${userPhoto}) center/cover` : 'rgba(255,255,255,0.15)', 
+                backdropFilter:'blur(10px)', border:'4px solid rgba(255,255,255,0.4)', 
+                display:'flex', alignItems:'center', justifyContent:'center', 
+                fontSize:'2.8rem', fontWeight:800, color:'white', flexShrink:0,
+                boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
                 {!userPhoto && userName[0]}
+                
+                {/* Overlay de carga */}
+                {isUploading && (
+                  <div style={{ 
+                    position:'absolute', inset:0, background:'rgba(0,40,85,0.7)', 
+                    display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', 
+                    gap:'8px', zIndex:5 
+                  }}>
+                    <div className="spinner-white" style={{ width:'24px', height:'24px' }} />
+                    <span style={{ fontSize:'0.65rem', fontWeight:700, color:'white', textTransform:'uppercase' }}>Subiendo...</span>
+                  </div>
+                )}
               </div>
-              <div style={{ position: 'absolute', bottom: 0, right: 0, display: 'flex', gap: '5px' }}>
-                <button onClick={() => avatarRef.current?.click()} style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'white', border: '1px solid #e2e8f0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }} title="Subir archivo">📁</button>
-                <button onClick={startCamera} style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'white', border: '1px solid #e2e8f0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }} title="Tomar foto">📸</button>
+
+              {/* Botones de acción mejorados */}
+              <div style={{ 
+                position:'absolute', bottom:'-5px', right:'-5px', 
+                display:'flex', gap:'6px', zIndex:10 
+              }}>
+                <button 
+                  onClick={() => avatarRef.current?.click()} 
+                  style={{ 
+                    width:'36px', height:'36px', borderRadius:'50%', 
+                    background:'white', border:'none', cursor:'pointer', 
+                    display:'flex', alignItems:'center', justifyContent:'center', 
+                    boxShadow:'0 4px 12px rgba(0,0,0,0.15)',
+                    transition: 'transform 0.2s ease'
+                  }} 
+                  title="Subir archivo"
+                  onMouseOver={e => e.currentTarget.style.transform = 'scale(1.1)'}
+                  onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00A9E0" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                </button>
+                <button 
+                  onClick={startCamera} 
+                  style={{ 
+                    width:'36px', height:'36px', borderRadius:'50%', 
+                    background:'var(--ucc-navy)', border:'none', cursor:'pointer', 
+                    display:'flex', alignItems:'center', justifyContent:'center', 
+                    boxShadow:'0 4px 12px rgba(0,0,0,0.15)',
+                    transition: 'transform 0.2s ease'
+                  }} 
+                  title="Tomar foto"
+                  onMouseOver={e => e.currentTarget.style.transform = 'scale(1.1)'}
+                  onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                </button>
               </div>
             </div>
             <div>
@@ -441,6 +495,18 @@ export default function DashboardExterno() {
           </div>
         </div>
       )}
+      <style jsx>{`
+        .spinner-white {
+          border: 3px solid rgba(255,255,255,0.3);
+          border-top: 3px solid white;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
       <Footer />
     </div>
   );
