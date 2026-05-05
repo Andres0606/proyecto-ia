@@ -7,11 +7,11 @@ import '../css/Dashboard/dashboard.css';
 
 // Iconos SVG Premium para Empresas
 const Icons = {
-  Home: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
-  Company: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M8 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M16 14h.01"/></svg>,
-  Announce: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8a3 3 0 0 0-3-3H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a3 3 0 0 0 3-3V8Z"/><path d="M10 8v4"/><path d="M21 15v-2a5 5 0 0 0-5-5"/><path d="M21 9v2"/></svg>,
-  Users: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M17 7a4 4 0 0 1 0 7.75"/></svg>,
-  Support: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+  Home: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>,
+  Company: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M8 10h.01" /><path d="M16 10h.01" /><path d="M8 14h.01" /><path d="M16 14h.01" /></svg>,
+  Announce: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8a3 3 0 0 0-3-3H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a3 3 0 0 0 3-3V8Z" /><path d="M10 8v4" /><path d="M21 15v-2a5 5 0 0 0-5-5" /><path d="M21 9v2" /></svg>,
+  Users: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M17 7a4 4 0 0 1 0 7.75" /></svg>,
+  Support: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6" /><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" /></svg>
 };
 
 const QUICK_ACTIONS = [
@@ -28,9 +28,9 @@ export default function DashboardEmpresa() {
   const [userId, setUserId] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<'none' | 'professional' | 'jobs' | 'candidates' | 'support'>('none');
   const [toast, setToast] = useState<{ msg: string, type: 'info' | 'success' | 'error' | 'none' }>({ msg: '', type: 'none' });
-  const [formData, setFormData] = useState({ 
-    razon_social: '', nit: '', sector_economico: '', ciudad: '', 
-    tamano_empresa: '', tipo_empresa: '', telefono: '', correo: '' 
+  const [formData, setFormData] = useState({
+    razon_social: '', nit: '', sector_economico: '', ciudad: '',
+    tamano_empresa: '', tipo_empresa: '', telefono: '', correo: ''
   });
 
   const showToast = (msg: string, type: 'info' | 'success' | 'error') => {
@@ -65,10 +65,10 @@ export default function DashboardEmpresa() {
         const u = data.profile;
         const c = u.empresa || {};
         setUserName(c.razon_social || u.nombre_completo?.split(' ')[0] || 'Empresa');
-        setFormData({ 
-          razon_social: c.razon_social || '', nit: c.nit || '', sector_economico: c.sector_economico || '', 
-          ciudad: c.ciudad || '', tamano_empresa: c.tamano_empresa || '', tipo_empresa: c.tipo_empresa || '', 
-          telefono: u.telefono || c.telefono || '', correo: u.correo || c.correo || '' 
+        setFormData({
+          razon_social: c.razon_social || '', nit: c.nit || '', sector_economico: c.sector_economico || '',
+          ciudad: c.ciudad || '', tamano_empresa: c.tamano_empresa || '', tipo_empresa: c.tipo_empresa || '',
+          telefono: u.telefono || c.telefono || '', correo: u.correo || c.correo || ''
         });
       }
     } catch (err) { console.error(err); }
@@ -82,7 +82,7 @@ export default function DashboardEmpresa() {
   return (
     <div className="db-page" style={{ background: '#f4f7fa', minHeight: '100vh' }}>
       <Header />
-      
+
       {toast.type !== 'none' && (
         <div style={{ position: 'fixed', bottom: '32px', right: '32px', zIndex: 9999, padding: '16px 24px', borderRadius: '16px', color: 'white', fontWeight: 600, boxShadow: '0 10px 40px rgba(0,0,0,0.15)', background: toast.type === 'success' ? '#059669' : toast.type === 'error' ? '#dc2626' : '#1e3a5f' }}>
           {toast.msg}
