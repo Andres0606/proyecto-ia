@@ -82,7 +82,7 @@ body {
 .planes-hero__blob--1 {
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, rgba(141, 198, 63, 0.18) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(0, 169, 224, 0.18) 0%, transparent 70%);
   top: -200px;
   right: -100px;
 }
@@ -106,8 +106,8 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(141, 198, 63, 0.12);
-  border: 1px solid rgba(141, 198, 63, 0.25);
+  background: rgba(0, 169, 224, 0.15);
+  border: 1px solid rgba(0, 169, 224, 0.3);
   border-radius: 50px;
   padding: 7px 20px;
   font-size: 13px;
@@ -129,7 +129,7 @@ body {
 }
 
 .planes-hero__title-accent {
-  color: var(--ucc-green);
+  color: #00A9E0;
 }
 
 .planes-hero__subtitle {
@@ -162,7 +162,7 @@ body {
   font-weight: 700;
   letter-spacing: 1.2px;
   text-transform: uppercase;
-  color: var(--ucc-green);
+  color: #00A9E0;
   margin-bottom: 12px;
 }
 
@@ -214,8 +214,8 @@ body {
 
 /* ── Plan card popular (destacado) ── */
 .plan-card--popular {
-  border-color: var(--ucc-green);
-  box-shadow: 0 8px 32px rgba(141, 198, 63, 0.12);
+  border-color: #00A9E0;
+  box-shadow: 0 8px 32px rgba(0, 169, 224, 0.15);
 }
 
 .plan-card--popular::before {
@@ -225,7 +225,7 @@ body {
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, var(--red), #e63950);
+  background: linear-gradient(90deg, #002855, #00A9E0);
 }
 
 .plan-card__badge {
@@ -352,13 +352,13 @@ body {
 }
 
 .plan-card__check--green {
-  background: #dcfce7;
-  color: #16a34a;
+  background: #e0f7ff;
+  color: #00A9E0;
 }
 
 .plan-card__check--red {
-  background: #ffe0e6;
-  color: var(--ucc-green);
+  background: #fff5f5;
+  color: #cbd5e1;
 }
 
 /* ── CTA button ── */
@@ -393,16 +393,16 @@ body {
 }
 
 .plan-card__cta--red {
-  background: var(--red);
+  background: var(--ucc-navy);
   color: var(--white);
-  border-color: var(--ucc-green);
+  border-color: var(--ucc-navy);
 }
 
 .plan-card__cta--red:hover {
-  background: var(--red-dark);
-  border-color: var(--red-dark);
+  background: #003875;
+  border-color: #003875;
   transform: translateY(-2px);
-  box-shadow: 0 6px 24px rgba(141, 198, 63, 0.3);
+  box-shadow: 0 6px 24px rgba(0, 40, 85, 0.3);
 }
 
 /* ══════════════════════════════════════════════════════
@@ -425,7 +425,7 @@ body {
   font-weight: 700;
   letter-spacing: 1.2px;
   text-transform: uppercase;
-  color: var(--ucc-green);
+  color: #00A9E0;
   margin-bottom: 12px;
 }
 
@@ -523,7 +523,7 @@ body {
   font-weight: 700;
   letter-spacing: 1.2px;
   text-transform: uppercase;
-  color: var(--ucc-green);
+  color: #00A9E0;
   margin-bottom: 12px;
 }
 
@@ -573,7 +573,7 @@ body {
 }
 
 .faq-item__question:hover {
-  color: var(--ucc-green);
+  color: #00A9E0;
 }
 
 .faq-item__arrow {
@@ -585,7 +585,7 @@ body {
 
 .faq-item__arrow--open {
   transform: rotate(180deg);
-  color: var(--ucc-green);
+  color: #00A9E0;
 }
 
 .faq-item__answer {
@@ -622,7 +622,7 @@ body {
   position: absolute;
   width: 700px;
   height: 700px;
-  background: radial-gradient(circle, rgba(141, 198, 63, 0.12) 0%, transparent 65%);
+  background: radial-gradient(circle, rgba(0, 169, 224, 0.1) 0%, transparent 65%);
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -674,16 +674,16 @@ body {
 }
 
 .planes-cta__btn--red {
-  background: var(--red);
+  background: var(--ucc-navy);
   color: var(--white);
-  border-color: var(--ucc-green);
+  border-color: var(--ucc-navy);
 }
 
 .planes-cta__btn--red:hover {
-  background: var(--red-dark);
-  border-color: var(--red-dark);
+  background: #003875;
+  border-color: #003875;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(141, 198, 63, 0.35);
+  box-shadow: 0 6px 20px rgba(0, 40, 85, 0.35);
 }
 
 .planes-cta__btn--ghost {
