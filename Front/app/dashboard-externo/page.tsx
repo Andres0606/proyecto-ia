@@ -101,12 +101,13 @@ export default function DashboardExterno() {
     try {
       const r = await fetch(`${base()}/api/users/upload-${type === 'avatar' ? 'avatar' : 'cv'}`, {method:'POST', body: fd});
       const d = await r.json();
-      if (d.success) { 
-        showToast('¡Subido con éxito!','success'); 
-        if (type==='avatar') setUserPhoto(d.url); 
+      if (d.success) {
+        showToast('¡Subido con éxito!','success');
+        if (type==='avatar') setUserPhoto(d.url);
         setTimeout(() => fetchProfile(userId), 1500);
       } else {
-        showToast(d.message || 'Error en la carga', 'error');
+        const errorDetail = d.error ? ` (${d.error})` : '';
+        showToast(`${d.message || 'Error en la carga'}${errorDetail}`, 'error');
       }
     } catch { showToast('Error en la carga','error'); } finally { setIsUploading(false); }
   };
@@ -124,10 +125,17 @@ export default function DashboardExterno() {
   const dis = { ...inp, background:'#f8fafc', color:'#64748b', cursor:'not-allowed' as const };
   const lbl = { fontSize:'0.8rem', fontWeight:700, color:'#475569', marginBottom:'6px', display:'block', textTransform:'uppercase' as const, letterSpacing:'0.5px' };
 
-  const PLAN_FEATURES = {
-    basico: ['Perfil Profesional', 'Subir CV', 'Bolsa de Empleo'],
-    premium: ['Todo lo básico', 'Diagnóstico de Estabilidad IA', 'Soporte Prioritario', 'Visibilidad Destacada']
-  };
+  const PLANS = [
+    { name:'Gratuito', price:'Gratis', period:'', note:'Acceso básico al portal', icon:'🆓', features:[
+      {t:'Perfil Profesional',ok:true},{t:'Subir CV',ok:true},{t:'Bolsa de Empleo',ok:false},{t:'Diagnóstico IA',ok:false},{t:'Alertas de vacantes',ok:false}
+    ]},
+    { name:'Acceso al Modelo', price:'$25.000', period:'pago único', note:'Sin cargos recurrentes', icon:'🧠', features:[
+      {t:'Perfil Profesional',ok:true},{t:'Subir CV',ok:true},{t:'Diagnóstico de estabilidad laboral con IA',ok:true},{t:'Bolsa de Empleo',ok:false},{t:'Alertas de vacantes',ok:false}
+    ]},
+    { name:'Plan Completo', price:'$45.000', period:'/ mes', note:'Cancela cuando quieras', icon:'🚀', popular:true, features:[
+      {t:'Perfil Profesional',ok:true},{t:'Subir CV',ok:true},{t:'Diagnóstico de estabilidad laboral con IA',ok:true},{t:'Acceso completo a la bolsa de empleo',ok:true},{t:'Alertas de vacantes por correo',ok:true},{t:'Postulación directa a empresas',ok:true}
+    ]}
+  ];
 
   return (
     <div className="db-page" style={{ background:'#f8fafc' }}>
@@ -145,8 +153,9 @@ export default function DashboardExterno() {
       <main style={{ paddingTop:'80px', minHeight:'100vh' }}>
 
         {/* Hero Banner */}
-        <div style={{ background:'linear-gradient(135deg,#0f766e 0%,#0d5a52 60%,#134e4a 100%)', padding:'50px 40px 80px', position:'relative', overflow:'hidden' }}>
+        <div style={{ background:'linear-gradient(135deg, #002855 0%, #003875 50%, #00A9E0 100%)', padding:'50px 40px 80px', position:'relative', overflow:'hidden' }}>
           <div style={{ position:'absolute', top:'-80px', right:'-80px', width:'320px', height:'320px', borderRadius:'50%', background:'rgba(255,255,255,0.04)' }} />
+          <div style={{ position:'absolute', bottom:'-60px', left:'-60px', width:'240px', height:'240px', borderRadius:'50%', background:'rgba(0,169,224,0.1)' }} />
           <div style={{ maxWidth:'1200px', margin:'0 auto', display:'flex', alignItems:'center', gap:'28px', position:'relative', flexWrap:'wrap' }}>
             <div style={{ width:'90px', height:'90px', borderRadius:'50%', background: userPhoto ? `url(${userPhoto}) center/cover` : 'rgba(255,255,255,0.15)', backdropFilter:'blur(10px)', border:'3px solid rgba(255,255,255,0.3)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'2.4rem', fontWeight:800, color:'white', cursor:'pointer', flexShrink:0 }} onClick={() => avatarRef.current?.click()}>
               {!userPhoto && userName[0]}
@@ -154,7 +163,7 @@ export default function DashboardExterno() {
             <div>
               <p style={{ color:'rgba(255,255,255,0.6)', margin:'0 0 4px', fontSize:'0.9rem' }}>{greeting}</p>
               <h1 style={{ color:'white', margin:'0 0 10px', fontSize:'2rem', fontWeight:800 }}>{userName} ✨</h1>
-              <span style={{ background:'rgba(255,255,255,0.1)', color:'#a7f3d0', padding:'5px 14px', borderRadius:'20px', fontSize:'0.75rem', fontWeight:700, letterSpacing:'1px' }}>USUARIO EXTERNO</span>
+              <span style={{ background:'rgba(0,169,224,0.25)', color:'#7dd3fc', padding:'5px 14px', borderRadius:'20px', fontSize:'0.75rem', fontWeight:700, letterSpacing:'1px' }}>USUARIO EXTERNO</span>
             </div>
           </div>
         </div>
@@ -163,7 +172,7 @@ export default function DashboardExterno() {
         <div style={{ background:'white', borderBottom:'1px solid #e2e8f0', position:'sticky', top:'80px', zIndex:100 }}>
           <div style={{ maxWidth:'1200px', margin:'0 auto', display:'flex', overflowX:'auto', padding:'0 20px' }}>
             {SECTIONS.map(s => (
-              <button key={s.id} onClick={() => setActiveSection(s.id as any)} style={{ padding:'18px 26px', border:'none', background:'none', cursor:'pointer', fontWeight:700, fontSize:'0.9rem', whiteSpace:'nowrap', borderBottom: activeSection===s.id ? '3px solid #0f766e' : '3px solid transparent', color: activeSection===s.id ? '#0f766e' : '#64748b', transition:'all 0.2s', display:'flex', alignItems:'center', gap:'8px' }}>
+              <button key={s.id} onClick={() => setActiveSection(s.id as any)} style={{ padding:'18px 26px', border:'none', background:'none', cursor:'pointer', fontWeight:700, fontSize:'0.9rem', whiteSpace:'nowrap', borderBottom: activeSection===s.id ? '3px solid var(--ucc-navy)' : '3px solid transparent', color: activeSection===s.id ? 'var(--ucc-navy)' : '#64748b', transition:'all 0.2s', display:'flex', alignItems:'center', gap:'8px' }}>
                 <span>{s.icon}</span>{s.title}
               </button>
             ))}
@@ -177,10 +186,10 @@ export default function DashboardExterno() {
             <div>
               <div className="responsive-grid-4" style={{ marginBottom:'28px' }}>
                 {[
-                  { label:'Perfil Completo', val:'45%', icon:'✅', color:'#0f766e', bg:'#f0fdf4' },
-                  { label:'CVs Subidos', val:'1', icon:'📄', color:'#3b82f6', bg:'#eff6ff' },
+                  { label:'Perfil Completo', val:'45%', icon:'✅', color:'var(--ucc-navy)', bg:'#eff6ff' },
+                  { label:'CVs Subidos', val:'1', icon:'📄', color:'#00A9E0', bg:'#e0f7ff' },
                   { label:'Postulaciones', val:'0', icon:'📬', color:'#8b5cf6', bg:'#f5f3ff' },
-                  { label:'Plan Actual', val:'Básico', icon:'💳', color:'#f59e0b', bg:'#fffbeb' },
+                  { label:'Plan Actual', val:'Gratuito', icon:'💳', color:'#e53e3e', bg:'#fff5f5' },
                 ].map(c => (
                   <div key={c.label} style={{ background:'white', borderRadius:'20px', padding:'24px', boxShadow:'0 4px 20px rgba(0,0,0,0.05)' }}>
                     <div style={{ width:'44px', height:'44px', borderRadius:'12px', background:c.bg, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'1.3rem', marginBottom:'12px' }}>{c.icon}</div>
@@ -195,8 +204,8 @@ export default function DashboardExterno() {
                   <h2 style={{ color:'var(--ucc-navy)', fontWeight:800, margin:'0 0 8px' }}>Portal de Usuario Externo UCC</h2>
                   <p style={{ color:'#64748b', lineHeight:1.6, margin:'0 0 20px' }}>Actualiza tu perfil, sube tu CV y explora los planes disponibles para acceder a más beneficios.</p>
                   <div style={{ display:'flex', gap:'12px', flexWrap:'wrap' }}>
-                    <button onClick={() => setActiveSection('professional')} style={{ background:'#0f766e', color:'white', border:'none', borderRadius:'12px', padding:'12px 24px', fontWeight:700, cursor:'pointer' }}>Mi Perfil</button>
-                    <button onClick={() => setActiveSection('plans')} style={{ background:'#fffbeb', color:'#92400e', border:'1px solid #fde68a', borderRadius:'12px', padding:'12px 24px', fontWeight:700, cursor:'pointer' }}>Ver Planes ⭐</button>
+                    <button onClick={() => setActiveSection('professional')} style={{ background:'var(--ucc-navy)', color:'white', border:'none', borderRadius:'12px', padding:'12px 24px', fontWeight:700, cursor:'pointer' }}>Mi Perfil</button>
+                    <button onClick={() => setActiveSection('plans')} style={{ background:'#fff5f5', color:'#e53e3e', border:'1px solid #feb2b2', borderRadius:'12px', padding:'12px 24px', fontWeight:700, cursor:'pointer' }}>Ver Planes ⭐</button>
                   </div>
                 </div>
               </div>
@@ -207,10 +216,10 @@ export default function DashboardExterno() {
             <div style={{ background:'white', borderRadius:'24px', padding:'40px', boxShadow:'0 4px 20px rgba(0,0,0,0.05)' }}>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'28px', paddingBottom:'20px', borderBottom:'1px solid #f1f5f9', flexWrap:'wrap', gap:'12px' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
-                  <div style={{ width:'48px', height:'48px', borderRadius:'14px', background:'#f0fdf4', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'1.5rem' }}>👤</div>
+                  <div style={{ width:'48px', height:'48px', borderRadius:'14px', background:'#eff6ff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'1.5rem' }}>👤</div>
                   <div><h2 style={{ margin:0, color:'var(--ucc-navy)', fontWeight:800 }}>Datos Personales</h2><p style={{ margin:0, color:'#64748b', fontSize:'0.85rem' }}>Tu información básica de registro</p></div>
                 </div>
-                <button onClick={() => setIsEditingPersonal(!isEditingPersonal)} style={{ background: isEditingPersonal ? '#fee2e2' : '#0f766e', color: isEditingPersonal ? '#b91c1c' : 'white', border:'none', borderRadius:'12px', padding:'10px 20px', cursor:'pointer', fontWeight:700 }}>
+                <button onClick={() => setIsEditingPersonal(!isEditingPersonal)} style={{ background: isEditingPersonal ? '#fee2e2' : 'var(--ucc-navy)', color: isEditingPersonal ? '#b91c1c' : 'white', border:'none', borderRadius:'12px', padding:'10px 20px', cursor:'pointer', fontWeight:700 }}>
                   {isEditingPersonal ? '✕ Cancelar' : '✏️ Editar'}
                 </button>
               </div>
@@ -227,7 +236,7 @@ export default function DashboardExterno() {
                   </div>
                 ))}
               </div>
-              {isEditingPersonal && <button onClick={handleSave} style={{ width:'100%', marginTop:'28px', padding:'16px', background:'#0f766e', color:'white', borderRadius:'14px', fontWeight:800, border:'none', cursor:'pointer', fontSize:'1rem' }}>💾 Guardar Cambios</button>}
+              {isEditingPersonal && <button onClick={handleSave} style={{ width:'100%', marginTop:'28px', padding:'16px', background:'var(--ucc-navy)', color:'white', borderRadius:'14px', fontWeight:800, border:'none', cursor:'pointer', fontSize:'1rem' }}>💾 Guardar Cambios</button>}
             </div>
           )}
 
@@ -238,7 +247,7 @@ export default function DashboardExterno() {
                   <div style={{ width:'48px', height:'48px', borderRadius:'14px', background:'#eff6ff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'1.5rem' }}>💼</div>
                   <div><h2 style={{ margin:0, color:'var(--ucc-navy)', fontWeight:800 }}>Perfil Profesional</h2><p style={{ margin:0, color:'#64748b', fontSize:'0.85rem' }}>Tu información laboral y académica</p></div>
                 </div>
-                <button onClick={() => setIsEditingProf(!isEditingProf)} style={{ background: isEditingProf ? '#fee2e2' : '#3b82f6', color: isEditingProf ? '#b91c1c' : 'white', border:'none', borderRadius:'12px', padding:'10px 20px', cursor:'pointer', fontWeight:700 }}>
+                <button onClick={() => setIsEditingProf(!isEditingProf)} style={{ background: isEditingProf ? '#fee2e2' : '#00A9E0', color: isEditingProf ? '#b91c1c' : 'white', border:'none', borderRadius:'12px', padding:'10px 20px', cursor:'pointer', fontWeight:700 }}>
                   {isEditingProf ? '✕ Cancelar' : '✏️ Actualizar'}
                 </button>
               </div>
@@ -259,7 +268,7 @@ export default function DashboardExterno() {
                   </div>
                 ))}
               </div>
-              {isEditingProf && <button onClick={handleSave} style={{ width:'100%', marginTop:'28px', padding:'16px', background:'#3b82f6', color:'white', borderRadius:'14px', fontWeight:800, border:'none', cursor:'pointer', fontSize:'1rem' }}>💾 Guardar Perfil</button>}
+              {isEditingProf && <button onClick={handleSave} style={{ width:'100%', marginTop:'28px', padding:'16px', background:'#00A9E0', color:'white', borderRadius:'14px', fontWeight:800, border:'none', cursor:'pointer', fontSize:'1rem' }}>💾 Guardar Perfil</button>}
             </div>
           )}
 
@@ -269,34 +278,24 @@ export default function DashboardExterno() {
                 <h2 style={{ color:'var(--ucc-navy)', fontWeight:800, fontSize:'1.8rem', margin:'0 0 8px' }}>💳 Planes y Membresía</h2>
                 <p style={{ color:'#64748b' }}>Elige el plan que mejor se adapte a tus necesidades</p>
               </div>
-              <div className="responsive-grid-2" style={{ gap:'24px', maxWidth:'800px', margin:'0 auto' }}>
-                {/* Plan Básico */}
-                <div style={{ background:'white', borderRadius:'24px', padding:'36px', boxShadow:'0 4px 20px rgba(0,0,0,0.05)', border:'2px solid #e2e8f0' }}>
-                  <div style={{ marginBottom:'20px' }}>
-                    <span style={{ background:'#f1f5f9', color:'#475569', padding:'5px 14px', borderRadius:'20px', fontSize:'0.75rem', fontWeight:700 }}>PLAN BÁSICO</span>
-                    <p style={{ fontSize:'2.5rem', fontWeight:800, color:'var(--ucc-navy)', margin:'16px 0 4px' }}>Gratis</p>
-                    <p style={{ color:'#94a3b8', fontSize:'0.85rem' }}>Acceso básico al portal</p>
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'24px', maxWidth:'1100px', margin:'0 auto' }}>
+                {PLANS.map((plan,i) => (
+                  <div key={plan.name} style={{ background: i===2 ? 'linear-gradient(135deg, #002855 0%, #003875 100%)' : 'white', borderRadius:'24px', padding:'36px', boxShadow: i===2 ? '0 20px 50px rgba(0,40,85,0.3)' : '0 4px 20px rgba(0,0,0,0.05)', border: i===0 ? '2px solid #00A9E0' : i===1 ? '2px solid #e2e8f0' : 'none', position:'relative', overflow:'hidden' }}>
+                    {(plan as any).popular && <span style={{ position:'absolute', top:'16px', right:'16px', background:'rgba(0,169,224,0.25)', color:'#7dd3fc', padding:'4px 12px', borderRadius:'20px', fontSize:'0.7rem', fontWeight:700 }}>MÁS POPULAR</span>}
+                    <div style={{ marginBottom:'20px' }}>
+                      <span style={{ fontSize:'2rem', display:'block', marginBottom:'8px' }}>{plan.icon}</span>
+                      <span style={{ background: i===2 ? 'rgba(255,255,255,0.1)' : '#f1f5f9', color: i===2 ? '#7dd3fc' : '#475569', padding:'5px 14px', borderRadius:'20px', fontSize:'0.7rem', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.5px' }}>{plan.name}</span>
+                      <p style={{ fontSize:'2.2rem', fontWeight:800, color: i===2 ? 'white' : 'var(--ucc-navy)', margin:'16px 0 4px' }}>{plan.price}{plan.period && <span style={{ fontSize:'0.85rem', fontWeight:500, opacity:0.7 }}> {plan.period}</span>}</p>
+                      <p style={{ color: i===2 ? 'rgba(255,255,255,0.6)' : '#94a3b8', fontSize:'0.85rem', margin:0 }}>{plan.note}</p>
+                    </div>
+                    <ul style={{ listStyle:'none', padding:0, margin:'0 0 28px' }}>
+                      {plan.features.map(f => <li key={f.t} style={{ padding:'8px 0', color: f.ok ? (i===2 ? 'rgba(255,255,255,0.85)' : '#475569') : (i===2 ? 'rgba(255,255,255,0.3)' : '#cbd5e1'), display:'flex', alignItems:'center', gap:'10px', borderBottom: i===2 ? '1px solid rgba(255,255,255,0.08)' : '1px solid #f8fafc', fontSize:'0.9rem' }}><span style={{ color: f.ok ? (i===2 ? '#7dd3fc' : '#00A9E0') : (i===2 ? 'rgba(255,255,255,0.3)' : '#cbd5e1'), fontWeight:700 }}>{f.ok ? '✓' : '✗'}</span>{f.t}</li>)}
+                    </ul>
+                    <button style={{ width:'100%', padding:'14px', background: i===0 ? '#f1f5f9' : i===1 ? '#00A9E0' : 'white', color: i===0 ? '#94a3b8' : i===1 ? 'white' : 'var(--ucc-navy)', border:'none', borderRadius:'12px', fontWeight:800, cursor: i===0 ? 'default' : 'pointer', fontSize:'0.95rem' }} disabled={i===0}>{i===0 ? 'Plan Actual' : i===1 ? 'Adquirir Acceso →' : 'Suscribirme Ahora →'}</button>
                   </div>
-                  <ul style={{ listStyle:'none', padding:0, margin:'0 0 28px' }}>
-                    {PLAN_FEATURES.basico.map(f => <li key={f} style={{ padding:'8px 0', color:'#475569', display:'flex', alignItems:'center', gap:'10px', borderBottom:'1px solid #f8fafc' }}><span style={{ color:'#10b981', fontWeight:700 }}>✓</span>{f}</li>)}
-                    <li style={{ padding:'8px 0', color:'#cbd5e1', display:'flex', alignItems:'center', gap:'10px' }}><span>✗</span>Diagnóstico IA</li>
-                  </ul>
-                  <button disabled style={{ width:'100%', padding:'14px', background:'#f1f5f9', color:'#94a3b8', border:'none', borderRadius:'12px', fontWeight:700, cursor:'default' }}>Plan Actual</button>
-                </div>
-                {/* Plan Premium */}
-                <div style={{ background:'linear-gradient(135deg,#0f766e 0%,#0d5a52 100%)', borderRadius:'24px', padding:'36px', boxShadow:'0 20px 50px rgba(15,118,110,0.3)', position:'relative', overflow:'hidden' }}>
-                  <div style={{ position:'absolute', top:'-30px', right:'-30px', width:'120px', height:'120px', borderRadius:'50%', background:'rgba(255,255,255,0.06)' }} />
-                  <div style={{ marginBottom:'20px', position:'relative' }}>
-                    <span style={{ background:'rgba(255,255,255,0.15)', color:'#a7f3d0', padding:'5px 14px', borderRadius:'20px', fontSize:'0.75rem', fontWeight:700 }}>⭐ PLAN PREMIUM</span>
-                    <p style={{ fontSize:'2.5rem', fontWeight:800, color:'white', margin:'16px 0 4px' }}>$29.900<span style={{ fontSize:'1rem', fontWeight:500, opacity:0.7 }}>/mes</span></p>
-                    <p style={{ color:'rgba(255,255,255,0.6)', fontSize:'0.85rem' }}>Acceso total al portal</p>
-                  </div>
-                  <ul style={{ listStyle:'none', padding:0, margin:'0 0 28px', position:'relative' }}>
-                    {PLAN_FEATURES.premium.map(f => <li key={f} style={{ padding:'8px 0', color:'rgba(255,255,255,0.85)', display:'flex', alignItems:'center', gap:'10px', borderBottom:'1px solid rgba(255,255,255,0.08)' }}><span style={{ color:'#6ee7b7', fontWeight:700 }}>✓</span>{f}</li>)}
-                  </ul>
-                  <button style={{ width:'100%', padding:'14px', background:'white', color:'#0f766e', border:'none', borderRadius:'12px', fontWeight:800, cursor:'pointer', fontSize:'0.95rem' }}>Mejorar Ahora →</button>
-                </div>
+                ))}
               </div>
+              <p style={{ textAlign:'center', color:'#94a3b8', fontSize:'0.85rem', marginTop:'24px' }}>¿Eres egresado UCC? <a href='/registro' style={{ color:'#e53e3e', fontWeight:700, textDecoration:'none' }}>Regístrate gratis aquí</a></p>
             </div>
           )}
 
@@ -306,10 +305,10 @@ export default function DashboardExterno() {
               <h2 style={{ color:'var(--ucc-navy)', fontWeight:800, fontSize:'1.6rem', marginBottom:'8px' }}>Tu Hoja de Vida</h2>
               <p style={{ color:'#64748b', marginBottom:'32px' }}>Sube tu CV en formato PDF para que las empresas puedan verlo</p>
               <div style={{ display:'flex', gap:'16px', justifyContent:'center', flexWrap:'wrap', marginBottom:'32px' }}>
-                <button onClick={handleViewCV} style={{ padding:'14px 28px', background:'#0f766e', color:'white', border:'none', borderRadius:'14px', fontWeight:700, cursor:'pointer', fontSize:'0.95rem' }}>📄 Ver CV Actual</button>
-                <button onClick={() => cvRef.current?.click()} disabled={isUploading} style={{ padding:'14px 28px', background:'#eff6ff', color:'#3b82f6', border:'1px solid #bfdbfe', borderRadius:'14px', fontWeight:700, cursor:'pointer', fontSize:'0.95rem' }}>{isUploading ? 'Subiendo...' : '⬆️ Subir Nuevo CV'}</button>
+                <button onClick={handleViewCV} style={{ padding:'14px 28px', background:'var(--ucc-navy)', color:'white', border:'none', borderRadius:'14px', fontWeight:700, cursor:'pointer', fontSize:'0.95rem' }}>📄 Ver CV Actual</button>
+                <button onClick={() => cvRef.current?.click()} disabled={isUploading} style={{ padding:'14px 28px', background:'#e0f7ff', color:'#00A9E0', border:'1px solid #7dd3fc', borderRadius:'14px', fontWeight:700, cursor:'pointer', fontSize:'0.95rem' }}>{isUploading ? 'Subiendo...' : '⬆️ Subir Nuevo CV'}</button>
               </div>
-              <div onClick={() => cvRef.current?.click()} style={{ border:'2px dashed #cbd5e1', padding:'40px', borderRadius:'20px', cursor:'pointer', transition:'all 0.2s' }} onMouseOver={e => (e.currentTarget.style.borderColor='#0f766e')} onMouseOut={e => (e.currentTarget.style.borderColor='#cbd5e1')}>
+              <div onClick={() => cvRef.current?.click()} style={{ border:'2px dashed #cbd5e1', padding:'40px', borderRadius:'20px', cursor:'pointer', transition:'all 0.2s' }} onMouseOver={e => (e.currentTarget.style.borderColor='var(--ucc-navy)')} onMouseOut={e => (e.currentTarget.style.borderColor='#cbd5e1')}>
                 <p style={{ color:'#94a3b8', margin:0 }}>Arrastra tu PDF aquí o haz clic para seleccionarlo</p>
               </div>
             </div>

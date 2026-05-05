@@ -310,3 +310,10 @@
     align-items: flex-start;
   }
 }
+
+/* Plans 3-column grid responsive */
+@media (max-width: 900px) {
+  .db-page [style*="grid-template-columns: repeat(3"] {
+    grid-template-columns: 1fr !important;
+  }
+}
