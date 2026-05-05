@@ -81,16 +81,39 @@ export default function DashboardExterno() {
         });
         if (u.suscripcion) setUserPlan(u.suscripcion.tipo_plan || 'Gratuito');
 
-        // Progreso para externos
         let pct = 0;
         if (u.foto_url) pct += 10;
         if (u.cv_url) pct += 20;
-        const fields = [p.nivel_formacion, p.programa_academico, p.estrato, p.estado_civil, p.ingreso_mensual];
+        const fields = [p.nivel_formacion, p.programa_academico, p.estrato, p.estado_civil, p.numero_hijos, p.ingreso_mensual, p.sector_economico, p.area_desempeno];
         const filled = fields.filter(f => f && String(f).trim() !== '').length;
         pct += (filled / fields.length) * 70;
         setCompletionPct(Math.round(pct));
       }
     } catch (e) { console.error(e); }
+  };
+
+  const handleSave = async () => {
+    if (!userId) return;
+    setToast({ msg: 'Guardando...', type: 'info' });
+    const payload = { ...formData, emprendimiento: formData.emprendimiento === 'Si' };
+    try {
+      const r = await fetch(`${base()}/api/users/profile/${userId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userData: payload, profileData: payload }) });
+      const d = await r.json();
+      if (d.success) { setToast({ msg: '¡Éxito!', type: 'success' }); setIsEditingProf(false); setIsEditingPersonal(false); fetchProfile(userId); }
+    } catch { setToast({ msg: 'Error', type: 'error' }); } finally { setTimeout(() => setToast({ msg: '', type: 'none' }), 3000); }
+  };
+
+  const handleUpload = async (file: File, type: 'avatar' | 'cv') => {
+    if (!userId) return;
+    setToast({ msg: 'Subiendo...', type: 'info' });
+    const fd = new FormData();
+    fd.append(type === 'avatar' ? 'image' : 'cv', file);
+    fd.append('userId', String(userId).trim());
+    try {
+      const r = await fetch(`${base()}/api/users/upload-${type === 'avatar' ? 'avatar' : 'cv'}`, { method: 'POST', body: fd });
+      const d = await r.json();
+      if (d.success) { setToast({ msg: '¡Subido!', type: 'success' }); setTimeout(() => fetchProfile(userId), 1500); }
+    } catch { setToast({ msg: 'Error', type: 'error' }); } finally { setTimeout(() => setToast({ msg: '', type: 'none' }), 3000); }
   };
 
   const PLANS = [
@@ -110,8 +133,8 @@ export default function DashboardExterno() {
   return (
     <div className="db-page" style={{ background: '#f4f7fa', minHeight: '100vh' }}>
       <Header />
-      <input type="file" ref={avatarRef} hidden accept="image/*" />
-      <input type="file" ref={cvRef} hidden accept=".pdf" />
+      <input type="file" ref={avatarRef} hidden accept="image/*" onChange={e => e.target.files?.[0] && handleUpload(e.target.files[0], 'avatar')} />
+      <input type="file" ref={cvRef} hidden accept=".pdf" onChange={e => e.target.files?.[0] && handleUpload(e.target.files[0], 'cv')} />
 
       {toast.type !== 'none' && (
         <div style={{ position: 'fixed', bottom: '32px', right: '32px', zIndex: 9999, padding: '16px 24px', borderRadius: '16px', color: 'white', fontWeight: 600, background: toast.type === 'success' ? '#059669' : toast.type === 'error' ? '#dc2626' : '#1e3a5f', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
@@ -139,10 +162,11 @@ export default function DashboardExterno() {
               <span style={{ background: '#ecfdf5', color: '#059669', padding: '8px 18px', borderRadius: '30px', fontSize: '0.75rem', fontWeight: 800, border: '1px solid #d1fae5' }}>USUARIO EXTERNO</span>
             </div>
             <p style={{ color: '#64748b', margin: 0, fontSize: '1.05rem', fontWeight: 500 }}>Tu perfil profesional está al <span style={{ color: '#3b82f6', fontWeight: 800 }}>{completionPct}%</span></p>
+            <button onClick={() => avatarRef.current?.click()} style={{ background: '#f8fafc', color: '#1e3a5f', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '12px 24px', fontWeight: 700, cursor: 'pointer', marginTop: '15px' }}>📁 Cambiar Foto</button>
           </div>
         </div>
 
-        {/* Grid de Acciones Correcto */}
+        {/* Grid de Acciones */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '20px', marginBottom: '40px' }}>
           {ACTIONS.map(a => {
             const Icon = a.icon;
@@ -157,7 +181,58 @@ export default function DashboardExterno() {
 
         {/* Áreas de Contenido */}
         <div style={{ background: 'white', borderRadius: '32px', padding: '45px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)' }}>
-          {activeSection === 'none' && <h2>Bienvenido al Portal Externo, {userName}</h2>}
+          {activeSection === 'none' && <h2>Bienvenido al Portal Externo</h2>}
+          
+          {activeSection === 'personal' && (
+             <div>
+               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '35px' }}>
+                 <h2 style={{ margin: 0 }}>Datos Personales</h2>
+                 <button onClick={() => setIsEditingPersonal(!isEditingPersonal)} style={{ background: '#1e3a5f', color: 'white', border: 'none', borderRadius: '12px', padding: '10px 20px', cursor: 'pointer' }}>{isEditingPersonal ? 'Cancelar' : 'Editar'}</button>
+               </div>
+               <div className="responsive-grid-2" style={{ gap: '25px' }}>
+                 {[{ l: 'Nombre Completo', k: 'nombre_completo' }, { l: 'Correo Electrónico', k: 'correo' }, { l: 'Teléfono', k: 'telefono' }].map(f => (
+                   <div key={f.k}><label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#475569', marginBottom: '6px', display: 'block' }}>{f.l}</label><input value={(formData as any)[f.k]} onChange={e => setFormData({ ...formData, [f.k]: e.target.value })} disabled={!isEditingPersonal} style={{ padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0', width: '100%', background: isEditingPersonal ? 'white' : '#f8fafc' }} /></div>
+                 ))}
+               </div>
+               {isEditingPersonal && <button onClick={handleSave} style={{ width: '100%', marginTop: '30px', padding: '15px', background: '#1e3a5f', color: 'white', borderRadius: '14px', border: 'none', fontWeight: 800, cursor: 'pointer' }}>Guardar Cambios</button>}
+             </div>
+          )}
+
+          {activeSection === 'professional' && (
+             <div>
+               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '35px' }}>
+                 <h2 style={{ margin: 0 }}>Perfil Profesional</h2>
+                 <button onClick={() => setIsEditingProf(!isEditingProf)} style={{ background: '#00A9E0', color: 'white', border: 'none', borderRadius: '12px', padding: '10px 20px', cursor: 'pointer' }}>{isEditingProf ? 'Cancelar' : 'Actualizar'}</button>
+               </div>
+               <div className="responsive-grid-2" style={{ gap: '25px' }}>
+                 {[
+                   { l: 'Programa Académico', k: 'programa_academico', o: DIAG_OPTIONS.Programa },
+                   { l: 'Nivel de Formación', k: 'nivel_formacion', o: DIAG_OPTIONS.Formacion },
+                   { l: 'Estrato', k: 'estrato', o: DIAG_OPTIONS.Estrato },
+                   { l: 'Estado Civil', k: 'estado_civil', o: DIAG_OPTIONS.EstadoCivil },
+                   { l: 'Número de Hijos', k: 'numero_hijos', o: DIAG_OPTIONS.Hijos },
+                   { l: 'Ingreso Mensual', k: 'ingreso_mensual', o: DIAG_OPTIONS.Ingreso },
+                   { l: 'Sector Económico', k: 'sector_economico', o: DIAG_OPTIONS.Sector },
+                   { l: 'Área de Desempeño', k: 'area_desempeno', o: DIAG_OPTIONS.Area },
+                   { l: 'Emprendimiento', k: 'emprendimiento', o: DIAG_OPTIONS.Emprendimiento },
+                 ].map(f => (
+                   <div key={f.k}>
+                     <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#475569', marginBottom: '6px', display: 'block' }}>{f.l}</label>
+                     {isEditingProf ? (
+                       <select value={(formData as any)[f.k]} onChange={e => setFormData({ ...formData, [f.k]: e.target.value })} style={{ padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0', width: '100%' }}>
+                         <option value="">Seleccionar...</option>
+                         {f.o.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                       </select>
+                     ) : (
+                       <input value={(formData as any)[f.k] || 'No registrado'} disabled style={{ padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0', width: '100%', background: '#f8fafc' }} />
+                     )}
+                   </div>
+                 ))}
+               </div>
+               {isEditingProf && <button onClick={handleSave} style={{ width: '100%', marginTop: '30px', padding: '15px', background: '#00A9E0', color: 'white', borderRadius: '14px', border: 'none', fontWeight: 800, cursor: 'pointer' }}>Guardar Perfil</button>}
+             </div>
+          )}
+
           {activeSection === 'plans' && (
              <div>
                <h2 style={{ textAlign: 'center', marginBottom: '40px' }}>Planes y Membresía</h2>
@@ -176,6 +251,18 @@ export default function DashboardExterno() {
                  ))}
                </div>
              </div>
+          )}
+
+          {activeSection === 'cv' && (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <div style={{ width: '80px', height: '80px', borderRadius: '20px', background: '#eff6ff', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}><Icons.File /></div>
+              <h2 style={{ color: '#1e3a5f', fontWeight: 900, fontSize: '1.8rem' }}>Mi Hoja de Vida</h2>
+              <p style={{ color: '#64748b', marginBottom: '30px' }}>Gestiona tu currículum para que las empresas puedan encontrarte.</p>
+              <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
+                <button onClick={() => { if (!userId) return; fetch(`${base()}/api/users/get-cv-url/${userId}`).then(r => r.json()).then(d => d.success ? window.open(d.url, '_blank') : setToast({ msg: 'No tienes CV', type: 'info' })) }} style={{ padding: '15px 30px', background: '#1e3a5f', color: 'white', border: 'none', borderRadius: '14px', fontWeight: 700, cursor: 'pointer' }}>Ver Hoja de Vida</button>
+                <button onClick={() => cvRef.current?.click()} style={{ padding: '15px 30px', background: '#f8fafc', color: '#1e3a5f', border: '2px solid #1e3a5f', borderRadius: '14px', fontWeight: 700, cursor: 'pointer' }}>Subir Nueva (.pdf)</button>
+              </div>
+            </div>
           )}
         </div>
       </main>

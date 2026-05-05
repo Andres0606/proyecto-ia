@@ -5,7 +5,6 @@ import Header from '../Components/header';
 import Footer from '../Components/footer';
 import '../css/Dashboard/dashboard.css';
 
-// Iconos corregidos para evitar errores de compilación
 const Icons = {
   Home: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
   User: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
@@ -80,7 +79,6 @@ export default function Dashboard() {
           sector_economico: val(p.sector_economico), area_desempeno: val(p.area_desempeno), emprendimiento: p.emprendimiento ? 'Si' : 'No'
         });
         
-        // Cálculo de progreso corregido
         let pct = 0;
         if (u.foto_url) pct += 10;
         if (u.cv_url) pct += 20;
@@ -99,7 +97,20 @@ export default function Dashboard() {
     try {
       const r = await fetch(`${base()}/api/users/profile/${userId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userData: payload, profileData: payload }) });
       const d = await r.json();
-      if (d.success) { setToast({ msg: '¡Actualizado!', type: 'success' }); setIsEditingProf(false); setIsEditingPersonal(false); fetchProfile(userId); }
+      if (d.success) { setToast({ msg: '¡Éxito!', type: 'success' }); setIsEditingProf(false); setIsEditingPersonal(false); fetchProfile(userId); }
+    } catch { setToast({ msg: 'Error', type: 'error' }); } finally { setTimeout(() => setToast({ msg: '', type: 'none' }), 3000); }
+  };
+
+  const handleFileUpload = async (file: File, type: 'avatar' | 'cv') => {
+    if (!userId) return;
+    setToast({ msg: 'Subiendo archivo...', type: 'info' });
+    const fd = new FormData();
+    fd.append(type === 'avatar' ? 'image' : 'cv', file);
+    fd.append('userId', String(userId).trim());
+    try {
+      const r = await fetch(`${base()}/api/users/upload-${type === 'avatar' ? 'avatar' : 'cv'}`, { method: 'POST', body: fd });
+      const d = await r.json();
+      if (d.success) { setToast({ msg: '¡Éxito!', type: 'success' }); setTimeout(() => fetchProfile(userId), 1500); }
     } catch { setToast({ msg: 'Error', type: 'error' }); } finally { setTimeout(() => setToast({ msg: '', type: 'none' }), 3000); }
   };
 
@@ -111,11 +122,15 @@ export default function Dashboard() {
     { title: 'Mis Postulaciones', icon: Icons.Mail, id: 'apps', color: '#f59e0b' },
   ];
 
+  const inpS = { padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0', width: '100%', fontSize: '0.95rem' };
+  const disS = { ...inpS, background: '#f8fafc', color: '#64748b' };
+  const lblS = { fontSize: '0.8rem', fontWeight: 700, color: '#475569', marginBottom: '6px', display: 'block', textTransform: 'uppercase' as const };
+
   return (
     <div className="db-page" style={{ background: '#f4f7fa', minHeight: '100vh' }}>
       <Header />
-      <input type="file" ref={avatarInputRef} hidden accept="image/*" />
-      <input type="file" ref={cvInputRef} hidden accept=".pdf" />
+      <input type="file" ref={avatarInputRef} hidden accept="image/*" onChange={e => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'avatar')} />
+      <input type="file" ref={cvInputRef} hidden accept=".pdf" onChange={e => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'cv')} />
 
       {toast.type !== 'none' && (
         <div style={{ position: 'fixed', bottom: '32px', right: '32px', zIndex: 9999, padding: '16px 24px', borderRadius: '16px', color: 'white', fontWeight: 600, background: toast.type === 'success' ? '#059669' : toast.type === 'error' ? '#dc2626' : '#1e3a5f', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
@@ -125,7 +140,7 @@ export default function Dashboard() {
 
       <main style={{ paddingTop: '110px', maxWidth: '1120px', margin: '0 auto', paddingBottom: '60px' }}>
         
-        {/* Hero Card Premium */}
+        {/* Hero Card */}
         <div style={{ background: 'white', borderRadius: '32px', padding: '40px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', gap: '40px', marginBottom: '32px', position: 'relative', overflow: 'hidden', border: '1px solid rgba(226, 232, 240, 0.5)' }}>
           <div style={{ position: 'absolute', top: '-100px', right: '-100px', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%)', zIndex: 0 }} />
           <div style={{ position: 'relative', width: '130px', height: '130px', flexShrink: 0 }}>
@@ -143,10 +158,11 @@ export default function Dashboard() {
               <span style={{ background: '#fee2e2', color: '#b91c1c', padding: '8px 18px', borderRadius: '30px', fontSize: '0.75rem', fontWeight: 800, border: '1px solid #fecaca' }}>EGRESADO</span>
             </div>
             <p style={{ color: '#64748b', margin: 0, fontSize: '1.05rem', fontWeight: 500 }}>Tu perfil profesional está al <span style={{ color: '#3b82f6', fontWeight: 800 }}>{completionPct}%</span></p>
+            <button onClick={() => avatarInputRef.current?.click()} style={{ background: '#f8fafc', color: '#1e3a5f', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '12px 24px', fontWeight: 700, cursor: 'pointer', marginTop: '15px' }}>📁 Cambiar Foto</button>
           </div>
         </div>
 
-        {/* Grid de Acciones Correcto */}
+        {/* Grid de Acciones */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '20px', marginBottom: '40px' }}>
           {ACTIONS.map(a => {
             const Icon = a.icon;
@@ -161,7 +177,8 @@ export default function Dashboard() {
 
         {/* Áreas de Contenido */}
         <div style={{ background: 'white', borderRadius: '32px', padding: '45px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)' }}>
-          {activeSection === 'none' && <h2>Bienvenido de nuevo, {userName}</h2>}
+          {activeSection === 'none' && <h2 style={{ textAlign: 'center' }}>Bienvenido al Panel de Control</h2>}
+
           {activeSection === 'personal' && (
              <div>
                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '35px' }}>
@@ -169,13 +186,21 @@ export default function Dashboard() {
                  <button onClick={() => setIsEditingPersonal(!isEditingPersonal)} style={{ background: '#1e3a5f', color: 'white', border: 'none', borderRadius: '12px', padding: '10px 20px', cursor: 'pointer' }}>{isEditingPersonal ? 'Cancelar' : 'Editar'}</button>
                </div>
                <div className="responsive-grid-2" style={{ gap: '25px' }}>
-                 {[{ l: 'Nombre Completo', k: 'nombre_completo' }, { l: 'Correo Electrónico', k: 'correo' }, { l: 'Teléfono', k: 'telefono' }].map(f => (
-                   <div key={f.k}><label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#475569', marginBottom: '6px', display: 'block' }}>{f.l}</label><input value={(formData as any)[f.k]} onChange={e => setFormData({ ...formData, [f.k]: e.target.value })} disabled={!isEditingPersonal} style={{ padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0', width: '100%', background: isEditingPersonal ? 'white' : '#f8fafc' }} /></div>
+                 {[
+                   { l: 'Nombre Completo', k: 'nombre_completo' },
+                   { l: 'Cédula', k: 'cedula' },
+                   { l: 'Correo Electrónico', k: 'correo' },
+                   { l: 'Teléfono', k: 'telefono' },
+                   { l: 'Fecha de Nacimiento', k: 'fecha_nacimiento' },
+                   { l: 'Género', k: 'genero' }
+                 ].map(f => (
+                   <div key={f.k}><label style={lblS}>{f.l}</label><input value={(formData as any)[f.k]} onChange={e => setFormData({ ...formData, [f.k]: e.target.value })} disabled={!isEditingPersonal} style={!isEditingPersonal ? disS : inpS} /></div>
                  ))}
                </div>
                {isEditingPersonal && <button onClick={handleSave} style={{ width: '100%', marginTop: '30px', padding: '15px', background: '#1e3a5f', color: 'white', borderRadius: '14px', border: 'none', fontWeight: 800, cursor: 'pointer' }}>Guardar Cambios</button>}
              </div>
           )}
+
           {activeSection === 'professional' && (
              <div>
                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '35px' }}>
@@ -195,20 +220,31 @@ export default function Dashboard() {
                    { l: 'Emprendimiento', k: 'emprendimiento', o: DIAG_OPTIONS.Emprendimiento },
                  ].map(f => (
                    <div key={f.k}>
-                     <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#475569', marginBottom: '6px', display: 'block' }}>{f.l}</label>
+                     <label style={lblS}>{f.l}</label>
                      {isEditingProf ? (
-                       <select value={(formData as any)[f.k]} onChange={e => setFormData({ ...formData, [f.k]: e.target.value })} style={{ padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0', width: '100%' }}>
+                       <select value={(formData as any)[f.k]} onChange={e => setFormData({ ...formData, [f.k]: e.target.value })} style={inpS}>
                          <option value="">Seleccionar...</option>
                          {f.o.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                        </select>
                      ) : (
-                       <input value={(formData as any)[f.k] || 'No registrado'} disabled style={{ padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0', width: '100%', background: '#f8fafc' }} />
+                       <input value={(formData as any)[f.k] || 'No registrado'} disabled style={disS} />
                      )}
                    </div>
                  ))}
                </div>
                {isEditingProf && <button onClick={handleSave} style={{ width: '100%', marginTop: '30px', padding: '15px', background: '#00A9E0', color: 'white', borderRadius: '14px', border: 'none', fontWeight: 800, cursor: 'pointer' }}>Guardar Perfil</button>}
              </div>
+          )}
+
+          {activeSection === 'cv' && (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <div style={{ width: '80px', height: '80px', borderRadius: '20px', background: '#fee2e2', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}><Icons.File /></div>
+              <h2 style={{ color: '#1e3a5f', fontWeight: 900, fontSize: '1.8rem' }}>Gestión de Hoja de Vida</h2>
+              <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', marginTop: '30px' }}>
+                <button onClick={() => { if (!userId) return; fetch(`${base()}/api/users/get-cv-url/${userId}`).then(r => r.json()).then(d => d.success ? window.open(d.url, '_blank') : setToast({ msg: 'No tienes CV subido', type: 'info' })) }} style={{ padding: '15px 30px', background: '#1e3a5f', color: 'white', border: 'none', borderRadius: '14px', fontWeight: 700, cursor: 'pointer' }}>Ver CV Actual</button>
+                <button onClick={() => cvInputRef.current?.click()} style={{ padding: '15px 30px', background: '#f8fafc', color: '#1e3a5f', border: '2px solid #1e3a5f', borderRadius: '14px', fontWeight: 700, cursor: 'pointer' }}>Subir Nuevo CV (.pdf)</button>
+              </div>
+            </div>
           )}
         </div>
       </main>
