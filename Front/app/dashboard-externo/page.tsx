@@ -240,7 +240,18 @@ export default function DashboardExterno() {
       const d = await r.json();
       if (d.success) {
         showToast(`¡Ahora tienes el ${planName}!`, 'success');
-        setTimeout(() => window.location.reload(), 2000);
+        
+        // Actualizar sessionStorage inmediatamente para que el Header lo vea tras el reload
+        const savedUser = sessionStorage.getItem('ucc_user');
+        if (savedUser) {
+          const parsed = JSON.parse(savedUser);
+          if (!parsed.profile) parsed.profile = {};
+          if (!parsed.profile.suscripcion) parsed.profile.suscripcion = {};
+          parsed.profile.suscripcion.tipo_plan = planName;
+          sessionStorage.setItem('ucc_user', JSON.stringify(parsed));
+        }
+
+        setTimeout(() => window.location.reload(), 1500);
       } else {
         showToast(d.message || 'Error al suscribirse', 'error');
       }
