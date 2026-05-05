@@ -203,7 +203,7 @@ export default function Dashboard() {
     
     const fd = new FormData();
     fd.append(type === 'avatar' ? 'image' : 'cv', file);
-    fd.append('userId', userId);
+    fd.append('userId', String(userId).trim());
     
     try {
       const r = await fetch(`${base()}/api/users/upload-${type === 'avatar' ? 'avatar' : 'cv'}`, { method: 'POST', body: fd });

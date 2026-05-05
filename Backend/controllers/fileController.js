@@ -58,17 +58,24 @@ const uploadProfileImage = async (req, res) => {
 
 const uploadResume = async (req, res) => {
   try {
-    const { userId } = req.body;
+    let { userId } = req.body;
     const file = req.file;
 
-    console.log(`🚀 Iniciando subida de CV para usuario: ${userId}`);
+    // Sanitización forzada del userId
+    if (userId) userId = String(userId).trim();
+
+    console.log(`🚀 Intentando subir CV para ID limpio: [${userId}]`);
 
     if (!file) {
       return res.status(400).json({ success: false, message: 'No se recibió el archivo del CV.' });
     }
 
-    // 1. Subir a Supabase Storage (Bucket privado)
-    const fileName = `${userId}/${Date.now()}-cv.pdf`;
+    if (!userId || userId === 'null' || userId === 'undefined') {
+       return res.status(400).json({ success: false, message: 'ID de usuario no válido para la subida.' });
+    }
+
+    // 1. Subir a Supabase Storage (Ruta plana para evitar líos de RLS con carpetas)
+    const fileName = `${userId}-${Date.now()}-cv.pdf`;
     console.log(`📤 Subiendo CV a Storage: ${fileName}`);
 
     const { data, error } = await supabase.storage
@@ -79,12 +86,11 @@ const uploadResume = async (req, res) => {
       });
 
     if (error) {
-      console.error('❌ Error de Supabase Storage (CV):', error);
+      console.error('❌ Error de Supabase Storage (CV):', error.message);
       throw new Error(`Error en Storage CV: ${error.message}`);
     }
 
     // 2. Guardar la RUTA en la tabla 'users'
-    console.log(`💾 Actualizando tabla users con ruta del CV: ${fileName}`);
     const { error: updateError } = await supabase
       .from('users')
       .update({ cv_url: fileName }) 
@@ -92,7 +98,7 @@ const uploadResume = async (req, res) => {
 
     if (updateError) {
       console.error('❌ Error al actualizar tabla users (CV):', updateError);
-      throw new Error(`Error en DB CV: ${updateError.message}. ¿Creaste la columna cv_url?`);
+      throw new Error(`Error en DB CV: ${updateError.message}`);
     }
 
     return res.status(200).json({
