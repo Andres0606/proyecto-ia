@@ -61,43 +61,42 @@ const uploadResume = async (req, res) => {
     let { userId } = req.body;
     const file = req.file;
 
-    // Sanitización forzada del userId
     if (userId) userId = String(userId).trim();
 
-    console.log(`🚀 Intentando subir CV para ID limpio: [${userId}]`);
+    console.log(`🚀 Iniciando subida de CV para usuario: [${userId}]`);
 
     if (!file) {
       return res.status(400).json({ success: false, message: 'No se recibió el archivo del CV.' });
     }
 
     if (!userId || userId === 'null' || userId === 'undefined') {
-       return res.status(400).json({ success: false, message: 'ID de usuario no válido para la subida.' });
+       return res.status(400).json({ success: false, message: 'ID de usuario no válido.' });
     }
 
-    // 1. Subir a Supabase Storage (Ruta plana para evitar líos de RLS con carpetas)
-    const fileName = `${userId}-${Date.now()}-cv.pdf`;
-    console.log(`📤 Subiendo CV a Storage: ${fileName}`);
+    // Nombre de archivo simplificado al máximo
+    const fileName = `cv-${userId}-${Date.now()}.pdf`;
+    
+    console.log(`📤 Subiendo a bucket 'hojas-de-vida' como: ${fileName}`);
 
     const { data, error } = await supabase.storage
       .from('hojas-de-vida')
       .upload(fileName, file.buffer, {
-        contentType: file.mimetype,
+        contentType: 'application/pdf',
         upsert: true
       });
 
     if (error) {
-      console.error('❌ Error de Supabase Storage (CV):', error.message);
+      console.error('❌ ERROR DETALLADO DE SUPABASE STORAGE:', JSON.stringify(error, null, 2));
       throw new Error(`Error en Storage CV: ${error.message}`);
     }
 
-    // 2. Guardar la RUTA en la tabla 'users'
     const { error: updateError } = await supabase
       .from('users')
       .update({ cv_url: fileName }) 
       .eq('id', userId);
 
     if (updateError) {
-      console.error('❌ Error al actualizar tabla users (CV):', updateError);
+      console.error('❌ Error al actualizar tabla users:', updateError);
       throw new Error(`Error en DB CV: ${updateError.message}`);
     }
 
@@ -108,7 +107,7 @@ const uploadResume = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('💥 Error fatal en uploadResume:', error.message);
+    console.error('💥 Error fatal en uploadResume:', error);
     return res.status(500).json({ success: false, message: error.message });
   }
 };
