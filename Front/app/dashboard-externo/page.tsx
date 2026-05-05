@@ -40,6 +40,7 @@ export default function DashboardExterno() {
   const [isUploading, setIsUploading] = useState(false);
   const [completionPct, setCompletionPct] = useState(0);
   const [showCamera, setShowCamera] = useState(false);
+  const [isHoveringAvatar, setIsHoveringAvatar] = useState(false);
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const streamRef = React.useRef<MediaStream | null>(null);
   const [formData, setFormData] = useState({
@@ -256,7 +257,11 @@ export default function DashboardExterno() {
           <div style={{ position: 'absolute', top: '-80px', right: '-80px', width: '320px', height: '320px', borderRadius: '50%', background: 'rgba(255,255,255,0.04)' }} />
           <div style={{ position: 'absolute', bottom: '-60px', left: '-60px', width: '240px', height: '240px', borderRadius: '50%', background: 'rgba(0,169,224,0.1)' }} />
           <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '28px', position: 'relative', flexWrap: 'wrap' }}>
-            <div style={{ position: 'relative', group: 'true' } as any}>
+            <div 
+              style={{ position: 'relative' }}
+              onMouseEnter={() => setIsHoveringAvatar(true)}
+              onMouseLeave={() => setIsHoveringAvatar(false)}
+            >
               <div style={{ 
                 width:'110px', height:'110px', borderRadius:'50%', 
                 background: userPhoto ? `url(${userPhoto}) center/cover` : 'rgba(255,255,255,0.15)', 
@@ -265,8 +270,9 @@ export default function DashboardExterno() {
                 fontSize:'2.8rem', fontWeight:800, color:'white', flexShrink:0,
                 boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
                 position: 'relative',
-                overflow: 'hidden'
-              }}>
+                overflow: 'hidden',
+                cursor: 'pointer'
+              }} onClick={() => avatarRef.current?.click()}>
                 {!userPhoto && userName[0]}
                 
                 {/* Overlay de carga */}
@@ -282,13 +288,17 @@ export default function DashboardExterno() {
                 )}
               </div>
 
-              {/* Botones de acción mejorados */}
+              {/* Botones de acción mejorados - Solo visibles en hover */}
               <div style={{ 
                 position:'absolute', bottom:'-5px', right:'-5px', 
-                display:'flex', gap:'6px', zIndex:10 
+                display:'flex', gap:'6px', zIndex:10,
+                opacity: isHoveringAvatar ? 1 : 0,
+                transform: isHoveringAvatar ? 'translateY(0)' : 'translateY(10px)',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                pointerEvents: isHoveringAvatar ? 'auto' : 'none'
               }}>
                 <button 
-                  onClick={() => avatarRef.current?.click()} 
+                  onClick={(e) => { e.stopPropagation(); avatarRef.current?.click(); }} 
                   style={{ 
                     width:'36px', height:'36px', borderRadius:'50%', 
                     background:'white', border:'none', cursor:'pointer', 
@@ -303,7 +313,7 @@ export default function DashboardExterno() {
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00A9E0" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
                 </button>
                 <button 
-                  onClick={startCamera} 
+                  onClick={(e) => { e.stopPropagation(); startCamera(); }} 
                   style={{ 
                     width:'36px', height:'36px', borderRadius:'50%', 
                     background:'var(--ucc-navy)', border:'none', cursor:'pointer', 
