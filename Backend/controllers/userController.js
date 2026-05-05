@@ -26,15 +26,15 @@ const registerUser = async (req, res) => {
     // 2. Insertar en la tabla 'public.users'
     const { error: userError } = await supabase
       .from('users')
-      .insert([{ 
-        id: userId, 
-        nombre_completo, 
-        correo: email, 
-        telefono, 
+      .insert([{
+        id: userId,
+        nombre_completo,
+        correo: email,
+        telefono,
         cedula,
         fecha_nacimiento,
         genero,
-        rol_id 
+        rol_id
       }]);
 
     if (userError) throw userError;
@@ -56,7 +56,7 @@ const registerUser = async (req, res) => {
           emprendimiento: extraData.emprendimiento === 'si'
         }]);
       if (profileError) throw profileError;
-    } 
+    }
     else if (rol_id === 3) { // Empresa
       const { error: companyError } = await supabase
         .from('empresas')
@@ -182,11 +182,11 @@ const getFullProfile = async (req, res) => {
       if (p.estrato !== null) p.estrato = estratoReverse[p.estrato] || String(p.estrato);
       if (p.numero_hijos !== null) p.numero_hijos = hijosReverse[p.numero_hijos] || String(p.numero_hijos);
       if (p.ingreso_mensual !== null) p.ingreso_mensual = ingresoReverse[p.ingreso_mensual] || String(p.ingreso_mensual);
-      
+
       if (typeof p.emprendimiento === 'boolean') {
         p.emprendimiento = p.emprendimiento ? "Si" : "No";
       }
-      
+
       console.log('✅ Datos profesionales encontrados y mapeados:', p);
     }
 
@@ -210,7 +210,7 @@ const updateProfile = async (req, res) => {
     // 2. Actualizar tabla users
     const { error: userError } = await supabase
       .from('users')
-      .update({ 
+      .update({
         nombre_completo: userData.nombre_completo,
         correo: userData.correo,
         telefono: userData.telefono,
@@ -237,15 +237,15 @@ const updateProfile = async (req, res) => {
 
     const { error: profileError } = await supabase
       .from('perfiles_usuarios')
-      .upsert(dbProfileData, { 
+      .upsert(dbProfileData, {
         onConflict: 'user_id',
-        ignoreDuplicates: false 
+        ignoreDuplicates: false
       });
 
     if (profileError) {
       console.error("❌ Error de Supabase (perfiles_usuarios):", profileError);
-      return res.status(400).json({ 
-        success: false, 
+      return res.status(400).json({
+        success: false,
         message: `Error en tabla perfiles_usuarios: ${profileError.message}`,
         details: profileError.details
       });

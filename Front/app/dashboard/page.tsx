@@ -210,7 +210,8 @@ export default function Dashboard() {
           setUploadStatus({ msg: '', type: 'none' });
         }, 3000);
       } else {
-        setUploadStatus({ msg: `❌ ${data.message || 'Error al procesar el archivo'}`, type: 'error' });
+        const errorDetail = data.error ? ` (${data.error})` : '';
+        setUploadStatus({ msg: `❌ ${data.message || 'Error al procesar el archivo'}${errorDetail}`, type: 'error' });
       }
     } catch (err: any) { 
       setUploadStatus({ msg: '❌ Error crítico en la carga', type: 'error' }); 
