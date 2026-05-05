@@ -38,6 +38,10 @@ export default function DashboardExterno() {
   const [isEditingPersonal, setIsEditingPersonal] = useState(false);
   const [toast, setToast] = useState<{msg:string,type:'info'|'success'|'error'|'none'}>({msg:'',type:'none'});
   const [isUploading, setIsUploading] = useState(false);
+  const [completionPct, setCompletionPct] = useState(0);
+  const [showCamera, setShowCamera] = useState(false);
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+  const streamRef = React.useRef<MediaStream | null>(null);
   const [formData, setFormData] = useState({
     nombre_completo: '',
     correo: '',
@@ -96,7 +100,6 @@ export default function DashboardExterno() {
         const p = u.perfiles_usuarios?.[0] || {};
         setUserName(u.nombre_completo?.split(' ')[0] || 'Usuario');
         if (u.foto_url) setUserPhoto(u.foto_url);
-        const v = (x: any) => x != null && x !== '' ? String(x) : '';
         setFormData({ 
           nombre_completo: u.nombre_completo||'', 
           correo: u.correo||'', 
@@ -114,6 +117,17 @@ export default function DashboardExterno() {
           area_desempeno: v(p.area_desempeno),
           emprendimiento: v(p.emprendimiento)
         });
+
+        // Calcular porcentaje de completitud
+        let pct = 0;
+        if (u.foto_url) pct += 15;
+        if (u.cv_url) pct += 25;
+        if (u.telefono && u.nombre_completo) pct += 20;
+        
+        const profFields = [p.nivel_formacion, p.programa_academico, p.estrato, p.estado_civil, p.ingreso_mensual];
+        const filled = profFields.filter(f => f !== null && f !== undefined && String(f).trim() !== '').length;
+        pct += (filled / profFields.length) * 40;
+        setCompletionPct(Math.round(pct));
       }
     } catch(e){ console.error(e); }
   };
@@ -145,7 +159,41 @@ export default function DashboardExterno() {
         const errorDetail = d.error ? ` (${d.error})` : '';
         showToast(`${d.message || 'Error en la carga'}${errorDetail}`, 'error');
       }
-    } catch { showToast('Error en la carga','error'); } finally { setIsUploading(false); }
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      if (videoRef.current) videoRef.current.srcObject = stream;
+      streamRef.current = stream;
+      setShowCamera(true);
+    } catch (err) {
+      showToast('No se pudo acceder a la cámara', 'error');
+    }
+  };
+
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    setShowCamera(false);
+  };
+
+  const capturePhoto = () => {
+    if (!videoRef.current) return;
+    const canvas = document.createElement('canvas');
+    canvas.width = videoRef.current.videoWidth;
+    canvas.height = videoRef.current.videoHeight;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.drawImage(videoRef.current, 0, 0);
+      canvas.toBlob(blob => {
+        if (blob) {
+          const file = new File([blob], "avatar.jpg", { type: "image/jpeg" });
+          handleUpload(file, 'avatar');
+          stopCamera();
+        }
+      }, 'image/jpeg');
+    }
   };
 
   const handleViewCV = async () => {
@@ -193,8 +241,14 @@ export default function DashboardExterno() {
           <div style={{ position:'absolute', top:'-80px', right:'-80px', width:'320px', height:'320px', borderRadius:'50%', background:'rgba(255,255,255,0.04)' }} />
           <div style={{ position:'absolute', bottom:'-60px', left:'-60px', width:'240px', height:'240px', borderRadius:'50%', background:'rgba(0,169,224,0.1)' }} />
           <div style={{ maxWidth:'1200px', margin:'0 auto', display:'flex', alignItems:'center', gap:'28px', position:'relative', flexWrap:'wrap' }}>
-            <div style={{ width:'90px', height:'90px', borderRadius:'50%', background: userPhoto ? `url(${userPhoto}) center/cover` : 'rgba(255,255,255,0.15)', backdropFilter:'blur(10px)', border:'3px solid rgba(255,255,255,0.3)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'2.4rem', fontWeight:800, color:'white', cursor:'pointer', flexShrink:0 }} onClick={() => avatarRef.current?.click()}>
-              {!userPhoto && userName[0]}
+            <div style={{ position: 'relative' }}>
+              <div style={{ width:'100px', height:'100px', borderRadius:'50%', background: userPhoto ? `url(${userPhoto}) center/cover` : 'rgba(255,255,255,0.15)', backdropFilter:'blur(10px)', border:'3px solid rgba(255,255,255,0.3)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'2.4rem', fontWeight:800, color:'white', flexShrink:0 }}>
+                {!userPhoto && userName[0]}
+              </div>
+              <div style={{ position:'absolute', bottom:0, right:0, display:'flex', gap:'5px' }}>
+                <button onClick={() => avatarRef.current?.click()} style={{ width:'32px', height:'32px', borderRadius:'50%', background:'white', border:'1px solid #e2e8f0', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.9rem', boxShadow:'0 2px 5px rgba(0,0,0,0.1)' }} title="Subir archivo">📁</button>
+                <button onClick={startCamera} style={{ width:'32px', height:'32px', borderRadius:'50%', background:'white', border:'1px solid #e2e8f0', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.9rem', boxShadow:'0 2px 5px rgba(0,0,0,0.1)' }} title="Tomar foto">📸</button>
+              </div>
             </div>
             <div>
               <p style={{ color:'rgba(255,255,255,0.6)', margin:'0 0 4px', fontSize:'0.9rem' }}>{greeting}</p>
@@ -222,7 +276,7 @@ export default function DashboardExterno() {
             <div>
               <div className="responsive-grid-4" style={{ marginBottom:'28px' }}>
                 {[
-                  { label:'Perfil Completo', val:'45%', icon:'✅', color:'var(--ucc-navy)', bg:'#eff6ff' },
+                  { label:'Perfil Completo', val:`${completionPct}%`, icon:'✅', color:'var(--ucc-navy)', bg:'#eff6ff' },
                   { label:'CVs Subidos', val:'1', icon:'📄', color:'#00A9E0', bg:'#e0f7ff' },
                   { label:'Postulaciones', val:'0', icon:'📬', color:'#8b5cf6', bg:'#f5f3ff' },
                   { label:'Plan Actual', val:'Gratuito', icon:'💳', color:'#e53e3e', bg:'#fff5f5' },
@@ -357,6 +411,21 @@ export default function DashboardExterno() {
           )}
         </div>
       </main>
+      {/* Camera Modal */}
+      {showCamera && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.8)', zIndex:10000, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
+          <div style={{ background:'white', borderRadius:'24px', padding:'30px', maxWidth:'500px', width:'100%', textAlign:'center' }}>
+            <h3 style={{ margin:'0 0 20px', color:'var(--ucc-navy)' }}>Tomar foto de perfil</h3>
+            <div style={{ background:'black', borderRadius:'16px', overflow:'hidden', aspectRatio:'4/3', marginBottom:'20px' }}>
+              <video ref={videoRef} autoPlay playsInline style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+            </div>
+            <div style={{ display:'flex', gap:'12px' }}>
+              <button onClick={stopCamera} style={{ flex:1, padding:'14px', background:'#f1f5f9', color:'#64748b', border:'none', borderRadius:'12px', fontWeight:700, cursor:'pointer' }}>Cancelar</button>
+              <button onClick={capturePhoto} style={{ flex:2, padding:'14px', background:'var(--ucc-navy)', color:'white', border:'none', borderRadius:'12px', fontWeight:700, cursor:'pointer' }}>📸 Capturar Foto</button>
+            </div>
+          </div>
+        </div>
+      )}
       <Footer />
     </div>
   );
