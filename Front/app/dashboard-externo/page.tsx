@@ -5,12 +5,21 @@ import Header from '../Components/header';
 import Footer from '../Components/footer';
 import '../css/Dashboard/dashboard.css';
 
+// Iconos SVG Premium
+const Icons = {
+  Home: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
+  User: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+  Briefcase: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>,
+  Card: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>,
+  File: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+};
+
 const QUICK_ACTIONS = [
-  { title: 'Inicio', icon: '🏠', id: 'none' },
-  { title: 'Datos Personales', icon: '👤', id: 'personal' },
-  { title: 'Perfil Profesional', icon: '💼', id: 'professional' },
-  { title: 'Planes y Membresía', icon: '💳', id: 'plans' },
-  { title: 'Mi Hoja de Vida', icon: '📄', id: 'cv' },
+  { title: 'Inicio', Icon: Icons.Home, id: 'none', color: '#3b82f6' },
+  { title: 'Datos Personales', Icon: Icons.User, id: 'personal', color: '#8b5cf6' },
+  { title: 'Perfil Profesional', Icon: Icons.Briefcase, id: 'professional', color: '#10b981' },
+  { title: 'Planes', Icon: Icons.Card, id: 'plans', color: '#f59e0b' },
+  { title: 'Mi Hoja de Vida', Icon: Icons.File, id: 'cv', color: '#ef4444' },
 ];
 
 const DIAG_OPTIONS = {
@@ -153,103 +162,109 @@ export default function DashboardExterno() {
     { name: 'Plan Completo', price: '$45.000', icon: '🚀', features: ['Todo lo anterior', 'Bolsa de Empleo', 'Alertas Email'] }
   ];
 
+  const mainWidth = '1120px';
+
   return (
-    <div className="db-page" style={{ background: '#f8fafc', minHeight: '100vh' }}>
+    <div className="db-page" style={{ background: '#f4f7fa', minHeight: '100vh' }}>
       <Header />
       <input type="file" ref={avatarRef} hidden accept="image/*" onChange={e => e.target.files?.[0] && handleUpload(e.target.files[0], 'avatar')} />
       <input type="file" ref={cvRef} hidden accept=".pdf" onChange={e => e.target.files?.[0] && handleUpload(e.target.files[0], 'cv')} />
 
       {toast.type !== 'none' && (
-        <div style={{ position: 'fixed', bottom: '32px', right: '32px', zIndex: 9999, padding: '14px 22px', borderRadius: '14px', color: 'white', fontWeight: 600, boxShadow: '0 10px 30px rgba(0,0,0,0.1)', background: toast.type === 'success' ? '#059669' : toast.type === 'error' ? '#dc2626' : '#1e3a5f' }}>
+        <div style={{ position: 'fixed', bottom: '32px', right: '32px', zIndex: 9999, padding: '16px 24px', borderRadius: '16px', color: 'white', fontWeight: 600, boxShadow: '0 10px 40px rgba(0,0,0,0.15)', background: toast.type === 'success' ? '#059669' : toast.type === 'error' ? '#dc2626' : '#1e3a5f', animation: 'slideIn 0.3s ease-out' }}>
           {toast.msg}
         </div>
       )}
 
-      <main style={{ paddingTop: '110px', maxWidth: '1100px', margin: '0 auto', paddingBottom: '60px' }}>
+      <main style={{ paddingTop: '110px', maxWidth: mainWidth, margin: '0 auto', paddingBottom: '60px' }}>
         
-        {/* Hero Card */}
-        <div style={{ background: 'white', borderRadius: '24px', padding: '40px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: '32px', marginBottom: '40px' }}>
-          <div style={{ position: 'relative', width: '120px', height: '120px' }}>
-            <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: userPhoto ? `url(${userPhoto}) center/cover` : '#1e3a5f', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', fontWeight: 800, color: 'white', border: '4px solid #f1f5f9' }}>
+        {/* Hero Card Ultra-Refinado */}
+        <div style={{ background: 'white', borderRadius: '32px', padding: '40px', boxShadow: '0 10px 40px rgba(0,40,85,0.04)', display: 'flex', alignItems: 'center', gap: '40px', marginBottom: '32px', position: 'relative', overflow: 'hidden', border: '1px solid rgba(226, 232, 240, 0.5)' }}>
+          <div style={{ position: 'absolute', top: '-100px', right: '-100px', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%)', zRef: 0 }} />
+          <div style={{ position: 'relative', width: '130px', height: '130px', flexShrink: 0 }}>
+            <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: userPhoto ? `url(${userPhoto}) center/cover` : 'linear-gradient(135deg, #1e3a5f 0%, #3b82f6 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.8rem', fontWeight: 800, color: 'white', border: '6px solid white', boxShadow: '0 8px 25px rgba(0,0,0,0.1)' }}>
               {!userPhoto && userName[0]}
             </div>
           </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-              <h1 style={{ margin: 0, color: '#1e3a5f', fontSize: '2.2rem', fontWeight: 800 }}>{greeting}, {userName} ✨</h1>
-              <span style={{ background: '#dcfce7', color: '#166534', padding: '6px 14px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 700 }}>USUARIO EXTERNO</span>
+          <div style={{ flex: 1, zIndex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '10px' }}>
+              <h1 style={{ margin: 0, color: '#1e3a5f', fontSize: '2.4rem', fontWeight: 900, letterSpacing: '-0.5px' }}>{greeting}, {userName} ✨</h1>
+              <span style={{ background: '#ecfdf5', color: '#059669', padding: '8px 18px', borderRadius: '30px', fontSize: '0.75rem', fontWeight: 800, border: '1px solid #d1fae5', textTransform: 'uppercase', letterSpacing: '0.5px' }}>USUARIO EXTERNO</span>
             </div>
-            <p style={{ color: '#64748b', margin: '0 0 16px', fontSize: '1rem' }}>Tu perfil profesional está al {completionPct}%</p>
-            <button onClick={() => avatarRef.current?.click()} style={{ background: '#f8fafc', color: '#1e3a5f', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '10px 20px', fontWeight: 700, cursor: 'pointer' }}>📁 Cambiar Foto</button>
+            <p style={{ color: '#64748b', margin: '0 0 20px', fontSize: '1.05rem', fontWeight: 500 }}>Tu perfil profesional está al <span style={{ color: '#3b82f6', fontWeight: 800 }}>{completionPct}%</span></p>
+            <button onClick={() => avatarRef.current?.click()} style={{ background: '#f8fafc', color: '#1e3a5f', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '12px 24px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }} onMouseOver={e => e.currentTarget.style.background = '#f1f5f9'} onMouseOut={e => e.currentTarget.style.background = '#f8fafc'}>📁 Cambiar Foto</button>
           </div>
         </div>
 
-        {/* Action Grid (Restaurado con INICIO) */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '40px' }}>
+        {/* Action Grid (Sin Emojis, con Difuminado) */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '20px', marginBottom: '40px' }}>
           {QUICK_ACTIONS.map(a => (
-            <div key={a.id} onClick={() => setActiveSection(a.id as any)} style={{ background: 'white', borderRadius: '24px', padding: '30px', textAlign: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.03)', cursor: 'pointer', border: activeSection === a.id ? '2px solid #3b82f6' : '2px solid transparent', transition: 'all 0.2s' }}>
-              <div style={{ fontSize: '3rem', marginBottom: '12px' }}>{a.icon}</div>
-              <h3 style={{ margin: 0, color: '#1e3a5f', fontWeight: 800, fontSize: '1.1rem' }}>{a.title}</h3>
+            <div key={a.id} onClick={() => setActiveSection(a.id as any)} style={{ background: activeSection === a.id ? 'white' : 'rgba(255, 255, 255, 0.7)', backdropFilter: 'blur(10px)', borderRadius: '28px', padding: '32px 20px', textAlign: 'center', boxShadow: activeSection === a.id ? '0 15px 35px rgba(59, 130, 246, 0.15)' : '0 4px 15px rgba(0,0,0,0.03)', cursor: 'pointer', border: activeSection === a.id ? `2px solid ${a.color}` : '1px solid rgba(255,255,255,0.4)', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', transform: activeSection === a.id ? 'translateY(-5px)' : 'none' }}>
+              <div style={{ width: '60px', height: '60px', borderRadius: '18px', background: `${a.color}15`, color: a.color, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', transition: 'all 0.3s' }}>
+                <a.Icon />
+              </div>
+              <h3 style={{ margin: 0, color: '#1e3a5f', fontWeight: 800, fontSize: '0.95rem', lineHeight: 1.3 }}>{a.title}</h3>
             </div>
           ))}
         </div>
 
-        {/* Content Sections */}
-        <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
+        {/* Content Area */}
+        <div style={{ animation: 'fadeIn 0.4s ease-out' }}>
           {activeSection === 'none' && (
-            <div style={{ background: 'white', borderRadius: '24px', padding: '40px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', display: 'flex', gap: '30px', alignItems: 'center' }}>
-              <div style={{ fontSize: '5rem' }}>🚀</div>
+            <div style={{ background: 'white', borderRadius: '32px', padding: '50px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)', display: 'flex', gap: '40px', alignItems: 'center', border: '1px solid rgba(226, 232, 240, 0.5)' }}>
+              <div style={{ width: '100px', height: '100px', borderRadius: '30px', background: 'linear-gradient(135deg, #3b82f6 0%, #1e3a5f 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem', color: 'white', boxShadow: '0 10px 20px rgba(59, 130, 246, 0.2)' }}><Icons.Home /></div>
               <div style={{ flex: 1 }}>
-                <h2 style={{ color: '#1e3a5f', fontWeight: 800, margin: '0 0 10px' }}>¡Bienvenido a tu Dashboard!</h2>
-                <p style={{ color: '#64748b', lineHeight: 1.6, margin: '0 0 20px' }}>Completa tu perfil para acceder a las mejores oportunidades laborales y diagnósticos inteligentes.</p>
-                <div style={{ display: 'flex', gap: '12px' }}>
-                  <button onClick={() => setActiveSection('professional')} style={{ background: '#1e3a5f', color: 'white', border: 'none', borderRadius: '12px', padding: '14px 28px', fontWeight: 700, cursor: 'pointer' }}>Completar Perfil</button>
-                  <button onClick={() => setActiveSection('plans')} style={{ background: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '12px', padding: '14px 28px', fontWeight: 700, cursor: 'pointer' }}>Ver Planes</button>
+                <h2 style={{ color: '#1e3a5f', fontWeight: 900, fontSize: '1.8rem', margin: '0 0 12px', letterSpacing: '-0.5px' }}>¡Bienvenido a tu Espacio Personal!</h2>
+                <p style={{ color: '#64748b', lineHeight: 1.7, margin: '0 0 28px', fontSize: '1.05rem' }}>Optimiza tu presencia profesional y accede a diagnósticos avanzados. Estamos aquí para impulsar tu carrera.</p>
+                <div style={{ display: 'flex', gap: '16px' }}>
+                  <button onClick={() => setActiveSection('professional')} style={{ background: '#1e3a5f', color: 'white', border: 'none', borderRadius: '16px', padding: '16px 32px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 8px 20px rgba(30, 58, 95, 0.25)', transition: 'all 0.2s' }}>Completar Perfil</button>
+                  <button onClick={() => setActiveSection('plans')} style={{ background: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '16px', padding: '16px 32px', fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s' }}>Explorar Planes</button>
                 </div>
               </div>
             </div>
           )}
 
           {activeSection === 'personal' && (
-            <div style={{ background: 'white', borderRadius: '24px', padding: '40px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-                <h2 style={{ margin: 0, color: '#1e3a5f', fontWeight: 800 }}>👤 Datos Personales</h2>
-                <button onClick={() => setIsEditingPersonal(!isEditingPersonal)} style={{ background: isEditingPersonal ? '#fee2e2' : '#1e3a5f', color: isEditingPersonal ? '#b91c1c' : 'white', border: 'none', borderRadius: '12px', padding: '10px 20px', fontWeight: 700, cursor: 'pointer' }}>{isEditingPersonal ? '✕ Cancelar' : '✏️ Editar'}</button>
+            <div style={{ background: 'white', borderRadius: '32px', padding: '45px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '35px' }}>
+                <h2 style={{ margin: 0, color: '#1e3a5f', fontWeight: 900, fontSize: '1.6rem' }}>Identidad Personal</h2>
+                <button onClick={() => setIsEditingPersonal(!isEditingPersonal)} style={{ background: isEditingPersonal ? '#fee2e2' : '#1e3a5f', color: isEditingPersonal ? '#b91c1c' : 'white', border: 'none', borderRadius: '14px', padding: '12px 24px', fontWeight: 700, cursor: 'pointer', boxShadow: isEditingPersonal ? 'none' : '0 4px 12px rgba(30, 58, 95, 0.15)' }}>{isEditingPersonal ? '✕ Cancelar' : 'Editar Información'}</button>
               </div>
-              <div className="responsive-grid-2">
-                {[{ l: 'Nombre Completo', k: 'nombre_completo', e: true }, { l: 'Correo', k: 'correo', e: true }, { l: 'Teléfono', k: 'telefono', e: true }, { l: 'Cédula', k: 'cedula', e: false }, { l: 'Nacimiento', k: 'fecha_nacimiento', e: false }, { l: 'Género', k: 'genero', e: false }].map(f => (
-                  <div key={f.k}><label style={lbl}>{f.l}</label><input value={(formData as any)[f.k]} onChange={e => f.e && setFormData({ ...formData, [f.k]: e.target.value })} disabled={!isEditingPersonal || !f.e} style={!isEditingPersonal || !f.e ? dis : inp} /></div>
+              <div className="responsive-grid-2" style={{ gap: '25px' }}>
+                {[{ l: 'Nombre Completo', k: 'nombre_completo', e: true }, { l: 'Correo Electrónico', k: 'correo', e: true }, { l: 'Teléfono de Contacto', k: 'telefono', e: true }, { l: 'Número de Cédula', k: 'cedula', e: false }, { l: 'Fecha de Nacimiento', k: 'fecha_nacimiento', e: false }, { l: 'Género', k: 'genero', e: false }].map(f => (
+                  <div key={f.k}><label style={lbl}>{f.l}</label><input value={(formData as any)[f.k]} onChange={e => f.e && setFormData({ ...formData, [f.k]: e.target.value })} disabled={!isEditingPersonal || !f.e} style={!isEditingPersonal || !f.e ? dis : {...inp, border: '2px solid #3b82f6'}} /></div>
                 ))}
               </div>
-              {isEditingPersonal && <button onClick={handleSave} style={{ width: '100%', marginTop: '30px', padding: '16px', background: '#1e3a5f', color: 'white', borderRadius: '12px', fontWeight: 800, border: 'none', cursor: 'pointer' }}>💾 Guardar Cambios</button>}
+              {isEditingPersonal && <button onClick={handleSave} style={{ width: '100%', marginTop: '40px', padding: '18px', background: 'linear-gradient(135deg, #1e3a5f 0%, #3b82f6 100%)', color: 'white', borderRadius: '16px', fontWeight: 800, border: 'none', cursor: 'pointer', boxShadow: '0 10px 25px rgba(59, 130, 246, 0.2)' }}>💾 Guardar Datos Personales</button>}
             </div>
           )}
 
           {activeSection === 'professional' && (
-            <div style={{ background: 'white', borderRadius: '24px', padding: '40px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-                <h2 style={{ margin: 0, color: '#1e3a5f', fontWeight: 800 }}>💼 Perfil Profesional</h2>
-                <button onClick={() => setIsEditingProf(!isEditingProf)} style={{ background: isEditingProf ? '#fee2e2' : '#00A9E0', color: isEditingProf ? '#b91c1c' : 'white', border: 'none', borderRadius: '12px', padding: '10px 20px', fontWeight: 700, cursor: 'pointer' }}>{isEditingProf ? '✕ Cancelar' : '✏️ Actualizar'}</button>
+            <div style={{ background: 'white', borderRadius: '32px', padding: '45px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '35px' }}>
+                <h2 style={{ margin: 0, color: '#1e3a5f', fontWeight: 900, fontSize: '1.6rem' }}>Perfil y Trayectoria</h2>
+                <button onClick={() => setIsEditingProf(!isEditingProf)} style={{ background: isEditingProf ? '#fee2e2' : '#00A9E0', color: isEditingProf ? '#b91c1c' : 'white', border: 'none', borderRadius: '14px', padding: '12px 24px', fontWeight: 700, cursor: 'pointer' }}>{isEditingProf ? '✕ Cancelar' : 'Actualizar Perfil'}</button>
               </div>
-              <div className="responsive-grid-2">
-                {[{ l: 'Programa', k: 'programa_academico', o: DIAG_OPTIONS.Programa }, { l: 'Nivel', k: 'nivel_formacion', o: DIAG_OPTIONS.Formacion }, { l: 'Estado Civil', k: 'estado_civil', o: DIAG_OPTIONS.EstadoCivil }, { l: 'Estrato', k: 'estrato', o: DIAG_OPTIONS.Estrato }, { l: 'Ingresos', k: 'ingreso_mensual', o: DIAG_OPTIONS.Ingreso }, { l: 'Emprendimiento', k: 'emprendimiento', o: DIAG_OPTIONS.Emprendimiento }].map(f => (
-                  <div key={f.k}><label style={lbl}>{f.l}</label>{isEditingProf ? <select value={(formData as any)[f.k]} onChange={e => setFormData({ ...formData, [f.k]: e.target.value })} style={inp}><option value="">Seleccionar...</option>{f.o.map(opt => <option key={opt} value={opt}>{opt}</option>)}</select> : <input value={(formData as any)[f.k] || 'No completado'} disabled style={dis} />}</div>
+              <div className="responsive-grid-2" style={{ gap: '25px' }}>
+                {[{ l: 'Programa Académico', k: 'programa_academico', o: DIAG_OPTIONS.Programa }, { l: 'Nivel de Formación', k: 'nivel_formacion', o: DIAG_OPTIONS.Formacion }, { l: 'Estado Civil', k: 'estado_civil', o: DIAG_OPTIONS.EstadoCivil }, { l: 'Estrato Socioeconómico', k: 'estrato', o: DIAG_OPTIONS.Estrato }, { l: 'Rango de Ingresos', k: 'ingreso_mensual', o: DIAG_OPTIONS.Ingreso }, { l: 'Proyecto de Emprendimiento', k: 'emprendimiento', o: DIAG_OPTIONS.Emprendimiento }].map(f => (
+                  <div key={f.k}><label style={lbl}>{f.l}</label>{isEditingProf ? <select value={(formData as any)[f.k]} onChange={e => setFormData({ ...formData, [f.k]: e.target.value })} style={{...inp, border: '2px solid #00A9E0'}}><option value="">Seleccionar...</option>{f.o.map(opt => <option key={opt} value={opt}>{opt}</option>)}</select> : <input value={(formData as any)[f.k] || 'Pendiente por completar'} disabled style={dis} />}</div>
                 ))}
               </div>
-              {isEditingProf && <button onClick={handleSave} style={{ width: '100%', marginTop: '30px', padding: '16px', background: '#00A9E0', color: 'white', borderRadius: '12px', fontWeight: 800, border: 'none', cursor: 'pointer' }}>💾 Guardar Perfil</button>}
+              {isEditingProf && <button onClick={handleSave} style={{ width: '100%', marginTop: '40px', padding: '18px', background: 'linear-gradient(135deg, #00A9E0 0%, #007bb3 100%)', color: 'white', borderRadius: '16px', fontWeight: 800, border: 'none', cursor: 'pointer', boxShadow: '0 10px 25px rgba(0, 169, 224, 0.2)' }}>💾 Guardar Cambios Profesionales</button>}
             </div>
           )}
 
           {activeSection === 'plans' && (
-            <div style={{ background: 'white', borderRadius: '24px', padding: '40px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
-              <h2 style={{ margin: '0 0 32px', color: '#1e3a5f', fontWeight: 800, textAlign: 'center' }}>💳 Planes y Membresía</h2>
-              <div className="responsive-grid-3" style={{ gap: '24px' }}>
+            <div style={{ background: 'white', borderRadius: '32px', padding: '50px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)' }}>
+              <h2 style={{ margin: '0 0 40px', color: '#1e3a5f', fontWeight: 900, textAlign: 'center', fontSize: '2rem' }}>Planes y Membresía</h2>
+              <div className="responsive-grid-3" style={{ gap: '30px' }}>
                 {PLANS.map(p => (
-                  <div key={p.name} style={{ padding: '30px', borderRadius: '20px', border: userPlan === p.name ? '2px solid #3b82f6' : '1px solid #e2e8f0', textAlign: 'center' }}>
-                    <div style={{ fontSize: '2.5rem', marginBottom: '10px' }}>{p.icon}</div>
-                    <h3 style={{ margin: '0 0 10px', color: '#1e3a5f' }}>{p.name}</h3>
-                    <p style={{ fontSize: '1.8rem', fontWeight: 800, margin: '0 0 20px' }}>{p.price}</p>
-                    <button onClick={() => userPlan !== p.name && handleSubscribe(p.name)} disabled={userPlan === p.name} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: 'none', background: userPlan === p.name ? '#f1f5f9' : '#3b82f6', color: userPlan === p.name ? '#94a3b8' : 'white', fontWeight: 700, cursor: userPlan === p.name ? 'default' : 'pointer' }}>{userPlan === p.name ? 'Plan Actual' : 'Seleccionar'}</button>
+                  <div key={p.name} style={{ padding: '40px 30px', borderRadius: '28px', border: userPlan === p.name ? '3px solid #3b82f6' : '1px solid #e2e8f0', textAlign: 'center', position: 'relative', transition: 'all 0.3s' }}>
+                    {userPlan === p.name && <span style={{ position: 'absolute', top: '-15px', left: '50%', transform: 'translateX(-50%)', background: '#3b82f6', color: 'white', padding: '6px 20px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 800 }}>ACTUAL</span>}
+                    <div style={{ fontSize: '3rem', marginBottom: '15px' }}>{p.icon}</div>
+                    <h3 style={{ margin: '0 0 12px', color: '#1e3a5f', fontWeight: 800 }}>{p.name}</h3>
+                    <p style={{ fontSize: '2.2rem', fontWeight: 900, color: '#1e3a5f', margin: '0 0 25px' }}>{p.price}</p>
+                    <button onClick={() => userPlan !== p.name && handleSubscribe(p.name)} disabled={userPlan === p.name} style={{ width: '100%', padding: '16px', borderRadius: '14px', border: 'none', background: userPlan === p.name ? '#f1f5f9' : '#3b82f6', color: userPlan === p.name ? '#94a3b8' : 'white', fontWeight: 800, cursor: userPlan === p.name ? 'default' : 'pointer', boxShadow: userPlan === p.name ? 'none' : '0 6px 20px rgba(59, 130, 246, 0.25)' }}>{userPlan === p.name ? 'Plan Activo' : 'Seleccionar Plan'}</button>
                   </div>
                 ))}
               </div>
@@ -257,13 +272,13 @@ export default function DashboardExterno() {
           )}
 
           {activeSection === 'cv' && (
-            <div style={{ background: 'white', borderRadius: '24px', padding: '60px 40px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', textAlign: 'center' }}>
-              <div style={{ fontSize: '4rem', marginBottom: '20px' }}>📄</div>
-              <h2 style={{ color: '#1e3a5f', fontWeight: 800, margin: '0 0 8px' }}>Tu Hoja de Vida</h2>
-              <p style={{ color: '#64748b', marginBottom: '32px' }}>Sube tu CV para que las empresas puedan conocerte</p>
-              <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
-                <button onClick={() => { if (!userId) return; fetch(`${base()}/api/users/get-cv-url/${userId}`).then(r => r.json()).then(d => d.success ? window.open(d.url, '_blank') : showToast('No hay CV', 'info')) }} style={{ padding: '14px 28px', background: '#1e3a5f', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 700, cursor: 'pointer' }}>Ver CV Actual</button>
-                <button onClick={() => cvRef.current?.click()} style={{ padding: '14px 28px', background: '#e0f7ff', color: '#00A9E0', border: '1px solid #3b82f6', borderRadius: '12px', fontWeight: 700, cursor: 'pointer' }}>Subir Nuevo CV</button>
+            <div style={{ background: 'white', borderRadius: '32px', padding: '70px 50px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)', textAlign: 'center' }}>
+              <div style={{ width: '90px', height: '90px', borderRadius: '25px', background: '#eff6ff', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 30px' }}><Icons.File /></div>
+              <h2 style={{ color: '#1e3a5f', fontWeight: 900, fontSize: '2rem', margin: '0 0 12px' }}>Gestión de Documentación</h2>
+              <p style={{ color: '#64748b', marginBottom: '45px', fontSize: '1.1rem' }}>Sube tu hoja de vida en PDF para que las empresas de la red UCC puedan contactarte.</p>
+              <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
+                <button onClick={() => { if (!userId) return; fetch(`${base()}/api/users/get-cv-url/${userId}`).then(r => r.json()).then(d => d.success ? window.open(d.url, '_blank') : showToast('No hay CV registrado', 'info')) }} style={{ padding: '16px 35px', background: '#1e3a5f', color: 'white', border: 'none', borderRadius: '16px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 10px 20px rgba(30, 58, 95, 0.2)' }}>📄 Ver Mi CV Actual</button>
+                <button onClick={() => cvRef.current?.click()} style={{ padding: '16px 35px', background: '#e0f7ff', color: '#00A9E0', border: '2px solid #3b82f6', borderRadius: '16px', fontWeight: 800, cursor: 'pointer' }}>⬆️ Subir Nuevo Archivo</button>
               </div>
             </div>
           )}
@@ -272,7 +287,8 @@ export default function DashboardExterno() {
       </main>
       <Footer />
       <style jsx>{`
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
       `}</style>
     </div>
   );
