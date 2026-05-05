@@ -334,26 +334,41 @@ const updatePlan = async (req, res) => {
     const finalPlan = tipoPlan || planType;
     
     if (!userId || !finalPlan) {
-      return res.status(400).json({ success: false, message: 'userId y tipoPlan son requeridos' });
+      return res.status(400).json({ success: false, message: 'ID de usuario y Plan son obligatorios' });
     }
 
-    userId = String(userId).trim();
-    console.log(`🔄 Actualizando BD: Usuario [${userId}] -> Nuevo Plan [${finalPlan}]`);
+    // 1. Limpieza absoluta del ID
+    const cleanUserId = String(userId).trim();
+
+    // 2. VERIFICACIÓN: ¿Existe el usuario en la tabla public.users?
+    const { data: userExists, error: userError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('id', cleanUserId)
+      .single();
+
+    if (userError || !userExists) {
+      console.error("❌ El usuario no existe en la tabla public.users:", cleanUserId);
+      return res.status(404).json({ 
+        success: false, 
+        message: 'No se puede actualizar el plan: El usuario no existe en la base de datos pública.',
+        error: userError?.message 
+      });
+    }
 
     const fecha_inicio = new Date().toISOString().split('T')[0];
     let fecha_fin = null;
-
     if (finalPlan === 'Plan Completo') {
       const date = new Date();
       date.setDate(date.getDate() + 30);
       fecha_fin = date.toISOString().split('T')[0];
     }
 
-    // Usamos upsert con onConflict explícito para asegurar que se actualice si ya existe
+    // 3. UPSERT FORZADO
     const { data, error } = await supabase
       .from('suscripciones')
       .upsert({
-        user_id: userId,
+        user_id: cleanUserId,
         tipo_plan: finalPlan,
         fecha_inicio,
         fecha_fin,
@@ -362,15 +377,20 @@ const updatePlan = async (req, res) => {
       .select();
 
     if (error) {
-      console.error("❌ Error de Supabase al actualizar plan:", error);
-      throw error;
+      console.error("❌ ERROR CRÍTICO SUPABASE:", error);
+      return res.status(500).json({ success: false, message: 'Error de base de datos', error: error.message });
     }
 
-    console.log("✅ BD Actualizada correctamente:", data);
-    return res.status(200).json({ success: true, message: `Plan ${finalPlan} actualizado en base de datos` });
+    console.log("✅ ACTUALIZACIÓN EXITOSA EN BD:", data);
+    return res.status(200).json({ 
+      success: true, 
+      message: `Plan ${finalPlan} actualizado correctamente en la base de datos.`,
+      data: data[0]
+    });
+
   } catch (error) {
-    console.error("❌ Error en updatePlan:", error);
-    return res.status(500).json({ success: false, message: 'Error interno al actualizar la base de datos', error: error.message });
+    console.error("❌ ERROR INESPERADO:", error);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor', error: error.message });
   }
 };
 
