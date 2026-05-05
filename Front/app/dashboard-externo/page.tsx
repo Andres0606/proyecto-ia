@@ -40,7 +40,6 @@ export default function DashboardExterno() {
   const [isUploading, setIsUploading] = useState(false);
   const [completionPct, setCompletionPct] = useState(0);
   const [showCamera, setShowCamera] = useState(false);
-  const [isHoveringAvatar, setIsHoveringAvatar] = useState(false);
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const streamRef = React.useRef<MediaStream | null>(null);
   const [formData, setFormData] = useState({
@@ -257,11 +256,7 @@ export default function DashboardExterno() {
           <div style={{ position: 'absolute', top: '-80px', right: '-80px', width: '320px', height: '320px', borderRadius: '50%', background: 'rgba(255,255,255,0.04)' }} />
           <div style={{ position: 'absolute', bottom: '-60px', left: '-60px', width: '240px', height: '240px', borderRadius: '50%', background: 'rgba(0,169,224,0.1)' }} />
           <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '28px', position: 'relative', flexWrap: 'wrap' }}>
-            <div 
-              style={{ position: 'relative' }}
-              onMouseEnter={() => setIsHoveringAvatar(true)}
-              onMouseLeave={() => setIsHoveringAvatar(false)}
-            >
+            <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:'12px' }}>
               <div style={{ 
                 width:'110px', height:'110px', borderRadius:'50%', 
                 background: userPhoto ? `url(${userPhoto}) center/cover` : 'rgba(255,255,255,0.15)', 
@@ -270,9 +265,8 @@ export default function DashboardExterno() {
                 fontSize:'2.8rem', fontWeight:800, color:'white', flexShrink:0,
                 boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
                 position: 'relative',
-                overflow: 'hidden',
-                cursor: 'pointer'
-              }} onClick={() => avatarRef.current?.click()}>
+                overflow: 'hidden'
+              }}>
                 {!userPhoto && userName[0]}
                 
                 {/* Overlay de carga */}
@@ -288,44 +282,33 @@ export default function DashboardExterno() {
                 )}
               </div>
 
-              {/* Botones de acción mejorados - Solo visibles en hover */}
-              <div style={{ 
-                position:'absolute', bottom:'-5px', right:'-5px', 
-                display:'flex', gap:'6px', zIndex:10,
-                opacity: isHoveringAvatar ? 1 : 0,
-                transform: isHoveringAvatar ? 'translateY(0)' : 'translateY(10px)',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                pointerEvents: isHoveringAvatar ? 'auto' : 'none'
-              }}>
+              {/* Botones de acción siempre visibles debajo */}
+              <div style={{ display:'flex', gap:'8px', zIndex:10 }}>
                 <button 
-                  onClick={(e) => { e.stopPropagation(); avatarRef.current?.click(); }} 
+                  onClick={() => avatarRef.current?.click()} 
                   style={{ 
-                    width:'36px', height:'36px', borderRadius:'50%', 
+                    padding:'6px 12px', borderRadius:'20px', 
                     background:'white', border:'none', cursor:'pointer', 
-                    display:'flex', alignItems:'center', justifyContent:'center', 
-                    boxShadow:'0 4px 12px rgba(0,0,0,0.15)',
-                    transition: 'transform 0.2s ease'
+                    display:'flex', alignItems:'center', gap:'6px',
+                    boxShadow:'0 4px 12px rgba(0,0,0,0.1)',
+                    fontSize:'0.75rem', fontWeight:700, color:'#00A9E0'
                   }} 
-                  title="Subir archivo"
-                  onMouseOver={e => e.currentTarget.style.transform = 'scale(1.1)'}
-                  onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
                 >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00A9E0" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                  Subir
                 </button>
                 <button 
-                  onClick={(e) => { e.stopPropagation(); startCamera(); }} 
+                  onClick={startCamera} 
                   style={{ 
-                    width:'36px', height:'36px', borderRadius:'50%', 
-                    background:'var(--ucc-navy)', border:'none', cursor:'pointer', 
-                    display:'flex', alignItems:'center', justifyContent:'center', 
-                    boxShadow:'0 4px 12px rgba(0,0,0,0.15)',
-                    transition: 'transform 0.2s ease'
+                    padding:'6px 12px', borderRadius:'20px', 
+                    background:'rgba(255,255,255,0.2)', border:'1px solid rgba(255,255,255,0.3)', cursor:'pointer', 
+                    display:'flex', alignItems:'center', gap:'6px',
+                    boxShadow:'0 4px 12px rgba(0,0,0,0.1)',
+                    fontSize:'0.75rem', fontWeight:700, color:'white'
                   }} 
-                  title="Tomar foto"
-                  onMouseOver={e => e.currentTarget.style.transform = 'scale(1.1)'}
-                  onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
                 >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                  Cámara
                 </button>
               </div>
             </div>
