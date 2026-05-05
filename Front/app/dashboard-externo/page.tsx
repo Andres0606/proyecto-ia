@@ -56,9 +56,14 @@ export default function DashboardExterno() {
     if (saved) {
       try {
         const u = JSON.parse(saved);
-        const id = String(u.id || u.profile?.id || u.user_id).trim().split(':')[0];
-        setUserId(id); fetchProfile(id);
-      } catch (e) { console.error(e); }
+        // Obtener el ID de forma ultra-segura
+        const rawId = u.id || u.user_id || (u.profile && u.profile.id);
+        if (rawId) {
+          const cleanId = String(rawId).trim().split(':')[0];
+          setUserId(cleanId);
+          fetchProfile(cleanId);
+        }
+      } catch (e) { console.error("Error sesión:", e); }
     }
   }, []);
 
@@ -124,17 +129,24 @@ export default function DashboardExterno() {
       const r = await fetch(`${base()}/api/users/update-plan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, tipoPlan: planName })
+        body: JSON.stringify({ userId, planType: planName }) // Usamos planType que es más estándar en el backend
       });
       const d = await r.json();
       if (d.success) {
         setToast({ msg: `¡Plan ${planName} activado!`, type: 'success' });
-        // Recargar perfil para actualizar sesión y UI
-        fetchProfile(userId);
+        // Sincronizar localmente antes de re-cargar para respuesta inmediata
+        const saved = sessionStorage.getItem('ucc_user');
+        if (saved) {
+          const obj = JSON.parse(saved);
+          if (obj.profile) obj.profile.suscripcion = { tipo_plan: planName };
+          sessionStorage.setItem('ucc_user', JSON.stringify(obj));
+        }
+        setTimeout(() => fetchProfile(userId), 500);
       } else {
-        setToast({ msg: 'Error al actualizar plan', type: 'error' });
+        setToast({ msg: d.message || 'Error al actualizar plan', type: 'error' });
       }
-    } catch {
+    } catch (err) {
+      console.error("Error updating plan:", err);
       setToast({ msg: 'Error de conexión', type: 'error' });
     } finally {
       setTimeout(() => setToast({ msg: '', type: 'none' }), 3000);
