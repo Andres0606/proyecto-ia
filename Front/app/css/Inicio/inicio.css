@@ -589,29 +589,31 @@ body {
   position: relative;
   text-align: center;
   width: 100%;
-  max-width: 320px;
+  max-width: 380px;
 }
 
 .gauge-svg {
   width: 100%;
-  max-width: 320px;
+  max-width: 380px;
+  display: block;
 }
 
 .gauge-value {
-  font-size: 3rem;
+  font-size: 4rem;
   font-weight: 800;
   color: var(--ucc-navy);
-  margin-top: -12px;
-  letter-spacing: -1.5px;
+  margin-top: -50px;
+  letter-spacing: -2px;
+  line-height: 1;
 }
 
 .gauge-label {
-  font-size: 14px;
+  font-size: 0.95rem;
   color: var(--ucc-green);
-  margin-top: 6px;
+  margin-top: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
+  letter-spacing: 1.5px;
 }
 
 .estabilidad__items {
