@@ -5,7 +5,7 @@ import Header from '../Components/header';
 import Footer from '../Components/footer';
 import '../css/Dashboard/dashboard.css';
 
-// Iconos SVG Premium (Los mismos del dashboard-externo)
+// Iconos SVG Premium
 const Icons = {
   Home: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
   User: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
@@ -26,12 +26,12 @@ const DIAG_OPTIONS = {
   Programa: ["Derecho", "Contaduria Publica", "Ingenieria Civil", "Ciencias Economicas", "Medicina", "Psicologia", "Odontologia", "Enfermeria", "Ingenieria de Sistemas", "Medicina Veterinaria y Zootecnia", "Especializacion", "Tecnico Auxiliar en Enfermeria"],
   Formacion: ["Profesional", "Especialista", "Magister", "Doctorado", "Tecnico Profesional"],
   EstadoCivil: ["Casado", "Union libre", "Soltero", "Separado", "Viudo"],
-  Estrato: ["Uno", "Dos", "Tres", "Cuatro", "Cinco", "Seis"],
+  Estrato: ["1", "2", "3", "4", "5", "6"],
   Ingreso: ["1 SML o menos", "2-3 SML", "3-5 SML", "5 SML o mas"],
   Area: ["Servicios", "Administrativa", "Salud", "Financiera", "Industrial", "Economica", "Gestion Humana", "Educacion", "Comercial", "Contable", "Sistemas"],
   Sector: ["Servicios", "Comercial", "Industrial"],
   Emprendimiento: ["Si", "No"],
-  Hijos: ["Cero", "Uno", "Dos", "Tres", "Cuatro", "Cinco"],
+  Hijos: ["0", "1", "2", "3", "4", "5+"],
 };
 
 export default function Dashboard() {
@@ -45,6 +45,12 @@ export default function Dashboard() {
   const [completionPct, setCompletionPct] = useState(0);
   const [toast, setToast] = useState<{ msg: string, type: 'info' | 'success' | 'error' | 'none' }>({ msg: '', type: 'none' });
   const [isUploading, setIsUploading] = useState(false);
+
+  const [formData, setFormData] = useState({
+    nombre_completo: '', correo: '', telefono: '', cedula: '', fecha_nacimiento: '', genero: '',
+    nivel_formacion: '', programa_academico: '', estrato: '', estado_civil: '', numero_hijos: '',
+    ingreso_mensual: '', sector_economico: '', area_desempeno: '', emprendimiento: ''
+  });
 
   const avatarInputRef = React.useRef<HTMLInputElement>(null);
   const cvInputRef = React.useRef<HTMLInputElement>(null);
@@ -60,7 +66,6 @@ export default function Dashboard() {
     const h = new Date().getHours();
     if (h >= 12 && h < 18) setGreeting('Buenas tardes');
     else if (h >= 18 || h < 5) setGreeting('Buenas noches');
-
     const saved = sessionStorage.getItem('ucc_user');
     if (saved) {
       try {
@@ -89,33 +94,27 @@ export default function Dashboard() {
           cedula: u.cedula || '', fecha_nacimiento: u.fecha_nacimiento?.split('T')[0] || '', genero: u.genero || '',
           nivel_formacion: val(p.nivel_formacion), programa_academico: val(p.programa_academico), estrato: val(p.estrato),
           estado_civil: val(p.estado_civil), numero_hijos: val(p.numero_hijos), ingreso_mensual: val(p.ingreso_mensual),
-          sector_economico: val(p.sector_economico), area_desempeno: val(p.area_desempeno), emprendimiento: val(p.emprendimiento)
+          sector_economico: val(p.sector_economico), area_desempeno: val(p.area_desempeno), emprendimiento: p.emprendimiento ? 'Si' : 'No'
         });
         let pct = 0;
-        if (u.foto_url) pct += 15;
-        if (u.cv_url) pct += 25;
-        if (u.telefono && u.nombre_completo) pct += 20;
-        const profFields = [p.nivel_formacion, p.programa_academico, p.estrato, p.estado_civil, p.ingreso_mensual];
-        const filled = profFields.filter(f => f !== null && f !== undefined && String(f).trim() !== '').length;
-        pct += (filled / profFields.length) * 40;
+        if (u.foto_url) pct += 10;
+        if (u.cv_url) pct += 20;
+        const fields = [p.nivel_formacion, p.programa_academico, p.estrato, p.estado_civil, p.numero_hijos, p.ingreso_mensual, p.sector_economico, p.area_desempeno];
+        const filled = fields.filter(f => f !== null && f !== undefined && String(f).trim() !== '').length;
+        pct += (filled / fields.length) * 70;
         setCompletionPct(Math.round(pct));
       }
     } catch (err) { console.error(err); }
   };
 
-  const [formData, setFormData] = useState({
-    nombre_completo: '', correo: '', telefono: '', cedula: '', fecha_nacimiento: '', genero: '',
-    nivel_formacion: '', programa_academico: '', estrato: '', estado_civil: '', numero_hijos: '',
-    ingreso_mensual: '', sector_economico: '', area_desempeno: '', emprendimiento: ''
-  });
-
   const handleSave = async () => {
     if (!userId) return;
     showToast('Guardando...', 'info');
+    const payload = { ...formData, emprendimiento: formData.emprendimiento === 'Si' };
     try {
-      const r = await fetch(`${base()}/api/users/profile/${userId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userData: formData, profileData: formData }) });
+      const r = await fetch(`${base()}/api/users/profile/${userId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userData: payload, profileData: payload }) });
       const d = await r.json();
-      if (d.success) { showToast('¡Perfil actualizado!', 'success'); setIsEditingProf(false); setIsEditingPersonal(false); setTimeout(() => fetchProfile(userId!), 2000); }
+      if (d.success) { showToast('¡Perfil actualizado!', 'success'); setIsEditingProf(false); setIsEditingPersonal(false); setTimeout(() => fetchProfile(userId!), 1500); }
     } catch { showToast('Error al guardar', 'error'); }
   };
 
@@ -128,11 +127,7 @@ export default function Dashboard() {
     try {
       const r = await fetch(`${base()}/api/users/upload-${type === 'avatar' ? 'avatar' : 'cv'}`, { method: 'POST', body: fd });
       const d = await r.json();
-      if (d.success) {
-        showToast('¡Subido con éxito!', 'success');
-        if (type === 'avatar') setUserPhoto(d.url);
-        setTimeout(() => fetchProfile(userId), 1500);
-      } else showToast(d.message || 'Error', 'error');
+      if (d.success) { showToast('¡Subido!', 'success'); setTimeout(() => fetchProfile(userId), 1500); }
     } catch { showToast('Error', 'error'); } finally { setIsUploading(false); }
   };
 
@@ -147,15 +142,9 @@ export default function Dashboard() {
       <input type="file" ref={avatarInputRef} hidden accept="image/*" onChange={e => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'avatar')} />
       <input type="file" ref={cvInputRef} hidden accept=".pdf" onChange={e => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'cv')} />
 
-      {toast.type !== 'none' && (
-        <div style={{ position: 'fixed', bottom: '32px', right: '32px', zIndex: 9999, padding: '16px 24px', borderRadius: '16px', color: 'white', fontWeight: 600, boxShadow: '0 10px 40px rgba(0,0,0,0.15)', background: toast.type === 'success' ? '#059669' : toast.type === 'error' ? '#dc2626' : '#1e3a5f', animation: 'slideIn 0.3s ease-out' }}>
-          {toast.msg}
-        </div>
-      )}
-
       <main style={{ paddingTop: '110px', maxWidth: mainWidth, margin: '0 auto', paddingBottom: '60px' }}>
         
-        {/* Hero Card Premium */}
+        {/* Hero Card */}
         <div style={{ background: 'white', borderRadius: '32px', padding: '40px', boxShadow: '0 10px 40px rgba(0,40,85,0.04)', display: 'flex', alignItems: 'center', gap: '40px', marginBottom: '32px', position: 'relative', overflow: 'hidden', border: '1px solid rgba(226, 232, 240, 0.5)' }}>
           <div style={{ position: 'absolute', top: '-100px', right: '-100px', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%)', zIndex: 0 }} />
           <div style={{ position: 'relative', width: '130px', height: '130px', flexShrink: 0 }}>
@@ -170,36 +159,33 @@ export default function Dashboard() {
           <div style={{ flex: 1, zIndex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '10px' }}>
               <h1 style={{ margin: 0, color: '#1e3a5f', fontSize: '2.4rem', fontWeight: 900, letterSpacing: '-0.5px' }}>{greeting}, {userName} ✨</h1>
-              <span style={{ background: '#fee2e2', color: '#b91c1c', padding: '8px 18px', borderRadius: '30px', fontSize: '0.75rem', fontWeight: 800, border: '1px solid #fecaca', textTransform: 'uppercase', letterSpacing: '0.5px' }}>EGRESADO</span>
+              <span style={{ background: '#fee2e2', color: '#b91c1c', padding: '8px 18px', borderRadius: '30px', fontSize: '0.75rem', fontWeight: 800, border: '1px solid #fecaca', textTransform: 'uppercase' }}>EGRESADO</span>
             </div>
-            <p style={{ color: '#64748b', margin: '0 0 20px', fontSize: '1.05rem', fontWeight: 500 }}>Tu perfil profesional está al <span style={{ color: '#3b82f6', fontWeight: 800 }}>{completionPct}%</span></p>
-            <button onClick={() => avatarInputRef.current?.click()} style={{ background: '#f8fafc', color: '#1e3a5f', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '12px 24px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}>📁 Cambiar Foto</button>
+            <p style={{ color: '#64748b', margin: '0 0 20px', fontSize: '1.05rem', fontWeight: 500 }}>Tu perfil está al <span style={{ color: '#3b82f6', fontWeight: 800 }}>{completionPct}%</span></p>
+            <button onClick={() => avatarInputRef.current?.click()} style={{ background: '#f8fafc', color: '#1e3a5f', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '12px 24px', fontWeight: 700, cursor: 'pointer' }}>📁 Cambiar Foto</button>
           </div>
         </div>
 
-        {/* Action Grid (Premium Icons + Glassmorphism) */}
+        {/* Navigation Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '20px', marginBottom: '40px' }}>
           {getQuickActions().map(a => (
-            <div key={a.id} onClick={() => setActiveSection(a.id as any)} style={{ background: activeSection === a.id ? 'white' : 'rgba(255, 255, 255, 0.7)', backdropFilter: 'blur(10px)', borderRadius: '28px', padding: '32px 20px', textAlign: 'center', boxShadow: activeSection === a.id ? '0 15px 35px rgba(59, 130, 246, 0.15)' : '0 4px 15px rgba(0,0,0,0.03)', cursor: 'pointer', border: activeSection === a.id ? `2px solid ${a.color}` : '1px solid rgba(255,255,255,0.4)', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', transform: activeSection === a.id ? 'translateY(-5px)' : 'none' }}>
-              <div style={{ width: '60px', height: '60px', borderRadius: '18px', background: `${a.color}15`, color: a.color, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                <a.Icon />
-              </div>
-              <h3 style={{ margin: 0, color: '#1e3a5f', fontWeight: 800, fontSize: '0.95rem', lineHeight: 1.3 }}>{a.title}</h3>
+            <div key={a.id} onClick={() => setActiveSection(a.id as any)} style={{ background: activeSection === a.id ? 'white' : 'rgba(255, 255, 255, 0.7)', backdropFilter: 'blur(10px)', borderRadius: '28px', padding: '32px 20px', textAlign: 'center', boxShadow: activeSection === a.id ? '0 15px 35px rgba(59, 130, 246, 0.15)' : '0 4px 15px rgba(0,0,0,0.03)', cursor: 'pointer', border: activeSection === a.id ? `2px solid ${a.color}` : '1px solid rgba(255,255,255,0.4)', transition: 'all 0.3s' }}>
+              <div style={{ width: '60px', height: '60px', borderRadius: '18px', background: `${a.color}15`, color: a.color, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}><a.Icon /></div>
+              <h3 style={{ margin: 0, color: '#1e3a5f', fontWeight: 800, fontSize: '0.95rem' }}>{a.title}</h3>
             </div>
           ))}
         </div>
 
-        {/* Content Area */}
+        {/* Sections */}
         <div style={{ animation: 'fadeIn 0.4s ease-out' }}>
           {activeSection === 'none' && (
             <div style={{ background: 'white', borderRadius: '32px', padding: '50px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)', display: 'flex', gap: '40px', alignItems: 'center', border: '1px solid rgba(226, 232, 240, 0.5)' }}>
-              <div style={{ width: '100px', height: '100px', borderRadius: '30px', background: 'linear-gradient(135deg, #3b82f6 0%, #1e3a5f 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem', color: 'white', boxShadow: '0 10px 20px rgba(59, 130, 246, 0.2)' }}><Icons.Home /></div>
+              <div style={{ width: '100px', height: '100px', borderRadius: '30px', background: 'linear-gradient(135deg, #3b82f6 0%, #1e3a5f 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}><Icons.Home /></div>
               <div style={{ flex: 1 }}>
-                <h2 style={{ color: '#1e3a5f', fontWeight: 900, fontSize: '1.8rem', margin: '0 0 12px' }}>¡Bienvenido a tu Portal Institucional!</h2>
-                <p style={{ color: '#64748b', lineHeight: 1.7, margin: '0 0 28px', fontSize: '1.05rem' }}>Como egresado de la UCC, tienes acceso a herramientas exclusivas para potenciar tu empleabilidad y desarrollo profesional.</p>
+                <h2 style={{ color: '#1e3a5f', fontWeight: 900, fontSize: '1.8rem', margin: '0 0 12px' }}>Bienvenido de nuevo</h2>
+                <p style={{ color: '#64748b', lineHeight: 1.7, margin: '0 0 28px', fontSize: '1.05rem' }}>Accede a tus datos y herramientas de carrera desde este panel centralizado.</p>
                 <div style={{ display: 'flex', gap: '16px' }}>
-                  <button onClick={() => setActiveSection('professional')} style={{ background: '#1e3a5f', color: 'white', border: 'none', borderRadius: '16px', padding: '16px 32px', fontWeight: 800, cursor: 'pointer' }}>Mi Perfil Profesional</button>
-                  <button onClick={() => setActiveSection('cv')} style={{ background: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '16px', padding: '16px 32px', fontWeight: 800, cursor: 'pointer' }}>Actualizar Hoja de Vida</button>
+                  <button onClick={() => setActiveSection('professional')} style={{ background: '#1e3a5f', color: 'white', border: 'none', borderRadius: '16px', padding: '16px 32px', fontWeight: 800, cursor: 'pointer' }}>Actualizar Perfil</button>
                 </div>
               </div>
             </div>
@@ -208,41 +194,60 @@ export default function Dashboard() {
           {activeSection === 'personal' && (
             <div style={{ background: 'white', borderRadius: '32px', padding: '45px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '35px' }}>
-                <h2 style={{ margin: 0, color: '#1e3a5f', fontWeight: 900, fontSize: '1.6rem' }}>Identidad Personal</h2>
+                <h2 style={{ color: '#1e3a5f', fontWeight: 900, fontSize: '1.6rem', margin: 0 }}>Datos Personales</h2>
                 <button onClick={() => setIsEditingPersonal(!isEditingPersonal)} style={{ background: isEditingPersonal ? '#fee2e2' : '#1e3a5f', color: isEditingPersonal ? '#b91c1c' : 'white', border: 'none', borderRadius: '14px', padding: '12px 24px', fontWeight: 700, cursor: 'pointer' }}>{isEditingPersonal ? '✕ Cancelar' : 'Editar Datos'}</button>
               </div>
               <div className="responsive-grid-2" style={{ gap: '25px' }}>
-                {[{ l: 'Nombre Completo', k: 'nombre_completo', e: true }, { l: 'Correo Electrónico', k: 'correo', e: true }, { l: 'Teléfono', k: 'telefono', e: true }, { l: 'Cédula', k: 'cedula', e: false }, { l: 'Nacimiento', k: 'fecha_nacimiento', e: false }, { l: 'Género', k: 'genero', e: false }].map(f => (
+                {[{ l: 'Nombre', k: 'nombre_completo', e: true }, { l: 'Correo', k: 'correo', e: true }, { l: 'Teléfono', k: 'telefono', e: true }, { l: 'Cédula', k: 'cedula', e: false }, { l: 'Nacimiento', k: 'fecha_nacimiento', e: false }, { l: 'Género', k: 'genero', e: false }].map(f => (
                   <div key={f.k}><label style={lbl}>{f.l}</label><input value={(formData as any)[f.k]} onChange={e => f.e && setFormData({ ...formData, [f.k]: e.target.value })} disabled={!isEditingPersonal || !f.e} style={!isEditingPersonal || !f.e ? dis : inp} /></div>
                 ))}
               </div>
-              {isEditingPersonal && <button onClick={handleSave} style={{ width: '100%', marginTop: '40px', padding: '18px', background: '#1e3a5f', color: 'white', borderRadius: '16px', fontWeight: 800, border: 'none', cursor: 'pointer' }}>💾 Guardar Cambios</button>}
+              {isEditingPersonal && <button onClick={handleSave} style={{ width: '100%', marginTop: '40px', padding: '18px', background: '#1e3a5f', color: 'white', borderRadius: '16px', fontWeight: 800, border: 'none', cursor: 'pointer' }}>Guardar Cambios</button>}
             </div>
           )}
 
           {activeSection === 'professional' && (
             <div style={{ background: 'white', borderRadius: '32px', padding: '45px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '35px' }}>
-                <h2 style={{ margin: 0, color: '#1e3a5f', fontWeight: 900, fontSize: '1.6rem' }}>Perfil Profesional</h2>
+                <h2 style={{ color: '#1e3a5f', fontWeight: 900, fontSize: '1.6rem', margin: 0 }}>Perfil Profesional (9 Campos)</h2>
                 <button onClick={() => setIsEditingProf(!isEditingProf)} style={{ background: isEditingProf ? '#fee2e2' : '#00A9E0', color: isEditingProf ? '#b91c1c' : 'white', border: 'none', borderRadius: '14px', padding: '12px 24px', fontWeight: 700, cursor: 'pointer' }}>{isEditingProf ? '✕ Cancelar' : 'Actualizar Perfil'}</button>
               </div>
               <div className="responsive-grid-2" style={{ gap: '25px' }}>
-                {[{ l: 'Programa Académico', k: 'programa_academico', o: DIAG_OPTIONS.Programa }, { l: 'Nivel', k: 'nivel_formacion', o: DIAG_OPTIONS.Formacion }, { l: 'Estado Civil', k: 'estado_civil', o: DIAG_OPTIONS.EstadoCivil }, { l: 'Estrato', k: 'estrato', o: DIAG_OPTIONS.Estrato }, { l: 'Ingresos', k: 'ingreso_mensual', o: DIAG_OPTIONS.Ingreso }, { l: 'Emprendimiento', k: 'emprendimiento', o: DIAG_OPTIONS.Emprendimiento }].map(f => (
-                  <div key={f.k}><label style={lbl}>{f.l}</label>{isEditingProf ? <select value={(formData as any)[f.k]} onChange={e => setFormData({ ...formData, [f.k]: e.target.value })} style={inp}><option value="">Seleccionar...</option>{f.o.map(opt => <option key={opt} value={opt}>{opt}</option>)}</select> : <input value={(formData as any)[f.k] || 'No completado'} disabled style={dis} />}</div>
+                {[
+                  { l: 'Programa Académico', k: 'programa_academico', o: DIAG_OPTIONS.Programa },
+                  { l: 'Nivel de Formación', k: 'nivel_formacion', o: DIAG_OPTIONS.Formacion },
+                  { l: 'Estado Civil', k: 'estado_civil', o: DIAG_OPTIONS.EstadoCivil },
+                  { l: 'Estrato Socioeconómico', k: 'estrato', o: DIAG_OPTIONS.Estrato },
+                  { l: 'Número de Hijos', k: 'numero_hijos', o: DIAG_OPTIONS.Hijos },
+                  { l: 'Ingreso Mensual', k: 'ingreso_mensual', o: DIAG_OPTIONS.Ingreso },
+                  { l: 'Sector Económico', k: 'sector_economico', o: DIAG_OPTIONS.Sector },
+                  { l: 'Área de Desempeño', k: 'area_desempeno', o: DIAG_OPTIONS.Area },
+                  { l: '¿Tiene Emprendimiento?', k: 'emprendimiento', o: DIAG_OPTIONS.Emprendimiento },
+                ].map(f => (
+                  <div key={f.k}>
+                    <label style={lbl}>{f.l}</label>
+                    {isEditingProf ? (
+                      <select value={(formData as any)[f.k]} onChange={e => setFormData({ ...formData, [f.k]: e.target.value })} style={inp}>
+                        <option value="">Seleccionar...</option>
+                        {f.o.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                      </select>
+                    ) : (
+                      <input value={(formData as any)[f.k] || 'Dato no registrado'} disabled style={dis} />
+                    )}
+                  </div>
                 ))}
               </div>
-              {isEditingProf && <button onClick={handleSave} style={{ width: '100%', marginTop: '40px', padding: '18px', background: '#00A9E0', color: 'white', borderRadius: '16px', fontWeight: 800, border: 'none', cursor: 'pointer' }}>💾 Guardar Perfil</button>}
+              {isEditingProf && <button onClick={handleSave} style={{ width: '100%', marginTop: '40px', padding: '18px', background: '#00A9E0', color: 'white', borderRadius: '16px', fontWeight: 800, border: 'none', cursor: 'pointer' }}>Guardar Perfil Profesional</button>}
             </div>
           )}
 
           {activeSection === 'cv' && (
             <div style={{ background: 'white', borderRadius: '32px', padding: '70px 50px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)', textAlign: 'center' }}>
               <div style={{ width: '90px', height: '90px', borderRadius: '25px', background: '#eff6ff', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 30px' }}><Icons.File /></div>
-              <h2 style={{ color: '#1e3a5f', fontWeight: 900, fontSize: '2rem', margin: '0 0 12px' }}>Hoja de Vida</h2>
-              <p style={{ color: '#64748b', marginBottom: '45px', fontSize: '1.1rem' }}>Mantén tu CV actualizado para ser visible ante las empresas aliadas.</p>
-              <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
-                <button onClick={() => { if (!userId) return; fetch(`${base()}/api/users/get-cv-url/${userId}`).then(r => r.json()).then(d => d.success ? window.open(d.url, '_blank') : showToast('No hay CV registrado', 'info')) }} style={{ padding: '16px 35px', background: '#1e3a5f', color: 'white', border: 'none', borderRadius: '16px', fontWeight: 800, cursor: 'pointer' }}>📄 Ver CV Actual</button>
-                <button onClick={() => cvInputRef.current?.click()} style={{ padding: '16px 35px', background: '#e0f7ff', color: '#00A9E0', border: '2px solid #3b82f6', borderRadius: '16px', fontWeight: 800, cursor: 'pointer' }}>⬆️ Subir Nuevo CV</button>
+              <h2 style={{ color: '#1e3a5f', fontWeight: 900, fontSize: '2rem', margin: '0 0 12px' }}>Gestión de CV</h2>
+              <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', marginTop: '40px' }}>
+                <button onClick={() => { if (!userId) return; fetch(`${base()}/api/users/get-cv-url/${userId}`).then(r => r.json()).then(d => d.success ? window.open(d.url, '_blank') : showToast('No hay CV', 'info')) }} style={{ padding: '16px 35px', background: '#1e3a5f', color: 'white', border: 'none', borderRadius: '16px', fontWeight: 800, cursor: 'pointer' }}>Ver CV Actual</button>
+                <button onClick={() => cvInputRef.current?.click()} style={{ padding: '16px 35px', background: '#e0f7ff', color: '#00A9E0', border: '2px solid #3b82f6', borderRadius: '16px', fontWeight: 800, cursor: 'pointer' }}>Subir Nuevo</button>
               </div>
             </div>
           )}
@@ -251,16 +256,14 @@ export default function Dashboard() {
             <div style={{ background: 'white', borderRadius: '32px', padding: '70px 50px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)', textAlign: 'center' }}>
               <div style={{ width: '90px', height: '90px', borderRadius: '25px', background: '#fff7ed', color: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 30px' }}><Icons.Mail /></div>
               <h2 style={{ color: '#1e3a5f', fontWeight: 900, fontSize: '2rem', margin: '0 0 12px' }}>Mis Postulaciones</h2>
-              <p style={{ color: '#64748b', fontSize: '1.1rem' }}>Aquí podrás hacer seguimiento a las vacantes a las que te has postulado.</p>
+              <p style={{ color: '#64748b', fontSize: '1.1rem' }}>Módulo próximamente disponible.</p>
             </div>
           )}
         </div>
-
       </main>
       <Footer />
       <style jsx>{`
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
       `}</style>
     </div>
   );
