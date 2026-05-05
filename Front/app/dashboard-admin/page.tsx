@@ -89,7 +89,7 @@ export default function DashboardAdmin() {
               {/* Welcome banner */}
               <div style={{ background: 'linear-gradient(135deg, var(--ucc-navy) 0%, #0f2340 100%)', borderRadius: '24px', padding: '40px 50px', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '30px', flexWrap: 'wrap' }}>
                 <div>
-                  <h2 style={{ fontSize: '1.6rem', fontWeight: 800, margin: '0 0 10px' }}>Centro de Control UCC 🎓</h2>
+                  <h2 style={{ fontSize: '1.6rem', fontWeight: 800, margin: '0 0 10px' }}>Centro de Control UCC</h2>
                   <p style={{ color: 'rgba(255,255,255,0.7)', margin: 0, maxWidth: '460px', lineHeight: 1.6 }}>Gestiona todos los usuarios, vacantes y reportes del Portal del Egresado desde aquí.</p>
                 </div>
                 <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
@@ -166,7 +166,7 @@ export default function DashboardAdmin() {
 
           {activeSection === 'settings' && (
             <div>
-              <h1 style={{ color: 'var(--ucc-navy)', fontSize: '1.8rem', fontWeight: 800, marginBottom: '24px' }}>⚙️ Configuración del Portal</h1>
+              <h1 style={{ color: 'var(--ucc-navy)', fontSize: '1.8rem', fontWeight: 800, marginBottom: '24px' }}>Configuración del Portal</h1>
               <div style={{ background: 'white', borderRadius: '20px', padding: '36px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
                 {['Nombre del Portal', 'Correo de Soporte', 'URL del Backend'].map(f => (
                   <div key={f} style={{ marginBottom: '24px' }}>
@@ -174,7 +174,7 @@ export default function DashboardAdmin() {
                     <input placeholder={`Ingrese ${f.toLowerCase()}...`} disabled style={{ width: '100%', padding: '14px 20px', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '1rem', background: '#f8fafc', color: '#94a3b8', cursor: 'not-allowed' }} />
                   </div>
                 ))}
-                <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>⚙️ Configuración disponible próximamente.</p>
+                <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Configuración disponible próximamente.</p>
               </div>
             </div>
           )}

@@ -180,7 +180,7 @@ export default function DashboardEmpresa() {
           </div>
           <div style={{ flex: 1, zIndex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '10px' }}>
-              <h1 style={{ margin: 0, color: '#1e3a5f', fontSize: '2.4rem', fontWeight: 900 }}>{greeting}, {companyName} ✨</h1>
+              <h1 style={{ margin: 0, color: '#1e3a5f', fontSize: '2.4rem', fontWeight: 900 }}>{greeting}, {companyName}</h1>
               <span style={{ background: '#eff6ff', color: '#1e40af', padding: '8px 18px', borderRadius: '30px', fontSize: '0.75rem', fontWeight: 800 }}>EMPRESA ALIADA UCC</span>
             </div>
             <p style={{ color: '#64748b', margin: 0, fontSize: '1.2rem', fontWeight: 600 }}>"{companySlogan}"</p>
