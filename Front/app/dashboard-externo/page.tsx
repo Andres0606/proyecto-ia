@@ -226,13 +226,15 @@ export default function DashboardExterno() {
               <div className="responsive-grid-2">
                 {[
                   { label:'Nombre Completo', key:'nombre_completo', editable:true },
-                  { label:'Correo Electrónico', key:'correo', editable:true },
+                  { label:'Correo Electrónico', key:'correo', editable:true, type: 'email' },
                   { label:'Teléfono', key:'telefono', editable:true },
                   { label:'Cédula', key:'cedula', editable:false },
+                  { label:'Fecha de Nacimiento', key:'fecha_nacimiento', editable:false },
+                  { label:'Género', key:'genero', editable:false },
                 ].map(f => (
                   <div key={f.key}>
                     <label style={lbl}>{f.label}</label>
-                    <input type="text" value={(formData as any)[f.key]} onChange={e => f.editable && setFormData({...formData, [f.key]: e.target.value})} disabled={!isEditingPersonal || !f.editable} style={!isEditingPersonal || !f.editable ? dis : inp} />
+                    <input type={f.type || "text"} value={(formData as any)[f.key]} onChange={e => f.editable && setFormData({...formData, [f.key]: e.target.value})} disabled={!isEditingPersonal || !f.editable} style={!isEditingPersonal || !f.editable ? dis : inp} />
                   </div>
                 ))}
               </div>
