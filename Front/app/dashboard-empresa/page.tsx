@@ -53,7 +53,7 @@ export default function DashboardEmpresa() {
           const cleanId = String(rawId).trim().split(':')[0];
           setUserId(cleanId); fetchProfile(cleanId);
         }
-      } catch (e) { console.error(e); }
+      } catch (e) { console.error('Error parseando usuario:', e); }
     }
   }, []);
 
@@ -61,31 +61,44 @@ export default function DashboardEmpresa() {
     try {
       const res = await fetch(`${base()}/api/users/profile/${id}`);
       const data = await res.json();
+      
       if (data.success && data.profile) {
         const u = data.profile;
-        const c = u.empresa || {};
+        // Buscamos la empresa en la respuesta. Puede venir como 'empresa' o dentro de un array.
+        const c = u.empresa || (u.empresas && u.empresas[0]) || {};
         
-        // Actualizar sessionStorage para el Header
+        console.log('📦 Datos de empresa recuperados:', c);
+
+        const nombreFinal = c.razon_social || u.nombre_completo || 'Empresa UCC';
+        setCompanyName(nombreFinal);
+        setCompanySlogan(c.eslogan || 'Panel de gestión y talento corporativo');
+        if (u.foto_url) setCompanyLogo(u.foto_url);
+
+        // Actualizar sesión para el Header
         const savedSession = sessionStorage.getItem('ucc_user');
         if (savedSession) {
           const sessionObj = JSON.parse(savedSession);
-          sessionObj.profile = { ...u, nombre_completo: c.razon_social || u.nombre_completo };
+          sessionObj.profile = { ...u, nombre_completo: nombreFinal };
           sessionStorage.setItem('ucc_user', JSON.stringify(sessionObj));
           window.dispatchEvent(new Event('storage'));
         }
 
-        setCompanyName(c.razon_social || 'Empresa');
-        setCompanySlogan(c.eslogan || 'Panel de gestión y talento corporativo');
-        if (u.foto_url) setCompanyLogo(u.foto_url);
-
         setFormData({
-          razon_social: c.razon_social || '', nit: c.nit || '', sector_economico: c.sector_economico || '',
-          ciudad: c.ciudad || '', tamano_empresa: c.tamano_empresa || '', tipo_empresa: c.tipo_empresa || '',
-          telefono: u.telefono || c.telefono || '', correo: u.correo || c.correo || '',
+          razon_social: c.razon_social || '',
+          nit: c.nit || '',
+          sector_economico: c.sector_economico || '',
+          ciudad: c.ciudad || '',
+          tamano_empresa: c.tamano_empresa || '',
+          tipo_empresa: c.tipo_empresa || '',
+          telefono: c.telefono || u.telefono || '',
+          correo: c.correo || u.correo || '',
           eslogan: c.eslogan || ''
         });
       }
-    } catch (err) { console.error(err); }
+    } catch (err) { 
+      console.error('❌ Error crítico recuperando perfil:', err);
+      setToast({ msg: 'Error de conexión con el servidor', type: 'error' });
+    }
   };
 
   const handleSave = async () => {
@@ -195,7 +208,7 @@ export default function DashboardEmpresa() {
               </div>
               <div className="responsive-grid-2" style={{ gap: '25px' }}>
                 <div style={{ gridColumn: '1 / -1' }}>
-                  <label style={lbl}>Eslogan de la Empresa (Máx 60 caracteres)</label>
+                  <label style={lbl}>Eslogan de la Empresa</label>
                   <input value={formData.eslogan} onChange={e => setFormData({...formData, eslogan: e.target.value})} placeholder="Ej: Innovación para un futuro mejor" disabled={!isEditing} style={isEditing ? inp : dis} />
                 </div>
                 {[
