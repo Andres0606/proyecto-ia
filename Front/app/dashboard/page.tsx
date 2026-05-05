@@ -458,7 +458,9 @@ export default function Dashboard() {
                   </div>
                 ))}
               </div>
-
+              {isEditingProf && (
+                <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ width: '100%', marginTop: '40px', padding: '18px', background: 'var(--ucc-navy)', color: 'white', borderRadius: '16px', fontWeight: 800, cursor: loadingProfile ? 'not-allowed' : 'pointer', transition: 'all 0.3s ease', boxShadow: '0 8px 25px rgba(30, 58, 95, 0.2)' }}>
+                  {loadingProfile ? 'Guardando...' : '💾 Guardar Perfil Profesional'}
                 </button>
               )}
             </div>
