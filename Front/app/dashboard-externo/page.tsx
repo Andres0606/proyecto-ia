@@ -163,10 +163,15 @@ export default function DashboardExterno() {
     } catch { showToast('Error en la carga', 'error'); } finally { setIsUploading(false); }
   };
 
+  useEffect(() => {
+    if (showCamera && streamRef.current && videoRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+    }
+  }, [showCamera]);
+
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      if (videoRef.current) videoRef.current.srcObject = stream;
       streamRef.current = stream;
       setShowCamera(true);
     } catch (err) {
@@ -426,8 +431,8 @@ export default function DashboardExterno() {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
           <div style={{ background: 'white', borderRadius: '24px', padding: '30px', maxWidth: '500px', width: '100%', textAlign: 'center' }}>
             <h3 style={{ margin: '0 0 20px', color: 'var(--ucc-navy)' }}>Tomar foto de perfil</h3>
-            <div style={{ background: 'black', borderRadius: '16px', overflow: 'hidden', aspectRatio: '4/3', marginBottom: '20px' }}>
-              <video ref={videoRef} autoPlay playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <div style={{ background:'black', borderRadius:'16px', overflow:'hidden', aspectRatio:'4/3', marginBottom:'20px' }}>
+              <video ref={videoRef} autoPlay playsInline muted style={{ width:'100%', height:'100%', objectFit:'cover' }} />
             </div>
             <div style={{ display: 'flex', gap: '12px' }}>
               <button onClick={stopCamera} style={{ flex: 1, padding: '14px', background: '#f1f5f9', color: '#64748b', border: 'none', borderRadius: '12px', fontWeight: 700, cursor: 'pointer' }}>Cancelar</button>
