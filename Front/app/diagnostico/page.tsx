@@ -127,21 +127,21 @@ function PillGroup({ label, options, value, onChange }: { label: string; options
   return (
     <div className="diag-field">
       <label className="diag-field__label">{label}</label>
-      <div className="diag-pills">
-        {options.map((opt) => {
-          const val = typeof opt === "string" ? opt : opt.val;
-          const text = typeof opt === "string" ? opt : opt.label;
-          return (
-            <button
-              key={val}
-              type="button"
-              className={`diag-pill ${value === val ? "diag-pill--active" : ""}`}
-              onClick={() => onChange(val)}
-            >
-              {text}
-            </button>
-          );
-        })}
+      <div className="diag-select-wrap">
+        <select
+          className={`diag-select ${value ? 'diag-select--filled' : ''}`}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+        >
+          <option value="" disabled>Selecciona una opción...</option>
+          {options.map((opt) => {
+            const val = typeof opt === "string" ? opt : opt.val;
+            const text = typeof opt === "string" ? opt : opt.label;
+            return <option key={val} value={val}>{text}</option>;
+          })}
+        </select>
+        <span className="diag-select__arrow">▾</span>
+        {value && <span className="diag-select__check">✓</span>}
       </div>
     </div>
   );
