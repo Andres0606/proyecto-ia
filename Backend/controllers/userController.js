@@ -165,11 +165,18 @@ const getFullProfile = async (req, res) => {
       .eq('user_id', userId)
       .single();
 
+    const { data: subscription } = await supabase
+      .from('suscripciones')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+
     // Unir los datos
     const profileData = {
       ...user,
       perfiles_usuarios: profileEntries || [],
-      empresa: companyData || null
+      empresa: companyData || null,
+      suscripcion: subscription || null
     };
 
     // Mapeo inverso (Sincronización con Diagnóstico)
@@ -258,4 +265,38 @@ const updateProfile = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, getFullProfile, updateProfile };
+const subscribe = async (req, res) => {
+  try {
+    const { userId, planType } = req.body;
+    if (!userId || !planType) return res.status(400).json({ success: false, message: 'userId y planType son requeridos' });
+
+    const fecha_inicio = new Date().toISOString().split('T')[0];
+    let fecha_fin = null;
+    let estado = 'activo';
+
+    if (planType === 'Plan Completo') {
+      const date = new Date();
+      date.setDate(date.getDate() + 30);
+      fecha_fin = date.toISOString().split('T')[0];
+    }
+
+    const { error } = await supabase
+      .from('suscripciones')
+      .upsert({
+        user_id: userId,
+        tipo_plan: planType,
+        fecha_inicio,
+        fecha_fin,
+        estado
+      }, { onConflict: 'user_id' });
+
+    if (error) throw error;
+
+    return res.status(200).json({ success: true, message: `Suscripción al ${planType} exitosa` });
+  } catch (error) {
+    console.error("❌ Error en subscribe:", error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+module.exports = { registerUser, loginUser, getFullProfile, updateProfile, subscribe };

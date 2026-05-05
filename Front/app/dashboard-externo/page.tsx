@@ -40,6 +40,7 @@ export default function DashboardExterno() {
   const [isUploading, setIsUploading] = useState(false);
   const [completionPct, setCompletionPct] = useState(0);
   const [showCamera, setShowCamera] = useState(false);
+  const [userPlan, setUserPlan] = useState('Gratuito');
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const streamRef = React.useRef<MediaStream | null>(null);
   const [formData, setFormData] = useState({
@@ -129,6 +130,10 @@ export default function DashboardExterno() {
         const filled = profFields.filter(f => f !== null && f !== undefined && String(f).trim() !== '').length;
         pct += (filled / profFields.length) * 40;
         setCompletionPct(Math.round(pct));
+
+        if (u.suscripcion) {
+          setUserPlan(u.suscripcion.tipo_plan || 'Gratuito');
+        }
       }
     } catch (e) { console.error(e); }
   };
@@ -212,6 +217,27 @@ export default function DashboardExterno() {
       const d = await r.json();
       if (d.success) window.open(d.url, '_blank'); else showToast('No hay CV subido', 'info');
     } catch { showToast('Error', 'error'); }
+  };
+
+  const handleSubscribe = async (planName: string) => {
+    if (!userId) return;
+    showToast('Procesando suscripción...', 'info');
+    try {
+      const r = await fetch(`${base()}/api/users/subscribe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, planType: planName })
+      });
+      const d = await r.json();
+      if (d.success) {
+        showToast(`¡Ahora tienes el ${planName}!`, 'success');
+        setTimeout(() => fetchProfile(userId), 2000);
+      } else {
+        showToast(d.message || 'Error al suscribirse', 'error');
+      }
+    } catch (e) {
+      showToast('Error de conexión', 'error');
+    }
   };
 
   const inp = { padding: '14px 18px', borderRadius: '12px', border: '1px solid #e2e8f0', width: '100%', fontSize: '0.95rem', outline: 'none' };
@@ -341,7 +367,7 @@ export default function DashboardExterno() {
                   { label: 'Perfil Completo', val: `${completionPct}%`, icon: '✅', color: 'var(--ucc-navy)', bg: '#eff6ff' },
                   { label: 'CVs Subidos', val: '1', icon: '📄', color: '#00A9E0', bg: '#e0f7ff' },
                   { label: 'Postulaciones', val: '0', icon: '📬', color: '#8b5cf6', bg: '#f5f3ff' },
-                  { label: 'Plan Actual', val: 'Gratuito', icon: '💳', color: '#e53e3e', bg: '#fff5f5' },
+                  { label: 'Plan Actual', val: userPlan, icon: '💳', color: '#e53e3e', bg: '#fff5f5' },
                 ].map(c => (
                   <div key={c.label} style={{ background: 'white', borderRadius: '20px', padding: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
                     <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: c.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', marginBottom: '12px' }}>{c.icon}</div>
@@ -449,7 +475,19 @@ export default function DashboardExterno() {
                     <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px' }}>
                       {plan.features.map(f => <li key={f.t} style={{ padding: '8px 0', color: f.ok ? (i === 2 ? 'rgba(255,255,255,0.85)' : '#475569') : (i === 2 ? 'rgba(255,255,255,0.3)' : '#cbd5e1'), display: 'flex', alignItems: 'center', gap: '10px', borderBottom: i === 2 ? '1px solid rgba(255,255,255,0.08)' : '1px solid #f8fafc', fontSize: '0.9rem' }}><span style={{ color: f.ok ? (i === 2 ? '#7dd3fc' : '#00A9E0') : (i === 2 ? 'rgba(255,255,255,0.3)' : '#cbd5e1'), fontWeight: 700 }}>{f.ok ? '✓' : '✗'}</span>{f.t}</li>)}
                     </ul>
-                    <button style={{ width: '100%', padding: '14px', background: i === 0 ? '#f1f5f9' : i === 1 ? '#00A9E0' : 'white', color: i === 0 ? '#94a3b8' : i === 1 ? 'white' : 'var(--ucc-navy)', border: 'none', borderRadius: '12px', fontWeight: 800, cursor: i === 0 ? 'default' : 'pointer', fontSize: '0.95rem' }} disabled={i === 0}>{i === 0 ? 'Plan Actual' : i === 1 ? 'Adquirir Acceso →' : 'Suscribirme Ahora →'}</button>
+                    <button 
+                      onClick={() => userPlan !== plan.name && handleSubscribe(plan.name)}
+                      style={{ 
+                        width: '100%', padding: '14px', 
+                        background: userPlan === plan.name ? '#f1f5f9' : i === 1 ? '#00A9E0' : (i === 2 ? 'white' : '#00A9E0'), 
+                        color: userPlan === plan.name ? '#94a3b8' : (i === 2 ? 'var(--ucc-navy)' : 'white'), 
+                        border: 'none', borderRadius: '12px', fontWeight: 800, 
+                        cursor: userPlan === plan.name ? 'default' : 'pointer', fontSize: '0.95rem' 
+                      }} 
+                      disabled={userPlan === plan.name}
+                    >
+                      {userPlan === plan.name ? 'Plan Actual' : i === 1 ? 'Adquirir Acceso →' : 'Suscribirme Ahora →'}
+                    </button>
                   </div>
                 ))}
               </div>
