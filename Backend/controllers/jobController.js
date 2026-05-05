@@ -84,7 +84,7 @@ const getVacancies = async (req, res) => {
       return { ...v, empresa_logo: userData?.foto_url || null };
     }));
 
-    return res.status(200).json({ success: true, vacancies: data });
+    return res.status(200).json({ success: true, vacancies: vacanciesWithLogos });
   } catch (error) {
     console.error('❌ Error al obtener vacantes:', error);
     return res.status(500).json({ success: false, message: 'Error al obtener vacantes', error: error.message });
