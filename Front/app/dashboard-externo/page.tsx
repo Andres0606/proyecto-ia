@@ -116,6 +116,12 @@ export default function DashboardExterno() {
     } catch { setToast({ msg: 'Error', type: 'error' }); } finally { setTimeout(() => setToast({ msg: '', type: 'none' }), 3000); }
   };
 
+  const PLANS = [
+    { name: 'Gratuito', price: 'Gratis', icon: '🆓', features: ['Perfil Profesional', 'Subir Hoja de Vida', 'Acceso a Vacantes Básicas'] },
+    { name: 'Acceso al Modelo', price: '$25.000', icon: '🧠', features: ['Todo lo anterior', 'Diagnóstico IA Estabilidad', 'Reporte PDF'] },
+    { name: 'Plan Completo', price: '$45.000', icon: '🚀', features: ['Todo lo anterior', 'Bolsa de Empleo UCC', 'Alertas Prioritarias'] }
+  ];
+
   const ACTIONS = [
     { title: 'Inicio', icon: Icons.Home, id: 'none', color: '#3b82f6' },
     { title: 'Datos Personales', icon: Icons.User, id: 'personal', color: '#8b5cf6' },
@@ -164,7 +170,7 @@ export default function DashboardExterno() {
           </div>
         </div>
 
-        {/* Grid */}
+        {/* Grid de Acciones */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '20px', marginBottom: '40px' }}>
           {ACTIONS.map(a => {
             const Icon = a.icon;
@@ -177,7 +183,7 @@ export default function DashboardExterno() {
           })}
         </div>
 
-        {/* Content Area */}
+        {/* Áreas de Contenido */}
         <div style={{ background: 'white', borderRadius: '32px', padding: '45px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)' }}>
           {activeSection === 'none' && <h2 style={{ textAlign: 'center' }}>Bienvenido al Portal Externo</h2>}
 
@@ -208,6 +214,65 @@ export default function DashboardExterno() {
                  ))}
                </div>
                {isEditingPersonal && <button onClick={handleSave} style={{ width: '100%', marginTop: '30px', padding: '15px', background: '#1e3a5f', color: 'white', borderRadius: '14px', border: 'none', fontWeight: 800, cursor: 'pointer' }}>Guardar Cambios</button>}
+             </div>
+          )}
+
+          {activeSection === 'professional' && (
+             <div>
+               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '35px' }}>
+                 <h2 style={{ margin: 0 }}>Perfil Profesional</h2>
+                 <button onClick={() => setIsEditingProf(!isEditingProf)} style={{ background: '#00A9E0', color: 'white', border: 'none', borderRadius: '12px', padding: '10px 20px', cursor: 'pointer' }}>{isEditingProf ? 'Cancelar' : 'Actualizar'}</button>
+               </div>
+               <div className="responsive-grid-2" style={{ gap: '25px' }}>
+                 {[
+                   { l: 'Programa Académico', k: 'programa_academico', o: DIAG_OPTIONS.Programa },
+                   { l: 'Nivel de Formación', k: 'nivel_formacion', o: DIAG_OPTIONS.Formacion },
+                   { l: 'Estrato', k: 'estrato', o: DIAG_OPTIONS.Estrato },
+                   { l: 'Estado Civil', k: 'estado_civil', o: DIAG_OPTIONS.EstadoCivil },
+                   { l: 'Número de Hijos', k: 'numero_hijos', o: DIAG_OPTIONS.Hijos },
+                   { l: 'Ingreso Mensual', k: 'ingreso_mensual', o: DIAG_OPTIONS.Ingreso },
+                   { l: 'Sector Económico', k: 'sector_economico', o: DIAG_OPTIONS.Sector },
+                   { l: 'Área de Desempeño', k: 'area_desempeno', o: DIAG_OPTIONS.Area },
+                   { l: 'Emprendimiento', k: 'emprendimiento', o: DIAG_OPTIONS.Emprendimiento },
+                 ].map(f => (
+                   <div key={f.k}>
+                     <label style={lblS}>{f.l}</label>
+                     {isEditingProf ? (
+                       <select value={(formData as any)[f.k]} onChange={e => setFormData({ ...formData, [f.k]: e.target.value })} style={inpS}>
+                         <option value="">Seleccionar...</option>
+                         {f.o.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                       </select>
+                     ) : (
+                       <input value={(formData as any)[f.k] || 'No registrado'} disabled style={{ ...inpS, background: '#f8fafc' }} />
+                     )}
+                   </div>
+                 ))}
+               </div>
+               {isEditingProf && <button onClick={handleSave} style={{ width: '100%', marginTop: '30px', padding: '15px', background: '#00A9E0', color: 'white', borderRadius: '14px', border: 'none', fontWeight: 800, cursor: 'pointer' }}>Guardar Perfil</button>}
+             </div>
+          )}
+
+          {activeSection === 'plans' && (
+             <div>
+               <h2 style={{ textAlign: 'center', marginBottom: '40px', color: '#1e3a5f', fontWeight: 900 }}>Planes y Membresía</h2>
+               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '30px' }}>
+                 {PLANS.map(p => (
+                   <div key={p.name} style={{ padding: '40px 30px', borderRadius: '32px', border: userPlan === p.name ? '3px solid #3b82f6' : '1px solid #e2e8f0', textAlign: 'center', position: 'relative', background: userPlan === p.name ? '#f8fafc' : 'white' }}>
+                     {userPlan === p.name && <span style={{ position: 'absolute', top: '-15px', left: '50%', transform: 'translateX(-50%)', background: '#3b82f6', color: 'white', padding: '6px 20px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 800 }}>PLAN ACTUAL</span>}
+                     <div style={{ fontSize: '3.5rem', marginBottom: '20px' }}>{p.icon}</div>
+                     <h3 style={{ color: '#1e3a5f', fontWeight: 800, fontSize: '1.4rem', marginBottom: '10px' }}>{p.name}</h3>
+                     <p style={{ fontSize: '2.2rem', fontWeight: 900, color: '#1e3a5f', marginBottom: '25px' }}>{p.price}</p>
+                     <ul style={{ listStyle: 'none', padding: 0, textAlign: 'left', margin: '0 0 30px' }}>
+                       {p.features.map(f => <li key={f} style={{ marginBottom: '12px', fontSize: '0.9rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                         <span style={{ color: '#10b981', fontWeight: 900 }}>✓</span> {f}
+                       </li>)}
+                     </ul>
+                     <button disabled={userPlan === p.name} style={{ width: '100%', padding: '15px', borderRadius: '16px', background: userPlan === p.name ? '#e2e8f0' : '#1e3a5f', color: userPlan === p.name ? '#94a3b8' : 'white', fontWeight: 800, border: 'none', cursor: userPlan === p.name ? 'default' : 'pointer' }}>
+                       {userPlan === p.name ? 'Activo' : 'Seleccionar'}
+                     </button>
+                   </div>
+                 ))}
+               </div>
              </div>
           )}
           
