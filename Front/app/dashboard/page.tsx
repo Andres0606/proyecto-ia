@@ -5,32 +5,33 @@ import Header from '../Components/header';
 import Footer from '../Components/footer';
 import '../css/Dashboard/dashboard.css';
 
-const getQuickActions = (role: string | null) => {
-  return [
-    { title: 'Datos Personales', icon: '👤', id: 'personal' },
-    { title: 'Perfil Profesional', icon: '💼', id: 'professional' },
-    { title: 'Actualizar CV', icon: '📄', id: 'cv' },
-    { title: 'Mis Postulaciones', icon: '📨', id: 'apps' },
-  ];
+// Iconos SVG Premium (Los mismos del dashboard-externo)
+const Icons = {
+  Home: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
+  User: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+  Briefcase: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>,
+  File: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>,
+  Mail: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
 };
 
+const getQuickActions = () => [
+  { title: 'Inicio', Icon: Icons.Home, id: 'none', color: '#3b82f6' },
+  { title: 'Datos Personales', Icon: Icons.User, id: 'personal', color: '#8b5cf6' },
+  { title: 'Perfil Profesional', Icon: Icons.Briefcase, id: 'professional', color: '#10b981' },
+  { title: 'Actualizar CV', Icon: Icons.File, id: 'cv', color: '#ef4444' },
+  { title: 'Mis Postulaciones', Icon: Icons.Mail, id: 'apps', color: '#f59e0b' },
+];
+
 const DIAG_OPTIONS = {
-  Programa: [
-    "Derecho", "Contaduria Publica", "Ingenieria Civil", "Ciencias Economicas",
-    "Medicina", "Psicologia", "Odontologia", "Enfermeria", "Ingenieria de Sistemas",
-    "Medicina Veterinaria y Zootecnia", "Especializacion", "Tecnico Auxiliar en Enfermeria"
-  ],
-  Estrato: ["Uno", "Dos", "Tres", "Cuatro", "Cinco", "Seis"],
-  EstadoCivil: ["Casado", "Union libre", "Soltero", "Separado", "Viudo"],
-  Hijos: ["Cero", "Uno", "Dos", "Tres", "Cuatro", "Cinco"],
+  Programa: ["Derecho", "Contaduria Publica", "Ingenieria Civil", "Ciencias Economicas", "Medicina", "Psicologia", "Odontologia", "Enfermeria", "Ingenieria de Sistemas", "Medicina Veterinaria y Zootecnia", "Especializacion", "Tecnico Auxiliar en Enfermeria"],
   Formacion: ["Profesional", "Especialista", "Magister", "Doctorado", "Tecnico Profesional"],
-  Emprendimiento: ["Si", "No"],
-  Area: [
-    "Servicios", "Administrativa", "Salud", "Financiera", "Industrial",
-    "Economica", "Gestion Humana", "Educacion", "Comercial", "Contable", "Sistemas"
-  ],
+  EstadoCivil: ["Casado", "Union libre", "Soltero", "Separado", "Viudo"],
+  Estrato: ["Uno", "Dos", "Tres", "Cuatro", "Cinco", "Seis"],
+  Ingreso: ["1 SML o menos", "2-3 SML", "3-5 SML", "5 SML o mas"],
+  Area: ["Servicios", "Administrativa", "Salud", "Financiera", "Industrial", "Economica", "Gestion Humana", "Educacion", "Comercial", "Contable", "Sistemas"],
   Sector: ["Servicios", "Comercial", "Industrial"],
-  Ingreso: ["1 SML o menos", "2-3 SML", "3-5 SML", "5 SML o mas"]
+  Emprendimiento: ["Si", "No"],
+  Hijos: ["Cero", "Uno", "Dos", "Tres", "Cuatro", "Cinco"],
 };
 
 export default function Dashboard() {
@@ -38,16 +39,15 @@ export default function Dashboard() {
   const [userName, setUserName] = useState('Egresado');
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-  const [userRole, setUserRole] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<'none' | 'personal' | 'professional' | 'apps' | 'cv'>('none');
   const [isEditingProf, setIsEditingProf] = useState(false);
   const [isEditingPersonal, setIsEditingPersonal] = useState(false);
-  const [loadingProfile, setLoadingProfile] = useState(false);
   const [completionPct, setCompletionPct] = useState(0);
-  
-  const [uploadStatus, setUploadStatus] = useState<{msg: string, type: 'info' | 'success' | 'error' | 'none'}>({msg: '', type: 'none'});
-  const [isUploading, setIsUploading] = useState(false);
   const [toast, setToast] = useState<{ msg: string, type: 'info' | 'success' | 'error' | 'none' }>({ msg: '', type: 'none' });
+  const [isUploading, setIsUploading] = useState(false);
+
+  const avatarInputRef = React.useRef<HTMLInputElement>(null);
+  const cvInputRef = React.useRef<HTMLInputElement>(null);
 
   const showToast = (msg: string, type: 'info' | 'success' | 'error') => {
     setToast({ msg, type });
@@ -55,112 +55,46 @@ export default function Dashboard() {
   };
 
   const base = () => (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000').replace(/\/$/, '');
-  
-  const [formData, setFormData] = useState({
-    nombre_completo: '',
-    correo: '',
-    telefono: '',
-    cedula: '',
-    fecha_nacimiento: '',
-    genero: '',
-    nivel_formacion: '',
-    programa_academico: '',
-    estrato: '',
-    estado_civil: '',
-    numero_hijos: '',
-    ingreso_mensual: '',
-    sector_economico: '',
-    area_desempeno: '',
-    emprendimiento: ''
-  });
-
-  const avatarInputRef = React.useRef<HTMLInputElement>(null);
-  const cvInputRef = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const hour = new Date().getHours();
-    if (hour >= 12 && hour < 18) setGreeting('Buenas tardes');
-    if (hour >= 18 || hour < 5) setGreeting('Buenas noches');
+    const h = new Date().getHours();
+    if (h >= 12 && h < 18) setGreeting('Buenas tardes');
+    else if (h >= 18 || h < 5) setGreeting('Buenas noches');
 
-    const savedUser = sessionStorage.getItem('ucc_user');
-    if (savedUser) {
+    const saved = sessionStorage.getItem('ucc_user');
+    if (saved) {
       try {
-        const userData = JSON.parse(savedUser);
-        const rawId = userData.id || userData.profile?.id || userData.user_id;
-        if (rawId) {
-          const cleanId = String(rawId).trim().split(':')[0];
-          const rolId = Number(userData.profile?.rol_id);
-          
-          // Route Guard
-          if (rolId === 4) window.location.href = "/dashboard-admin";
-          else if (rolId === 2) window.location.href = "/dashboard-externo";
-          else if (rolId === 3) window.location.href = "/dashboard-empresa";
-          else {
-            setUserId(cleanId);
-            const meta = userData.profile || userData.user_metadata || {};
-            setUserName(meta.full_name?.split(' ')[0] || meta.nombre_completo?.split(' ')[0] || 'Usuario');
-            setUserRole('egresado');
-            fetchFullProfile(cleanId);
-          }
+        const u = JSON.parse(saved);
+        const raw = u.id || u.profile?.id || u.user_id;
+        if (raw) {
+          const id = String(raw).trim().split(':')[0];
+          setUserId(id); fetchProfile(id);
         }
-      } catch (e) {
-        console.error(e);
-      }
+      } catch (e) { console.error(e); }
     }
   }, []);
 
-  const fetchFullProfile = async (id: string) => {
+  const fetchProfile = async (id: string) => {
     try {
-      const backendUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000').replace(/\/$/, '');
-      const res = await fetch(`${backendUrl}/api/users/profile/${id}`);
-      const data = await res.json();
-      
-      if (data.success && data.profile) {
-        const u = data.profile;
-        const fetchedRol = Number(u.rol_id);
-
-        // Async Route Guard
-        if (fetchedRol === 4) { window.location.href = "/dashboard-admin"; return; }
-        if (fetchedRol === 2) { window.location.href = "/dashboard-externo"; return; }
-        if (fetchedRol === 3) { window.location.href = "/dashboard-empresa"; return; }
-
-        const p = (u.perfiles_usuarios && u.perfiles_usuarios.length > 0) ? u.perfiles_usuarios[0] : {};
-        const c = u.empresa || {};
-        
-        setUserName(u.nombre_completo ? u.nombre_completo.split(' ')[0] : 'Egresado');
+      const r = await fetch(`${base()}/api/users/profile/${id}`);
+      const d = await r.json();
+      if (d.success && d.profile) {
+        const u = d.profile;
+        const p = u.perfiles_usuarios?.[0] || {};
+        setUserName(u.nombre_completo?.split(' ')[0] || 'Egresado');
         if (u.foto_url) setUserPhoto(u.foto_url);
-
         const val = (v: any) => (v !== null && v !== undefined && v !== '') ? String(v) : '';
-
         setFormData({
-          nombre_completo: u.nombre_completo || '',
-          correo: u.correo || '',
-          telefono: u.telefono || '',
-          cedula: u.cedula || 'N/A',
-          fecha_nacimiento: u.fecha_nacimiento ? u.fecha_nacimiento.split('T')[0] : 'No definida',
-          genero: u.genero || 'No definido',
-          nivel_formacion: val(p.nivel_formacion),
-          programa_academico: val(p.programa_academico),
-          estrato: val(p.estrato),
-          estado_civil: val(p.estado_civil),
-          numero_hijos: val(p.numero_hijos),
-          ingreso_mensual: val(p.ingreso_mensual),
-          sector_economico: val(p.sector_economico || c.sector_economico),
-          area_desempeno: val(p.area_desempeno),
-          emprendimiento: val(p.emprendimiento),
-          // Empresa fields
-          razon_social: val(c.razon_social),
-          nit: val(c.nit),
-          ciudad: val(c.ciudad),
-          tamano_empresa: val(c.tamano_empresa),
-          tipo_empresa: val(c.tipo_empresa)
-        } as any);
-
+          nombre_completo: u.nombre_completo || '', correo: u.correo || '', telefono: u.telefono || '',
+          cedula: u.cedula || '', fecha_nacimiento: u.fecha_nacimiento?.split('T')[0] || '', genero: u.genero || '',
+          nivel_formacion: val(p.nivel_formacion), programa_academico: val(p.programa_academico), estrato: val(p.estrato),
+          estado_civil: val(p.estado_civil), numero_hijos: val(p.numero_hijos), ingreso_mensual: val(p.ingreso_mensual),
+          sector_economico: val(p.sector_economico), area_desempeno: val(p.area_desempeno), emprendimiento: val(p.emprendimiento)
+        });
         let pct = 0;
-        if (u.foto_url || userPhoto) pct += 15;
+        if (u.foto_url) pct += 15;
         if (u.cv_url) pct += 25;
         if (u.telefono && u.nombre_completo) pct += 20;
-        
         const profFields = [p.nivel_formacion, p.programa_academico, p.estrato, p.estado_civil, p.ingreso_mensual];
         const filled = profFields.filter(f => f !== null && f !== undefined && String(f).trim() !== '').length;
         pct += (filled / profFields.length) * 40;
@@ -169,355 +103,165 @@ export default function Dashboard() {
     } catch (err) { console.error(err); }
   };
 
-  const handleSaveProfile = async () => {
+  const [formData, setFormData] = useState({
+    nombre_completo: '', correo: '', telefono: '', cedula: '', fecha_nacimiento: '', genero: '',
+    nivel_formacion: '', programa_academico: '', estrato: '', estado_civil: '', numero_hijos: '',
+    ingreso_mensual: '', sector_economico: '', area_desempeno: '', emprendimiento: ''
+  });
+
+  const handleSave = async () => {
     if (!userId) return;
-    setLoadingProfile(true);
-    setUploadStatus({ msg: 'Guardando cambios...', type: 'info' });
+    showToast('Guardando...', 'info');
     try {
-      const backendUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000').replace(/\/$/, '');
-      const res = await fetch(`${backendUrl}/api/users/profile/${userId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userData: formData,
-          profileData: formData
-        }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setUploadStatus({ msg: 'Perfil actualizado con éxito', type: 'success' });
-        setIsEditingProf(false);
-        setIsEditingPersonal(false);
-        setTimeout(() => {
-          fetchFullProfile(userId);
-          setUploadStatus({ msg: '', type: 'none' });
-        }, 2000);
-      }
-    } catch (err: any) { setUploadStatus({ msg: 'Error al guardar cambios', type: 'error' }); } finally { setLoadingProfile(false); }
+      const r = await fetch(`${base()}/api/users/profile/${userId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userData: formData, profileData: formData }) });
+      const d = await r.json();
+      if (d.success) { showToast('¡Perfil actualizado!', 'success'); setIsEditingProf(false); setIsEditingPersonal(false); setTimeout(() => fetchProfile(userId!), 2000); }
+    } catch { showToast('Error al guardar', 'error'); }
   };
 
   const handleFileUpload = async (file: File, type: 'avatar' | 'cv') => {
     if (!userId) return;
-    setIsUploading(true);
-    showToast(`Subiendo ${type === 'avatar' ? 'foto' : 'CV'}...`, 'info');
-    
+    setIsUploading(true); showToast(`Subiendo ${type}...`, 'info');
     const fd = new FormData();
     fd.append(type === 'avatar' ? 'image' : 'cv', file);
     fd.append('userId', String(userId).trim());
-    
     try {
       const r = await fetch(`${base()}/api/users/upload-${type === 'avatar' ? 'avatar' : 'cv'}`, { method: 'POST', body: fd });
       const d = await r.json();
-      
       if (d.success) {
         showToast('¡Subido con éxito!', 'success');
         if (type === 'avatar') setUserPhoto(d.url);
-        setTimeout(() => fetchFullProfile(userId), 1500);
-      } else {
-        const errorDetail = d.error ? ` (${d.error})` : '';
-        showToast(`${d.message || 'Error en la carga'}${errorDetail}`, 'error');
-      }
-    } catch { 
-      showToast('Error en la carga', 'error'); 
-    } finally { 
-      setIsUploading(false); 
-    }
+        setTimeout(() => fetchProfile(userId), 1500);
+      } else showToast(d.message || 'Error', 'error');
+    } catch { showToast('Error', 'error'); } finally { setIsUploading(false); }
   };
 
-  const handleViewResume = async () => {
-    if (!userId) return;
-    try {
-      const r = await fetch(`${base()}/api/users/get-cv-url/${userId}`);
-      const d = await r.json();
-      if (d.success) window.open(d.url, '_blank'); else showToast('No hay CV subido', 'info');
-    } catch { showToast('Error al recuperar archivo', 'error'); }
-  };
-
-  const baseInputStyle = {
-    padding: '16px 24px',
-    borderRadius: '14px',
-    border: '1px solid #e2e8f0',
-    width: '100%',
-    fontSize: '1rem',
-    outline: 'none',
-    transition: 'all 0.2s ease'
-  };
-
-  const disabledInputStyle = {
-    ...baseInputStyle,
-    background: '#f8fafc',
-    color: '#64748b',
-    cursor: 'not-allowed',
-    fontWeight: 500,
-    border: '1px solid #e2e8f0'
-  };
-
-  const labelStyle = {
-    fontSize: '0.9rem',
-    fontWeight: 700,
-    color: 'var(--ucc-navy)',
-    marginBottom: '8px',
-    display: 'block'
-  };
+  const mainWidth = '1120px';
+  const inp = { padding: '14px 18px', borderRadius: '12px', border: '1px solid #e2e8f0', width: '100%', fontSize: '0.95rem', outline: 'none' };
+  const dis = { ...inp, background: '#f8fafc', color: '#64748b', cursor: 'not-allowed' as const };
+  const lbl = { fontSize: '0.8rem', fontWeight: 700, color: '#475569', marginBottom: '6px', display: 'block', textTransform: 'uppercase' as const };
 
   return (
-    <div className="db-page">
+    <div className="db-page" style={{ background: '#f4f7fa', minHeight: '100vh' }}>
       <Header />
-      <input type="file" ref={avatarInputRef} hidden accept="image/*" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'avatar')} />
-      <input type="file" ref={cvInputRef} hidden accept=".pdf" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'cv')} />
+      <input type="file" ref={avatarInputRef} hidden accept="image/*" onChange={e => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'avatar')} />
+      <input type="file" ref={cvInputRef} hidden accept=".pdf" onChange={e => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'cv')} />
 
-      {/* Notificación Toast Moderna */}
       {toast.type !== 'none' && (
-        <div style={{
-          position: 'fixed', bottom: '32px', right: '32px', zIndex: 9999,
-          padding: '16px 22px',
-          borderRadius: '16px',
-          color: 'white',
-          fontWeight: 600,
-          fontSize: '0.95rem',
-          letterSpacing: '0.01em',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.20), 0 4px 16px rgba(0,0,0,0.10)',
-          border: '1px solid rgba(255,255,255,0.15)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          minWidth: '260px',
-          maxWidth: '360px',
-          backdropFilter: 'blur(12px)',
-          animation: 'slideInRight 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-          background:
-            toast.type === 'success'
-              ? 'linear-gradient(135deg, #059669 0%, #047857 100%)'
-              : toast.type === 'error'
-              ? 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)'
-              : 'linear-gradient(135deg, #1e3a5f 0%, #0f2340 100%)'
-        }}>
-          {toast.type === 'info' && (
-            <div className="spinner-white" style={{ flexShrink: 0 }} />
-          )}
-          {toast.type === 'success' && (
-            <svg style={{ flexShrink: 0 }} width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10" fill="rgba(255,255,255,0.2)" />
-              <path d="M7 12.5l3.5 3.5 6.5-7" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          )}
-          {toast.type === 'error' && (
-            <svg style={{ flexShrink: 0 }} width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10" fill="rgba(255,255,255,0.2)" />
-              <path d="M15 9l-6 6M9 9l6 6" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
-            </svg>
-          )}
-          <span>{toast.msg}</span>
+        <div style={{ position: 'fixed', bottom: '32px', right: '32px', zIndex: 9999, padding: '16px 24px', borderRadius: '16px', color: 'white', fontWeight: 600, boxShadow: '0 10px 40px rgba(0,0,0,0.15)', background: toast.type === 'success' ? '#059669' : toast.type === 'error' ? '#dc2626' : '#1e3a5f', animation: 'slideIn 0.3s ease-out' }}>
+          {toast.msg}
         </div>
       )}
 
-      <main className="db-main" style={{ paddingTop: '100px', minHeight: '80vh' }}>
+      <main style={{ paddingTop: '110px', maxWidth: mainWidth, margin: '0 auto', paddingBottom: '60px' }}>
         
-        <div className="db-card responsive-hero" style={{ margin: '0 auto 40px', maxWidth: '1100px', padding: '30px 40px', background: 'white', borderRadius: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', position: 'relative', overflow: 'hidden' }}>
-          {/* Elemento Decorativo (Sticker) */}
+        {/* Hero Card Premium */}
+        <div style={{ background: 'white', borderRadius: '32px', padding: '40px', boxShadow: '0 10px 40px rgba(0,40,85,0.04)', display: 'flex', alignItems: 'center', gap: '40px', marginBottom: '32px', position: 'relative', overflow: 'hidden', border: '1px solid rgba(226, 232, 240, 0.5)' }}>
           <div style={{ position: 'absolute', top: '-100px', right: '-100px', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%)', zIndex: 0 }} />
           <div style={{ position: 'relative', width: '130px', height: '130px', flexShrink: 0 }}>
-            <svg viewBox="0 0 36 36" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)', position: 'absolute' }}>
+            <svg viewBox="0 0 36 36" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)', position: 'absolute', zIndex: 1 }}>
               <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#f1f5f9" strokeWidth="2" />
-              <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--ucc-blue)" strokeDasharray={`${completionPct}, 100`} strokeWidth="2" strokeLinecap="round" />
+              <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#3b82f6" strokeDasharray={`${completionPct}, 100`} strokeWidth="2" strokeLinecap="round" style={{ transition: 'stroke-dasharray 0.5s ease' }} />
             </svg>
-            <div style={{ position: 'absolute', top: '10px', left: '10px', right: '10px', bottom: '10px', borderRadius: '50%', background: userPhoto ? `url(${userPhoto}) center/cover` : 'var(--ucc-navy)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '2.5rem', fontWeight: 800, border: '4px solid white' }}>
+            <div style={{ position: 'absolute', top: '10px', left: '10px', right: '10px', bottom: '10px', borderRadius: '50%', background: userPhoto ? `url(${userPhoto}) center/cover` : 'linear-gradient(135deg, #1e3a5f 0%, #3b82f6 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.8rem', fontWeight: 800, color: 'white', border: '4px solid white', boxShadow: '0 8px 25px rgba(0,0,0,0.1)', zIndex: 2 }}>
               {!userPhoto && userName[0]}
             </div>
-            {isUploading && (
-              <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div className="spinner-white" />
-              </div>
-            )}
           </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-              <h1 style={{ margin: 0, color: 'var(--ucc-navy)', fontSize: '2rem' }}>{greeting}, {userName} ✨</h1>
-              <span style={{ 
-                background: userRole === 'empresa' ? '#fef3c7' : userRole === 'externo' ? '#dcfce7' : '#fee2e2', 
-                color: userRole === 'empresa' ? '#92400e' : userRole === 'externo' ? '#166534' : '#b91c1c',
-                padding: '6px 14px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px'
-              }}>
-                {userRole || 'Egresado'}
-              </span>
+          <div style={{ flex: 1, zIndex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '10px' }}>
+              <h1 style={{ margin: 0, color: '#1e3a5f', fontSize: '2.4rem', fontWeight: 900, letterSpacing: '-0.5px' }}>{greeting}, {userName} ✨</h1>
+              <span style={{ background: '#fee2e2', color: '#b91c1c', padding: '8px 18px', borderRadius: '30px', fontSize: '0.75rem', fontWeight: 800, border: '1px solid #fecaca', textTransform: 'uppercase', letterSpacing: '0.5px' }}>EGRESADO</span>
             </div>
-            <p style={{ color: '#64748b', margin: 0 }}>Tu perfil profesional está al {completionPct}%</p>
-            <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
-              <button disabled={isUploading} onClick={() => avatarInputRef.current?.click()} style={{ background: '#f8fafc', color: 'var(--ucc-navy)', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '10px 20px', cursor: isUploading ? 'not-allowed' : 'pointer', fontWeight: 600, transition: 'all 0.2s' }}>
-                {isUploading ? 'Procesando...' : '📁 Cambiar Foto'}
-              </button>
-            </div>
+            <p style={{ color: '#64748b', margin: '0 0 20px', fontSize: '1.05rem', fontWeight: 500 }}>Tu perfil profesional está al <span style={{ color: '#3b82f6', fontWeight: 800 }}>{completionPct}%</span></p>
+            <button onClick={() => avatarInputRef.current?.click()} style={{ background: '#f8fafc', color: '#1e3a5f', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '12px 24px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}>📁 Cambiar Foto</button>
           </div>
         </div>
 
-        <div className="db-actions responsive-grid-4" style={{ margin: '40px auto', maxWidth: '1100px' }}>
-          {getQuickActions(userRole).map((action) => (
-            <div key={action.id} className="db-action-card" style={{ cursor: 'pointer', padding: '30px', textAlign: 'center', background: 'white', borderRadius: '24px', border: activeSection === action.id ? '2px solid var(--ucc-blue)' : '1px solid #f1f5f9', boxShadow: '0 8px 20px rgba(0,0,0,0.03)', transition: 'all 0.3s ease' }} 
-              onClick={() => setActiveSection(activeSection === action.id ? 'none' : action.id as any)}>
-              <div style={{ fontSize: '3rem', marginBottom: '10px' }}>{action.icon}</div>
-              <h3 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--ucc-navy)', fontWeight: 800 }}>{action.title}</h3>
+        {/* Action Grid (Premium Icons + Glassmorphism) */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '20px', marginBottom: '40px' }}>
+          {getQuickActions().map(a => (
+            <div key={a.id} onClick={() => setActiveSection(a.id as any)} style={{ background: activeSection === a.id ? 'white' : 'rgba(255, 255, 255, 0.7)', backdropFilter: 'blur(10px)', borderRadius: '28px', padding: '32px 20px', textAlign: 'center', boxShadow: activeSection === a.id ? '0 15px 35px rgba(59, 130, 246, 0.15)' : '0 4px 15px rgba(0,0,0,0.03)', cursor: 'pointer', border: activeSection === a.id ? `2px solid ${a.color}` : '1px solid rgba(255,255,255,0.4)', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', transform: activeSection === a.id ? 'translateY(-5px)' : 'none' }}>
+              <div style={{ width: '60px', height: '60px', borderRadius: '18px', background: `${a.color}15`, color: a.color, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                <a.Icon />
+              </div>
+              <h3 style={{ margin: 0, color: '#1e3a5f', fontWeight: 800, fontSize: '0.95rem', lineHeight: 1.3 }}>{a.title}</h3>
             </div>
           ))}
         </div>
 
-        <div style={{ maxWidth: '1100px', margin: '0 auto 60px' }}>
-          {activeSection === 'personal' && userRole !== 'empresa' && (
-            <div className="db-card" style={{ padding: '45px', borderRadius: '28px' }}>
-              <div className="responsive-flex-between">
-                <h2 style={{ color: 'var(--ucc-navy)', margin: 0, fontWeight: 800 }}>👤 Datos Personales</h2>
-                <button 
-                  onClick={() => setIsEditingPersonal(!isEditingPersonal)} 
-                  style={{ 
-                    background: isEditingPersonal ? 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)' : 'linear-gradient(135deg, var(--ucc-blue) 0%, #0056b3 100%)', 
-                    color: isEditingPersonal ? '#475569' : 'white', 
-                    border: 'none', borderRadius: '14px', padding: '12px 24px', cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem',
-                    boxShadow: isEditingPersonal ? '0 2px 4px rgba(0,0,0,0.05)' : '0 6px 16px rgba(0, 122, 255, 0.3)',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    display: 'flex', alignItems: 'center', gap: '8px'
-                  }}>
-                  {isEditingPersonal ? '✕ Cancelar' : '✎ Editar Datos'}
-                </button>
-              </div>
-
-              <div className="responsive-grid-2">
-                <div className="form-group">
-                  <label style={labelStyle}>Nombre Completo</label>
-                  <input type="text" value={formData.nombre_completo} onChange={(e) => setFormData({...formData, nombre_completo: e.target.value})} disabled={!isEditingPersonal} style={isEditingPersonal ? {...baseInputStyle, border: '1px solid var(--ucc-blue)'} : disabledInputStyle} />
-                </div>
-                <div className="form-group">
-                  <label style={labelStyle}>Correo Electrónico</label>
-                  <input type="email" value={formData.correo} onChange={(e) => setFormData({...formData, correo: e.target.value})} disabled={!isEditingPersonal} style={isEditingPersonal ? {...baseInputStyle, border: '1px solid var(--ucc-blue)'} : disabledInputStyle} />
-                </div>
-                <div className="form-group">
-                  <label style={labelStyle}>Teléfono</label>
-                  <input type="text" value={formData.telefono} onChange={(e) => setFormData({...formData, telefono: e.target.value})} disabled={!isEditingPersonal} style={isEditingPersonal ? {...baseInputStyle, border: '1px solid var(--ucc-blue)'} : disabledInputStyle} />
-                </div>
-                <div className="form-group">
-                  <label style={labelStyle}>Cédula</label>
-                  <input type="text" value={formData.cedula} disabled style={disabledInputStyle} title="Este campo no se puede editar" />
-                </div>
-                <div className="form-group">
-                  <label style={labelStyle}>Fecha de Nacimiento</label>
-                  <input type="text" value={formData.fecha_nacimiento} disabled style={disabledInputStyle} title="Este campo no se puede editar" />
-                </div>
-                <div className="form-group">
-                  <label style={labelStyle}>Género</label>
-                  <input type="text" value={formData.genero} disabled style={disabledInputStyle} title="Este campo no se puede editar" />
+        {/* Content Area */}
+        <div style={{ animation: 'fadeIn 0.4s ease-out' }}>
+          {activeSection === 'none' && (
+            <div style={{ background: 'white', borderRadius: '32px', padding: '50px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)', display: 'flex', gap: '40px', alignItems: 'center', border: '1px solid rgba(226, 232, 240, 0.5)' }}>
+              <div style={{ width: '100px', height: '100px', borderRadius: '30px', background: 'linear-gradient(135deg, #3b82f6 0%, #1e3a5f 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem', color: 'white', boxShadow: '0 10px 20px rgba(59, 130, 246, 0.2)' }}><Icons.Home /></div>
+              <div style={{ flex: 1 }}>
+                <h2 style={{ color: '#1e3a5f', fontWeight: 900, fontSize: '1.8rem', margin: '0 0 12px' }}>¡Bienvenido a tu Portal Institucional!</h2>
+                <p style={{ color: '#64748b', lineHeight: 1.7, margin: '0 0 28px', fontSize: '1.05rem' }}>Como egresado de la UCC, tienes acceso a herramientas exclusivas para potenciar tu empleabilidad y desarrollo profesional.</p>
+                <div style={{ display: 'flex', gap: '16px' }}>
+                  <button onClick={() => setActiveSection('professional')} style={{ background: '#1e3a5f', color: 'white', border: 'none', borderRadius: '16px', padding: '16px 32px', fontWeight: 800, cursor: 'pointer' }}>Mi Perfil Profesional</button>
+                  <button onClick={() => setActiveSection('cv')} style={{ background: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '16px', padding: '16px 32px', fontWeight: 800, cursor: 'pointer' }}>Actualizar Hoja de Vida</button>
                 </div>
               </div>
+            </div>
+          )}
 
-              {isEditingPersonal && (
-                <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ width: '100%', marginTop: '40px', padding: '18px', background: 'var(--ucc-navy)', color: 'white', borderRadius: '16px', fontWeight: 800, cursor: loadingProfile ? 'not-allowed' : 'pointer', transition: 'all 0.3s ease', boxShadow: '0 8px 25px rgba(30, 58, 95, 0.2)' }}>
-                  {loadingProfile ? 'Guardando...' : '💾 Guardar Cambios Personales'}
-                </button>
-              )}
+          {activeSection === 'personal' && (
+            <div style={{ background: 'white', borderRadius: '32px', padding: '45px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '35px' }}>
+                <h2 style={{ margin: 0, color: '#1e3a5f', fontWeight: 900, fontSize: '1.6rem' }}>Identidad Personal</h2>
+                <button onClick={() => setIsEditingPersonal(!isEditingPersonal)} style={{ background: isEditingPersonal ? '#fee2e2' : '#1e3a5f', color: isEditingPersonal ? '#b91c1c' : 'white', border: 'none', borderRadius: '14px', padding: '12px 24px', fontWeight: 700, cursor: 'pointer' }}>{isEditingPersonal ? '✕ Cancelar' : 'Editar Datos'}</button>
+              </div>
+              <div className="responsive-grid-2" style={{ gap: '25px' }}>
+                {[{ l: 'Nombre Completo', k: 'nombre_completo', e: true }, { l: 'Correo Electrónico', k: 'correo', e: true }, { l: 'Teléfono', k: 'telefono', e: true }, { l: 'Cédula', k: 'cedula', e: false }, { l: 'Nacimiento', k: 'fecha_nacimiento', e: false }, { l: 'Género', k: 'genero', e: false }].map(f => (
+                  <div key={f.k}><label style={lbl}>{f.l}</label><input value={(formData as any)[f.k]} onChange={e => f.e && setFormData({ ...formData, [f.k]: e.target.value })} disabled={!isEditingPersonal || !f.e} style={!isEditingPersonal || !f.e ? dis : inp} /></div>
+                ))}
+              </div>
+              {isEditingPersonal && <button onClick={handleSave} style={{ width: '100%', marginTop: '40px', padding: '18px', background: '#1e3a5f', color: 'white', borderRadius: '16px', fontWeight: 800, border: 'none', cursor: 'pointer' }}>💾 Guardar Cambios</button>}
             </div>
           )}
 
           {activeSection === 'professional' && (
-            <div className="db-card" style={{ padding: '45px', borderRadius: '28px' }}>
-              <div className="responsive-flex-between" style={{ marginBottom: '40px' }}>
-                <h2 style={{ color: 'var(--ucc-navy)', margin: 0, fontWeight: 800 }}>
-                  {userRole === 'empresa' ? '🏢 Perfil de Empresa' : '💼 Perfil Profesional'}
-                </h2>
-                <button 
-                  onClick={() => setIsEditingProf(!isEditingProf)} 
-                  style={{ 
-                    background: isEditingProf ? 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)' : 'linear-gradient(135deg, var(--ucc-blue) 0%, #0056b3 100%)', 
-                    color: isEditingProf ? '#475569' : 'white', 
-                    border: 'none', borderRadius: '14px', padding: '12px 24px', cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem',
-                    boxShadow: isEditingProf ? '0 2px 4px rgba(0,0,0,0.05)' : '0 6px 16px rgba(0, 122, 255, 0.3)',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    display: 'flex', alignItems: 'center', gap: '8px'
-                  }}>
-                  {isEditingProf ? '✕ Cancelar' : '✎ Actualizar Información'}
-                </button>
+            <div style={{ background: 'white', borderRadius: '32px', padding: '45px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '35px' }}>
+                <h2 style={{ margin: 0, color: '#1e3a5f', fontWeight: 900, fontSize: '1.6rem' }}>Perfil Profesional</h2>
+                <button onClick={() => setIsEditingProf(!isEditingProf)} style={{ background: isEditingProf ? '#fee2e2' : '#00A9E0', color: isEditingProf ? '#b91c1c' : 'white', border: 'none', borderRadius: '14px', padding: '12px 24px', fontWeight: 700, cursor: 'pointer' }}>{isEditingProf ? '✕ Cancelar' : 'Actualizar Perfil'}</button>
               </div>
-
-              <div className="responsive-grid-2">
-                {/* Egresado Fields */}
-                {[
-                  { label: 'Programa Académico', key: 'programa_academico', options: DIAG_OPTIONS.Programa },
-                  { label: 'Nivel de Formación', key: 'nivel_formacion', options: DIAG_OPTIONS.Formacion },
-                  { label: 'Estado Civil', key: 'estado_civil', options: DIAG_OPTIONS.EstadoCivil },
-                  { label: 'Estrato', key: 'estrato', options: DIAG_OPTIONS.Estrato },
-                  { label: 'Rango de Ingreso', key: 'ingreso_mensual', options: DIAG_OPTIONS.Ingreso },
-                  { label: '¿Emprendimiento?', key: 'emprendimiento', options: DIAG_OPTIONS.Emprendimiento },
-                  { label: 'Área de Desempeño', key: 'area_desempeno', options: DIAG_OPTIONS.Area },
-                  { label: 'Sector Económico', key: 'sector_economico', options: DIAG_OPTIONS.Sector },
-                  { label: 'Número de Hijos', key: 'numero_hijos', options: DIAG_OPTIONS.Hijos },
-                ].map((field) => (
-                  <div key={field.key} className="form-group">
-                    <label style={labelStyle}>{field.label}</label>
-                    {isEditingProf ? (
-                      <select value={(formData as any)[field.key]} onChange={(e) => setFormData({...formData, [field.key]: e.target.value})} style={{...baseInputStyle, border: '1px solid var(--ucc-blue)'}}>
-                        <option value="">Seleccione...</option>
-                        {field.options.map(o => <option key={o} value={o}>{o}</option>)}
-                      </select>
-                    ) : (
-                      <input type="text" value={(formData as any)[field.key] || 'No completado'} disabled style={disabledInputStyle} />
-                    )}
-                  </div>
+              <div className="responsive-grid-2" style={{ gap: '25px' }}>
+                {[{ l: 'Programa Académico', k: 'programa_academico', o: DIAG_OPTIONS.Programa }, { l: 'Nivel', k: 'nivel_formacion', o: DIAG_OPTIONS.Formacion }, { l: 'Estado Civil', k: 'estado_civil', o: DIAG_OPTIONS.EstadoCivil }, { l: 'Estrato', k: 'estrato', o: DIAG_OPTIONS.Estrato }, { l: 'Ingresos', k: 'ingreso_mensual', o: DIAG_OPTIONS.Ingreso }, { l: 'Emprendimiento', k: 'emprendimiento', o: DIAG_OPTIONS.Emprendimiento }].map(f => (
+                  <div key={f.k}><label style={lbl}>{f.l}</label>{isEditingProf ? <select value={(formData as any)[f.k]} onChange={e => setFormData({ ...formData, [f.k]: e.target.value })} style={inp}><option value="">Seleccionar...</option>{f.o.map(opt => <option key={opt} value={opt}>{opt}</option>)}</select> : <input value={(formData as any)[f.k] || 'No completado'} disabled style={dis} />}</div>
                 ))}
               </div>
-              {isEditingProf && (
-                <button onClick={handleSaveProfile} disabled={loadingProfile} style={{ width: '100%', marginTop: '40px', padding: '18px', background: 'var(--ucc-navy)', color: 'white', borderRadius: '16px', fontWeight: 800, cursor: loadingProfile ? 'not-allowed' : 'pointer', transition: 'all 0.3s ease', boxShadow: '0 8px 25px rgba(30, 58, 95, 0.2)' }}>
-                  {loadingProfile ? 'Guardando...' : '💾 Guardar Perfil Profesional'}
-                </button>
-              )}
+              {isEditingProf && <button onClick={handleSave} style={{ width: '100%', marginTop: '40px', padding: '18px', background: '#00A9E0', color: 'white', borderRadius: '16px', fontWeight: 800, border: 'none', cursor: 'pointer' }}>💾 Guardar Perfil</button>}
             </div>
           )}
 
           {activeSection === 'cv' && (
-            <div style={{ background: 'white', borderRadius: '24px', padding: '50px 40px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', textAlign: 'center' }}>
-              <div style={{ width: '80px', height: '80px', borderRadius: '24px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', margin: '0 auto 24px' }}>📄</div>
-              <h2 style={{ color: 'var(--ucc-navy)', fontWeight: 800, fontSize: '1.6rem', marginBottom: '8px' }}>Tu Hoja de Vida</h2>
-              <p style={{ color: '#64748b', marginBottom: '32px' }}>Sube tu CV en formato PDF para que las empresas puedan verlo</p>
-              <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '32px' }}>
-                <button onClick={handleViewResume} style={{ padding: '14px 28px', background: 'var(--ucc-navy)', color: 'white', border: 'none', borderRadius: '14px', fontWeight: 700, cursor: 'pointer', fontSize: '0.95rem' }}>📄 Ver CV Actual</button>
-                <button onClick={() => cvInputRef.current?.click()} disabled={isUploading} style={{ padding: '14px 28px', background: '#e0f7ff', color: '#00A9E0', border: '1px solid #7dd3fc', borderRadius: '14px', fontWeight: 700, cursor: 'pointer', fontSize: '0.95rem' }}>{isUploading ? 'Subiendo...' : '⬆️ Subir Nuevo CV'}</button>
-              </div>
-              <div onClick={() => !isUploading && cvInputRef.current?.click()} style={{ border: '2px dashed #cbd5e1', padding: '40px', borderRadius: '20px', cursor: 'pointer', transition: 'all 0.2s' }} onMouseOver={e => (e.currentTarget.style.borderColor = 'var(--ucc-navy)')} onMouseOut={e => (e.currentTarget.style.borderColor = '#cbd5e1')}>
-                <p style={{ color: '#94a3b8', margin: 0 }}>{isUploading ? 'Procesando archivo...' : 'Arrastra tu PDF aquí o haz clic para seleccionarlo'}</p>
+            <div style={{ background: 'white', borderRadius: '32px', padding: '70px 50px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)', textAlign: 'center' }}>
+              <div style={{ width: '90px', height: '90px', borderRadius: '25px', background: '#eff6ff', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 30px' }}><Icons.File /></div>
+              <h2 style={{ color: '#1e3a5f', fontWeight: 900, fontSize: '2rem', margin: '0 0 12px' }}>Hoja de Vida</h2>
+              <p style={{ color: '#64748b', marginBottom: '45px', fontSize: '1.1rem' }}>Mantén tu CV actualizado para ser visible ante las empresas aliadas.</p>
+              <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
+                <button onClick={() => { if (!userId) return; fetch(`${base()}/api/users/get-cv-url/${userId}`).then(r => r.json()).then(d => d.success ? window.open(d.url, '_blank') : showToast('No hay CV registrado', 'info')) }} style={{ padding: '16px 35px', background: '#1e3a5f', color: 'white', border: 'none', borderRadius: '16px', fontWeight: 800, cursor: 'pointer' }}>📄 Ver CV Actual</button>
+                <button onClick={() => cvInputRef.current?.click()} style={{ padding: '16px 35px', background: '#e0f7ff', color: '#00A9E0', border: '2px solid #3b82f6', borderRadius: '16px', fontWeight: 800, cursor: 'pointer' }}>⬆️ Subir Nuevo CV</button>
               </div>
             </div>
           )}
-        </div>
-      </main>
 
-      <style jsx>{`
-        @keyframes slideInRight {
-          from { transform: translateX(120%); opacity: 0; }
-          to { transform: translateX(0); opacity: 1; }
-        }
-        @keyframes float {
-          0% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
-          100% { transform: translateY(0px); }
-        }
-        .spinner-white {
-          width: 18px;
-          height: 18px;
-          border: 2.5px solid rgba(255,255,255,0.3);
-          border-top-color: white;
-          border-radius: 50%;
-          animation: spin 0.8s linear infinite;
-          flex-shrink: 0;
-        }
-        .spinner-blue {
-          width: 30px;
-          height: 30px;
-          border: 4px solid rgba(0,0,0,0.05);
-          border-top-color: var(--ucc-blue);
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
-      
+          {activeSection === 'apps' && (
+            <div style={{ background: 'white', borderRadius: '32px', padding: '70px 50px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)', textAlign: 'center' }}>
+              <div style={{ width: '90px', height: '90px', borderRadius: '25px', background: '#fff7ed', color: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 30px' }}><Icons.Mail /></div>
+              <h2 style={{ color: '#1e3a5f', fontWeight: 900, fontSize: '2rem', margin: '0 0 12px' }}>Mis Postulaciones</h2>
+              <p style={{ color: '#64748b', fontSize: '1.1rem' }}>Aquí podrás hacer seguimiento a las vacantes a las que te has postulado.</p>
+            </div>
+          )}
+        </div>
+
+      </main>
       <Footer />
+      <style jsx>{`
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+      `}</style>
     </div>
   );
 }
