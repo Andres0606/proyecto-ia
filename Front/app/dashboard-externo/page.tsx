@@ -135,6 +135,14 @@ export default function DashboardExterno() {
         if (u.suscripcion) {
           setUserPlan(u.suscripcion.tipo_plan || 'Gratuito');
         }
+
+        // Sincronizar con sessionStorage para que el Header lo vea
+        const savedUser = sessionStorage.getItem('ucc_user');
+        if (savedUser) {
+          const parsed = JSON.parse(savedUser);
+          parsed.profile = u;
+          sessionStorage.setItem('ucc_user', JSON.stringify(parsed));
+        }
       }
     } catch (e) { console.error(e); }
   };

@@ -27,6 +27,35 @@ export default function Header() {
     window.location.href = "/";
   };
 
+  const checkAccess = (e: React.MouseEvent, type: 'diagnostico' | 'bolsa') => {
+    if (!user) {
+      e.preventDefault();
+      alert("Por favor inicia sesión para acceder.");
+      return;
+    }
+
+    const rol = Number(user.profile?.rol_id);
+    const plan = user.profile?.suscripcion?.tipo_plan || 'Gratuito';
+
+    // Roles 1 y 4 tienen acceso total
+    if (rol === 1 || rol === 4) return;
+
+    // Lógica para Externos (Rol 2)
+    if (rol === 2) {
+      if (type === 'diagnostico') {
+        if (plan === 'Gratuito') {
+          e.preventDefault();
+          alert("No tienes acceso a este módulo debido a tu tipo de plan. Adquiere el 'Acceso al Modelo' para continuar.");
+        }
+      } else if (type === 'bolsa') {
+        if (plan === 'Gratuito' || plan === 'Acceso al Modelo') {
+          e.preventDefault();
+          alert("No tienes acceso a este módulo debido a tu tipo de plan. Adquiere el 'Plan Completo' para acceder a la bolsa de empleo.");
+        }
+      }
+    }
+  };
+
   const dashboardUrl = user
     ? Number(user.profile?.rol_id) === 4 ? "/dashboard-admin"
     : Number(user.profile?.rol_id) === 2 ? "/dashboard-externo"
@@ -71,8 +100,8 @@ export default function Header() {
         {/* Links + Actions en el mismo contenedor para mobile */}
         <ul className={`header__links ${menuOpen ? "header__links--open" : ""}`}>
           <li><a href="/">Inicio</a></li>
-          <li><a href="/Bolsa_Empleo">Bolsa de empleo</a></li>
-          <li><a href="/diagnostico">Diagnóstico de estabilidad</a></li>
+          <li><a href="/Bolsa_Empleo" onClick={(e) => checkAccess(e, 'bolsa')}>Bolsa de empleo</a></li>
+          <li><a href="/diagnostico" onClick={(e) => checkAccess(e, 'diagnostico')}>Diagnóstico de estabilidad</a></li>
           <li><a href="/planes">Planes</a></li>
           {/* Botones dentro del menú mobile */}
           <li className="header__mobile-actions">

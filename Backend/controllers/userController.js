@@ -105,7 +105,7 @@ const loginUser = async (req, res) => {
 
     if (error) throw error;
 
-    // 2. Traer información extra del perfil (opcional pero recomendado)
+    // 2. Traer información extra del perfil
     const { data: profile, error: profileError } = await supabase
       .from('users')
       .select('*')
@@ -116,13 +116,22 @@ const loginUser = async (req, res) => {
       console.error('⚠️ Error al obtener perfil en login:', profileError.message);
     }
 
+    const { data: subscription } = await supabase
+      .from('suscripciones')
+      .select('*')
+      .eq('user_id', data.user.id)
+      .single();
+
     return res.status(200).json({
       success: true,
       message: 'Login exitoso.',
       session: data.session,
       user: {
         ...data.user,
-        profile: profile
+        profile: {
+          ...profile,
+          suscripcion: subscription || null
+        }
       }
     });
 
