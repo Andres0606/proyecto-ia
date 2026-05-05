@@ -180,7 +180,7 @@ export default function DashboardExterno() {
         
         {/* Hero Card Ultra-Refinado */}
         <div style={{ background: 'white', borderRadius: '32px', padding: '40px', boxShadow: '0 10px 40px rgba(0,40,85,0.04)', display: 'flex', alignItems: 'center', gap: '40px', marginBottom: '32px', position: 'relative', overflow: 'hidden', border: '1px solid rgba(226, 232, 240, 0.5)' }}>
-          <div style={{ position: 'absolute', top: '-100px', right: '-100px', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%)', zRef: 0 }} />
+          <div style={{ position: 'absolute', top: '-100px', right: '-100px', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%)', zIndex: 0 }} />
           <div style={{ position: 'relative', width: '130px', height: '130px', flexShrink: 0 }}>
             <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: userPhoto ? `url(${userPhoto}) center/cover` : 'linear-gradient(135deg, #1e3a5f 0%, #3b82f6 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.8rem', fontWeight: 800, color: 'white', border: '6px solid white', boxShadow: '0 8px 25px rgba(0,0,0,0.1)' }}>
               {!userPhoto && userName[0]}

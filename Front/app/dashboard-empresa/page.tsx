@@ -92,7 +92,8 @@ export default function DashboardEmpresa() {
       <main style={{ paddingTop: '110px', maxWidth: mainWidth, margin: '0 auto', paddingBottom: '60px' }}>
 
         {/* Hero Card Refinado */}
-        <div style={{ background: 'white', borderRadius: '32px', padding: '40px', boxShadow: '0 10px 40px rgba(0,40,85,0.04)', display: 'flex', alignItems: 'center', gap: '40px', marginBottom: '32px', border: '1px solid rgba(226, 232, 240, 0.5)' }}>
+        <div style={{ background: 'white', borderRadius: '32px', padding: '40px', boxShadow: '0 10px 40px rgba(0,40,85,0.04)', display: 'flex', alignItems: 'center', gap: '40px', marginBottom: '32px', border: '1px solid rgba(226, 232, 240, 0.5)', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: '-100px', right: '-100px', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%)', zIndex: 0 }} />
           <div style={{ width: '130px', height: '130px', borderRadius: '28px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3.5rem', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)', color: '#1e3a5f' }}><Icons.Company /></div>
           <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '10px' }}>
