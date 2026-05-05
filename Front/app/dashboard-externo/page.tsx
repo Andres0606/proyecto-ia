@@ -6,6 +6,7 @@ import Footer from '../Components/footer';
 import '../css/Dashboard/dashboard.css';
 
 const SECTIONS = [
+  { title: 'Inicio', icon: '🏠', id: 'none' },
   { title: 'Datos Personales', icon: '👤', id: 'personal' },
   { title: 'Perfil Profesional', icon: '💼', id: 'professional' },
   { title: 'Planes', icon: '💳', id: 'plans' },
@@ -282,56 +283,56 @@ export default function DashboardExterno() {
           <div style={{ position: 'absolute', top: '-80px', right: '-80px', width: '320px', height: '320px', borderRadius: '50%', background: 'rgba(255,255,255,0.04)' }} />
           <div style={{ position: 'absolute', bottom: '-60px', left: '-60px', width: '240px', height: '240px', borderRadius: '50%', background: 'rgba(0,169,224,0.1)' }} />
           <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '28px', position: 'relative', flexWrap: 'wrap' }}>
-            <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:'12px' }}>
-              <div style={{ 
-                width:'110px', height:'110px', borderRadius:'50%', 
-                background: userPhoto ? `url(${userPhoto}) center/cover` : 'rgba(255,255,255,0.15)', 
-                backdropFilter:'blur(10px)', border:'4px solid rgba(255,255,255,0.4)', 
-                display:'flex', alignItems:'center', justifyContent:'center', 
-                fontSize:'2.8rem', fontWeight:800, color:'white', flexShrink:0,
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+              <div style={{
+                width: '110px', height: '110px', borderRadius: '50%',
+                background: userPhoto ? `url(${userPhoto}) center/cover` : 'rgba(255,255,255,0.15)',
+                backdropFilter: 'blur(10px)', border: '4px solid rgba(255,255,255,0.4)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '2.8rem', fontWeight: 800, color: 'white', flexShrink: 0,
                 boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
                 position: 'relative',
                 overflow: 'hidden'
               }}>
                 {!userPhoto && userName[0]}
-                
+
                 {/* Overlay de carga */}
                 {isUploading && (
-                  <div style={{ 
-                    position:'absolute', inset:0, background:'rgba(0,40,85,0.7)', 
-                    display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', 
-                    gap:'8px', zIndex:5 
+                  <div style={{
+                    position: 'absolute', inset: 0, background: 'rgba(0,40,85,0.7)',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    gap: '8px', zIndex: 5
                   }}>
-                    <div className="spinner-white" style={{ width:'24px', height:'24px' }} />
-                    <span style={{ fontSize:'0.65rem', fontWeight:700, color:'white', textTransform:'uppercase' }}>Subiendo...</span>
+                    <div className="spinner-white" style={{ width: '24px', height: '24px' }} />
+                    <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'white', textTransform: 'uppercase' }}>Subiendo...</span>
                   </div>
                 )}
               </div>
 
               {/* Botones de acción siempre visibles debajo */}
-              <div style={{ display:'flex', gap:'8px', zIndex:10 }}>
-                <button 
-                  onClick={() => avatarRef.current?.click()} 
-                  style={{ 
-                    padding:'6px 12px', borderRadius:'20px', 
-                    background:'white', border:'none', cursor:'pointer', 
-                    display:'flex', alignItems:'center', gap:'6px',
-                    boxShadow:'0 4px 12px rgba(0,0,0,0.1)',
-                    fontSize:'0.75rem', fontWeight:700, color:'#00A9E0'
-                  }} 
+              <div style={{ display: 'flex', gap: '8px', zIndex: 10 }}>
+                <button
+                  onClick={() => avatarRef.current?.click()}
+                  style={{
+                    padding: '6px 12px', borderRadius: '20px',
+                    background: 'white', border: 'none', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: '6px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    fontSize: '0.75rem', fontWeight: 700, color: '#00A9E0'
+                  }}
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
                   Subir
                 </button>
-                <button 
-                  onClick={startCamera} 
-                  style={{ 
-                    padding:'6px 12px', borderRadius:'20px', 
-                    background:'rgba(255,255,255,0.2)', border:'1px solid rgba(255,255,255,0.3)', cursor:'pointer', 
-                    display:'flex', alignItems:'center', gap:'6px',
-                    boxShadow:'0 4px 12px rgba(0,0,0,0.1)',
-                    fontSize:'0.75rem', fontWeight:700, color:'white'
-                  }} 
+                <button
+                  onClick={startCamera}
+                  style={{
+                    padding: '6px 12px', borderRadius: '20px',
+                    background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.3)', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: '6px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    fontSize: '0.75rem', fontWeight: 700, color: 'white'
+                  }}
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
                   Cámara
@@ -475,15 +476,15 @@ export default function DashboardExterno() {
                     <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px' }}>
                       {plan.features.map(f => <li key={f.t} style={{ padding: '8px 0', color: f.ok ? (i === 2 ? 'rgba(255,255,255,0.85)' : '#475569') : (i === 2 ? 'rgba(255,255,255,0.3)' : '#cbd5e1'), display: 'flex', alignItems: 'center', gap: '10px', borderBottom: i === 2 ? '1px solid rgba(255,255,255,0.08)' : '1px solid #f8fafc', fontSize: '0.9rem' }}><span style={{ color: f.ok ? (i === 2 ? '#7dd3fc' : '#00A9E0') : (i === 2 ? 'rgba(255,255,255,0.3)' : '#cbd5e1'), fontWeight: 700 }}>{f.ok ? '✓' : '✗'}</span>{f.t}</li>)}
                     </ul>
-                    <button 
+                    <button
                       onClick={() => userPlan !== plan.name && handleSubscribe(plan.name)}
-                      style={{ 
-                        width: '100%', padding: '14px', 
-                        background: userPlan === plan.name ? '#f1f5f9' : i === 1 ? '#00A9E0' : (i === 2 ? 'white' : '#00A9E0'), 
-                        color: userPlan === plan.name ? '#94a3b8' : (i === 2 ? 'var(--ucc-navy)' : 'white'), 
-                        border: 'none', borderRadius: '12px', fontWeight: 800, 
-                        cursor: userPlan === plan.name ? 'default' : 'pointer', fontSize: '0.95rem' 
-                      }} 
+                      style={{
+                        width: '100%', padding: '14px',
+                        background: userPlan === plan.name ? '#f1f5f9' : i === 1 ? '#00A9E0' : (i === 2 ? 'white' : '#00A9E0'),
+                        color: userPlan === plan.name ? '#94a3b8' : (i === 2 ? 'var(--ucc-navy)' : 'white'),
+                        border: 'none', borderRadius: '12px', fontWeight: 800,
+                        cursor: userPlan === plan.name ? 'default' : 'pointer', fontSize: '0.95rem'
+                      }}
                       disabled={userPlan === plan.name}
                     >
                       {userPlan === plan.name ? 'Plan Actual' : i === 1 ? 'Adquirir Acceso →' : 'Suscribirme Ahora →'}
@@ -491,7 +492,6 @@ export default function DashboardExterno() {
                   </div>
                 ))}
               </div>
-              <p style={{ textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem', marginTop: '24px' }}>¿Eres egresado UCC? <a href='/registro' style={{ color: '#e53e3e', fontWeight: 700, textDecoration: 'none' }}>Regístrate gratis aquí</a></p>
             </div>
           )}
 
@@ -516,8 +516,8 @@ export default function DashboardExterno() {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
           <div style={{ background: 'white', borderRadius: '24px', padding: '30px', maxWidth: '500px', width: '100%', textAlign: 'center' }}>
             <h3 style={{ margin: '0 0 20px', color: 'var(--ucc-navy)' }}>Tomar foto de perfil</h3>
-            <div style={{ background:'black', borderRadius:'16px', overflow:'hidden', aspectRatio:'4/3', marginBottom:'20px' }}>
-              <video ref={videoRef} autoPlay playsInline muted style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+            <div style={{ background: 'black', borderRadius: '16px', overflow: 'hidden', aspectRatio: '4/3', marginBottom: '20px' }}>
+              <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
             <div style={{ display: 'flex', gap: '12px' }}>
               <button onClick={stopCamera} style={{ flex: 1, padding: '14px', background: '#f1f5f9', color: '#64748b', border: 'none', borderRadius: '12px', fontWeight: 700, cursor: 'pointer' }}>Cancelar</button>
