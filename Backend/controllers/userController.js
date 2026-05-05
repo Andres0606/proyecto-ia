@@ -331,13 +331,15 @@ const subscribe = async (req, res) => {
 const updatePlan = async (req, res) => {
   try {
     let { userId, tipoPlan, planType } = req.body;
-    const finalPlan = tipoPlan || planType; // Soporta ambos nombres de campo
+    const finalPlan = tipoPlan || planType;
     
     if (!userId || !finalPlan) {
       return res.status(400).json({ success: false, message: 'userId y tipoPlan son requeridos' });
     }
 
     userId = String(userId).trim();
+    console.log(`🔄 Actualizando BD: Usuario [${userId}] -> Nuevo Plan [${finalPlan}]`);
+
     const fecha_inicio = new Date().toISOString().split('T')[0];
     let fecha_fin = null;
 
@@ -347,7 +349,8 @@ const updatePlan = async (req, res) => {
       fecha_fin = date.toISOString().split('T')[0];
     }
 
-    const { error } = await supabase
+    // Usamos upsert con onConflict explícito para asegurar que se actualice si ya existe
+    const { data, error } = await supabase
       .from('suscripciones')
       .upsert({
         user_id: userId,
@@ -355,14 +358,19 @@ const updatePlan = async (req, res) => {
         fecha_inicio,
         fecha_fin,
         estado: 'activo'
-      }, { onConflict: 'user_id' });
+      }, { onConflict: 'user_id' })
+      .select();
 
-    if (error) throw error;
+    if (error) {
+      console.error("❌ Error de Supabase al actualizar plan:", error);
+      throw error;
+    }
 
-    return res.status(200).json({ success: true, message: `Plan ${finalPlan} activado con éxito` });
+    console.log("✅ BD Actualizada correctamente:", data);
+    return res.status(200).json({ success: true, message: `Plan ${finalPlan} actualizado en base de datos` });
   } catch (error) {
     console.error("❌ Error en updatePlan:", error);
-    return res.status(500).json({ success: false, message: 'Error interno del servidor', error: error.message });
+    return res.status(500).json({ success: false, message: 'Error interno al actualizar la base de datos', error: error.message });
   }
 };
 
