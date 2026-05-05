@@ -9,11 +9,9 @@ export default function Header() {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    // Escuchar el scroll
     const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", onScroll);
 
-    // Cargar usuario de sessionStorage
     const savedUser = sessionStorage.getItem("ucc_user");
     if (savedUser) {
       setUser(JSON.parse(savedUser));
@@ -29,6 +27,38 @@ export default function Header() {
     window.location.href = "/";
   };
 
+  const dashboardUrl = user
+    ? Number(user.profile?.rol_id) === 4 ? "/dashboard-admin"
+    : Number(user.profile?.rol_id) === 2 ? "/dashboard-externo"
+    : Number(user.profile?.rol_id) === 3 ? "/dashboard-empresa"
+    : "/dashboard"
+    : "/login";
+
+  const userFirstName = user
+    ? (user.profile?.nombre_completo || user.user_metadata?.full_name || 'Usuario').split(' ')[0]
+    : '';
+
+  // Shared action buttons (rendered in both desktop and mobile)
+  const ActionButtons = () => (
+    <>
+      {user ? (
+        <div className="header__auth-buttons">
+          <a href={dashboardUrl} className="header__btn header__btn--ghost">
+            Mi Perfil: <span style={{ color: '#e53e3e', marginLeft: '4px' }}>{userFirstName}</span>
+          </a>
+          <button onClick={handleLogout} className="header__btn header__btn--logout">
+            Cerrar sesión
+          </button>
+        </div>
+      ) : (
+        <div className="header__auth-buttons">
+          <a href="/login" className="header__btn header__btn--ghost">Ingresar</a>
+          <a href="/registro" className="header__btn header__btn--red">Registrarse</a>
+        </div>
+      )}
+    </>
+  );
+
   return (
     <nav className={`header ${scrolled ? "header--scrolled" : ""}`}>
       <div className="header__inner">
@@ -38,75 +68,21 @@ export default function Header() {
           <span className="header__brand-text">Portal del Egresado</span>
         </a>
 
-        {/* Links Principales (Limpios) */}
+        {/* Links + Actions en el mismo contenedor para mobile */}
         <ul className={`header__links ${menuOpen ? "header__links--open" : ""}`}>
           <li><a href="/">Inicio</a></li>
           <li><a href="/Bolsa_Empleo">Bolsa de empleo</a></li>
           <li><a href="/diagnostico">Diagnóstico de estabilidad</a></li>
           <li><a href="/planes">Planes</a></li>
+          {/* Botones dentro del menú mobile */}
+          <li className="header__mobile-actions">
+            <ActionButtons />
+          </li>
         </ul>
 
-        {/* Acciones de Usuario */}
+        {/* Acciones Desktop (fuera del menú) */}
         <div className="header__actions">
-          {user ? (
-            <div className="header__profile-container" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-              {/* Botón Mi Perfil Estilo Cápsula */}
-              <a href={
-                Number(user.profile?.rol_id) === 4 ? "/dashboard-admin" :
-                Number(user.profile?.rol_id) === 2 ? "/dashboard-externo" :
-                Number(user.profile?.rol_id) === 3 ? "/dashboard-empresa" :
-                "/dashboard"
-              } className="header__profile-badge" style={{ 
-                textDecoration: 'none',
-                background: 'rgba(0, 102, 204, 0.1)', 
-                color: 'var(--ucc-navy)',
-                padding: '8px 20px',
-                borderRadius: '50px',
-                fontSize: '0.9rem',
-                fontWeight: '600',
-                border: '1px solid rgba(0, 102, 204, 0.2)',
-                transition: 'all 0.3s ease'
-              }}>
-                Mi Perfil: <span style={{ color: 'var(--ucc-red)' }}>
-                  {(user.profile?.nombre_completo || user.user_metadata?.full_name || 'Usuario').split(' ')[0]}
-                </span>
-              </a>
-              
-              {/* Botón Cerrar Sesión con Estilo */}
-              <button 
-                onClick={handleLogout} 
-                className="header__logout-btn"
-                style={{ 
-                  background: 'rgba(229, 62, 62, 0.1)',
-                  border: '1px solid rgba(229, 62, 62, 0.2)',
-                  color: '#e53e3e',
-                  fontSize: '0.8rem',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  padding: '6px 14px',
-                  borderRadius: '50px',
-                  transition: 'all 0.3s ease',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px'
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.background = '#e53e3e';
-                  e.currentTarget.style.color = 'white';
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.background = 'rgba(229, 62, 62, 0.1)';
-                  e.currentTarget.style.color = '#e53e3e';
-                }}
-              >
-                Cerrar sesión
-              </button>
-            </div>
-          ) : (
-            <>
-              <a href="/login" className="header__btn header__btn--ghost">Ingresar</a>
-              <a href="/registro" className="header__btn header__btn--red">Registrarse</a>
-            </>
-          )}
+          <ActionButtons />
         </div>
 
         {/* Hamburger */}
@@ -122,4 +98,4 @@ export default function Header() {
       </div>
     </nav>
   );
-}
+}
