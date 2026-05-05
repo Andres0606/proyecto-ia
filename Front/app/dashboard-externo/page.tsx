@@ -69,6 +69,18 @@ export default function DashboardExterno() {
       if (d.success && d.profile) {
         const u = d.profile;
         const p = u.perfiles_usuarios?.[0] || {};
+        
+        // Actualizar sessionStorage para que el Header reconozca el cambio
+        const savedSession = sessionStorage.getItem('ucc_user');
+        if (savedSession) {
+          const sessionObj = JSON.parse(savedSession);
+          sessionObj.profile = u;
+          sessionObj.profile.suscripcion = u.suscripcion; // Sincronizar plan
+          sessionStorage.setItem('ucc_user', JSON.stringify(sessionObj));
+          // Disparar evento para que componentes como Header se enteren del cambio
+          window.dispatchEvent(new Event('storage'));
+        }
+
         setUserName(u.nombre_completo?.split(' ')[0] || 'Usuario');
         if (u.foto_url) setUserPhoto(u.foto_url);
         const val = (v: any) => (v !== null && v !== undefined && v !== '') ? String(v) : '';
@@ -79,11 +91,9 @@ export default function DashboardExterno() {
           estado_civil: val(p.estado_civil), numero_hijos: val(p.numero_hijos), ingreso_mensual: val(p.ingreso_mensual),
           sector_economico: val(p.sector_economico), area_desempeno: val(p.area_desempeno), emprendimiento: p.emprendimiento ? 'Si' : 'No'
         });
-        if (u.suscripciones?.[0]) {
-          setUserPlan(u.suscripciones[0].tipo_plan || 'Gratuito');
-        } else {
-          setUserPlan('Gratuito');
-        }
+        
+        const planActual = u.suscripcion?.tipo_plan || 'Gratuito';
+        setUserPlan(planActual);
 
         let pct = 0;
         if (u.foto_url) pct += 10;
@@ -119,7 +129,8 @@ export default function DashboardExterno() {
       const d = await r.json();
       if (d.success) {
         setToast({ msg: `¡Plan ${planName} activado!`, type: 'success' });
-        setTimeout(() => fetchProfile(userId), 1000);
+        // Recargar perfil para actualizar sesión y UI
+        fetchProfile(userId);
       } else {
         setToast({ msg: 'Error al actualizar plan', type: 'error' });
       }
