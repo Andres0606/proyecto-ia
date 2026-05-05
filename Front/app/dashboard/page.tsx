@@ -123,7 +123,7 @@ export default function Dashboard() {
   ];
 
   const inpS = { padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0', width: '100%', fontSize: '0.95rem' };
-  const disS = { ...inpS, background: '#f8fafc', color: '#64748b' };
+  const disS = { ...inpS, background: '#f1f5f9', color: '#64748b', cursor: 'not-allowed' };
   const lblS = { fontSize: '0.8rem', fontWeight: 700, color: '#475569', marginBottom: '6px', display: 'block', textTransform: 'uppercase' as const };
 
   return (
@@ -187,14 +187,22 @@ export default function Dashboard() {
                </div>
                <div className="responsive-grid-2" style={{ gap: '25px' }}>
                  {[
-                   { l: 'Nombre Completo', k: 'nombre_completo' },
-                   { l: 'Cédula', k: 'cedula' },
-                   { l: 'Correo Electrónico', k: 'correo' },
-                   { l: 'Teléfono', k: 'telefono' },
-                   { l: 'Fecha de Nacimiento', k: 'fecha_nacimiento' },
-                   { l: 'Género', k: 'genero' }
+                   { l: 'Nombre Completo', k: 'nombre_completo', gray: false },
+                   { l: 'Cédula', k: 'cedula', gray: false },
+                   { l: 'Correo Electrónico', k: 'correo', gray: false },
+                   { l: 'Teléfono', k: 'telefono', gray: true },
+                   { l: 'Fecha de Nacimiento', k: 'fecha_nacimiento', gray: true },
+                   { l: 'Género', k: 'genero', gray: true }
                  ].map(f => (
-                   <div key={f.k}><label style={lblS}>{f.l}</label><input value={(formData as any)[f.k]} onChange={e => setFormData({ ...formData, [f.k]: e.target.value })} disabled={!isEditingPersonal} style={!isEditingPersonal ? disS : inpS} /></div>
+                   <div key={f.k}>
+                     <label style={lblS}>{f.l}</label>
+                     <input 
+                       value={(formData as any)[f.k]} 
+                       onChange={e => !f.gray && setFormData({ ...formData, [f.k]: e.target.value })} 
+                       disabled={f.gray || !isEditingPersonal} 
+                       style={f.gray ? disS : (!isEditingPersonal ? { ...inpS, background: '#f8fafc' } : inpS)} 
+                     />
+                   </div>
                  ))}
                </div>
                {isEditingPersonal && <button onClick={handleSave} style={{ width: '100%', marginTop: '30px', padding: '15px', background: '#1e3a5f', color: 'white', borderRadius: '14px', border: 'none', fontWeight: 800, cursor: 'pointer' }}>Guardar Cambios</button>}
@@ -227,7 +235,7 @@ export default function Dashboard() {
                          {f.o.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                        </select>
                      ) : (
-                       <input value={(formData as any)[f.k] || 'No registrado'} disabled style={disS} />
+                       <input value={(formData as any)[f.k] || 'No registrado'} disabled style={{ ...inpS, background: '#f8fafc' }} />
                      )}
                    </div>
                  ))}
