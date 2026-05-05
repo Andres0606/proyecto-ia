@@ -72,7 +72,12 @@ export default function DashboardEmpresa() {
         const nombreFinal = c.razon_social || u.nombre_completo || 'Empresa UCC';
         setCompanyName(nombreFinal);
         setCompanySlogan(c.eslogan || 'Panel de gestión y talento corporativo');
-        if (u.foto_url) setCompanyLogo(u.foto_url);
+        
+        // Añadimos un timestamp para evitar el caché del navegador al actualizar la foto
+        if (u.foto_url) {
+          const freshUrl = `${u.foto_url}?t=${new Date().getTime()}`;
+          setCompanyLogo(freshUrl);
+        }
 
         // Actualizar sesión para el Header
         const savedSession = sessionStorage.getItem('ucc_user');
@@ -131,7 +136,8 @@ export default function DashboardEmpresa() {
       const d = await r.json();
       if (d.success) {
         setToast({ msg: '¡Logo actualizado!', type: 'success' });
-        setTimeout(() => fetchProfile(userId), 1500);
+        // Llamada inmediata para refrescar la UI
+        await fetchProfile(userId);
       }
     } catch { setToast({ msg: 'Error de subida', type: 'error' }); }
     finally { setTimeout(() => setToast({ msg: '', type: 'none' }), 3000); }
