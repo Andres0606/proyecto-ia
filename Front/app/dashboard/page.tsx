@@ -26,12 +26,12 @@ const DIAG_OPTIONS = {
   Programa: ["Derecho", "Contaduria Publica", "Ingenieria Civil", "Ciencias Economicas", "Medicina", "Psicologia", "Odontologia", "Enfermeria", "Ingenieria de Sistemas", "Medicina Veterinaria y Zootecnia", "Especializacion", "Tecnico Auxiliar en Enfermeria"],
   Formacion: ["Profesional", "Especialista", "Magister", "Doctorado", "Tecnico Profesional"],
   EstadoCivil: ["Casado", "Union libre", "Soltero", "Separado", "Viudo"],
-  Estrato: ["1", "2", "3", "4", "5", "6"],
+  Estrato: ["Uno", "Dos", "Tres", "Cuatro", "Cinco", "Seis"],
   Ingreso: ["1 SML o menos", "2-3 SML", "3-5 SML", "5 SML o mas"],
   Area: ["Servicios", "Administrativa", "Salud", "Financiera", "Industrial", "Economica", "Gestion Humana", "Educacion", "Comercial", "Contable", "Sistemas"],
   Sector: ["Servicios", "Comercial", "Industrial"],
   Emprendimiento: ["Si", "No"],
-  Hijos: ["0", "1", "2", "3", "4", "5+"],
+  Hijos: ["Cero", "Uno", "Dos", "Tres", "Cuatro", "Cinco"],
 };
 
 export default function Dashboard() {
