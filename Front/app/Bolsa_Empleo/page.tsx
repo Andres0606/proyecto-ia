@@ -12,8 +12,8 @@ interface Job {
   company: string;
   logo: string;
   area: string;
-  mode: "Presencial" | "Remoto" | "Híbrido";
-  exp: "Sin exp." | "1-3 años" | "3+ años";
+  mode: string;
+  exp: string;
   city: string;
   salaryMin: number;
   salaryLabel: string;
@@ -23,146 +23,15 @@ interface Job {
   tags: string[];
 }
 
-// ── Datos ──────────────────────────────────────────────
-const ALL_JOBS: Job[] = [
-  {
-    id: 1,
-    role: "Desarrollador Full Stack",
-    company: "TechColombia S.A.S",
-    logo: "TC",
-    area: "Ingeniería",
-    mode: "Híbrido",
-    exp: "1-3 años",
-    city: "Bogotá",
-    salaryMin: 4500000,
-    salaryLabel: "$4.5M – $6M",
-    desc: "Buscamos desarrollador con experiencia en React y Node.js para unirse a nuestro equipo de producto digital en crecimiento.",
-    posted: "Hace 2 días",
-    featured: true,
-    tags: ["React", "Node.js", "PostgreSQL"],
-  },
-  {
-    id: 2,
-    role: "Médico General",
-    company: "Clínica del Norte",
-    logo: "CN",
-    area: "Salud",
-    mode: "Presencial",
-    exp: "Sin exp.",
-    city: "Medellín",
-    salaryMin: 4000000,
-    salaryLabel: "$4M – $5M",
-    desc: "Convocatoria abierta para médicos recién graduados. Turnos rotativos, formación continua y excelentes prestaciones sociales.",
-    posted: "Hace 1 día",
-    featured: false,
-    tags: ["Medicina general", "Urgencias"],
-  },
-  {
-    id: 3,
-    role: "Abogado Corporativo Jr.",
-    company: "Bermúdez & Asociados",
-    logo: "BA",
-    area: "Derecho",
-    mode: "Presencial",
-    exp: "1-3 años",
-    city: "Cali",
-    salaryMin: 3500000,
-    salaryLabel: "$3.5M – $4.5M",
-    desc: "Firma boutique requiere abogado para apoyo en contratos mercantiles y consultoría a clientes corporativos.",
-    posted: "Hace 3 días",
-    featured: false,
-    tags: ["Contratos", "Derecho mercantil"],
-  },
-  {
-    id: 4,
-    role: "Analista Financiero",
-    company: "Grupo Bancolombia",
-    logo: "GB",
-    area: "Administración",
-    mode: "Híbrido",
-    exp: "1-3 años",
-    city: "Bogotá",
-    salaryMin: 5000000,
-    salaryLabel: "$5M – $7M",
-    desc: "Perfil analítico para modelación financiera, reportes de gestión y soporte a la gerencia en toma de decisiones estratégicas.",
-    posted: "Hace 5 días",
-    featured: true,
-    tags: ["Excel avanzado", "Power BI", "Finanzas"],
-  },
-  {
-    id: 5,
-    role: "Contador Público",
-    company: "Deloitte Colombia",
-    logo: "DL",
-    area: "Contaduría",
-    mode: "Remoto",
-    exp: "1-3 años",
-    city: "Barranquilla",
-    salaryMin: 4000000,
-    salaryLabel: "$4M – $5.5M",
-    desc: "Oportunidad para contador con experiencia en auditoría o impuestos. Trabajo 100% remoto con clientes multinacionales.",
-    posted: "Hace 1 semana",
-    featured: false,
-    tags: ["NIIF", "Auditoría", "Tributaria"],
-  },
-  {
-    id: 6,
-    role: "Ingeniero Civil de Obra",
-    company: "Constructora Bolívar",
-    logo: "CB",
-    area: "Ingeniería",
-    mode: "Presencial",
-    exp: "3+ años",
-    city: "Bucaramanga",
-    salaryMin: 6000000,
-    salaryLabel: "$6M – $9M",
-    desc: "Residente de obra para proyectos de vivienda masiva. Manejo de presupuesto, cronograma y personal en campo.",
-    posted: "Hace 2 días",
-    featured: false,
-    tags: ["AutoCAD", "MS Project", "Presupuestos"],
-  },
-  {
-    id: 7,
-    role: "Docente de Matemáticas",
-    company: "Colegio Los Nogales",
-    logo: "LN",
-    area: "Educación",
-    mode: "Presencial",
-    exp: "Sin exp.",
-    city: "Bogotá",
-    salaryMin: 2800000,
-    salaryLabel: "$2.8M – $3.5M",
-    desc: "Institución privada busca licenciado o profesional afín para enseñanza de matemáticas en bachillerato.",
-    posted: "Hace 4 días",
-    featured: false,
-    tags: ["Pedagogía", "Cálculo"],
-  },
-  {
-    id: 8,
-    role: "Enfermero Jefe UCI",
-    company: "Hospital San Ignacio",
-    logo: "HS",
-    area: "Salud",
-    mode: "Presencial",
-    exp: "3+ años",
-    city: "Bogotá",
-    salaryMin: 4500000,
-    salaryLabel: "$4.5M – $6M",
-    desc: "Vacante para enfermero(a) especialista en cuidados intensivos. Experiencia en manejo de ventilación mecánica requerida.",
-    posted: "Hace 6 días",
-    featured: false,
-    tags: ["UCI", "Ventilación mecánica"],
-  },
-];
-
-const AREAS = ["Todas", "Ingeniería", "Salud", "Derecho", "Administración", "Contaduría", "Educación"];
+const AREAS = ["Todas", "Administrativa", "Salud", "Financiera", "Industrial", "Educacion", "Sistemas", "Juridica", "Ventas", "Marketing"];
 const MODOS = ["Todas", "Presencial", "Remoto", "Híbrido"];
-const EXPS = ["Todas", "Sin exp.", "1-3 años", "3+ años"];
+const EXPS = ["Todas", "Profesional", "Especialista", "Magister", "Doctorado", "Tecnico"];
 
 const MODE_BADGE: Record<string, string> = {
   Presencial: "be-badge--presencial",
   Remoto: "be-badge--remoto",
   Híbrido: "be-badge--hibrido",
+  "Hibrido": "be-badge--hibrido",
 };
 
 // ── Chip ───────────────────────────────────────────────
@@ -212,7 +81,7 @@ function Filters({
       <div className="be-filter-divider" />
 
       <div className="be-filter-group">
-        <span className="be-filter-group__label">Experiencia</span>
+        <span className="be-filter-group__label">Nivel de Formación</span>
         <div className="be-chips">
           {EXPS.map((e) => <Chip key={e} label={e} active={exp === e} onClick={() => setExp(e)} />)}
         </div>
@@ -228,7 +97,9 @@ function JobCard({ job }: { job: Job }) {
       {job.featured && <span className="be-card__badge-feat">DESTACADA</span>}
 
       <div className="be-card__top">
-        <div className="be-card__logo">{job.logo}</div>
+        <div className="be-card__logo">
+          {job.logo.startsWith('http') ? <img src={job.logo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }} /> : job.logo}
+        </div>
         <div className="be-card__heading">
           <h3 className="be-card__role">{job.role}</h3>
           <p className="be-card__company">{job.company}</p>
@@ -237,7 +108,7 @@ function JobCard({ job }: { job: Job }) {
       </div>
 
       <div className="be-card__badges">
-        <span className={`be-badge ${MODE_BADGE[job.mode]}`}>{job.mode}</span>
+        <span className={`be-badge ${MODE_BADGE[job.mode] || "be-badge--hibrido"}`}>{job.mode}</span>
         <span className="be-badge be-badge--area">{job.area}</span>
         <span className="be-badge be-badge--exp">{job.exp}</span>
         <span className="be-badge be-badge--city">📍 {job.city}</span>
@@ -259,6 +130,8 @@ function JobCard({ job }: { job: Job }) {
 
 // ── Page ───────────────────────────────────────────────
 export default function BolsaPage() {
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [city, setCity] = useState("");
   const [area, setArea] = useState("Todas");
@@ -266,8 +139,51 @@ export default function BolsaPage() {
   const [exp, setExp] = useState("Todas");
   const [sort, setSort] = useState("recent");
 
+  const base = () => (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000').replace(/\/$/, '');
+
+  useEffect(() => {
+    fetchJobs();
+  }, []);
+
+  const fetchJobs = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${base()}/api/vacantes`);
+      const data = await res.json();
+      if (data.success) {
+        const mappedJobs: Job[] = data.vacancies.map((v: any) => {
+          const fecha = new Date(v.created_at);
+          const diff = Math.floor((new Date().getTime() - fecha.getTime()) / (1000 * 60 * 60 * 24));
+          const postedText = diff === 0 ? "Publicado hoy" : `Hace ${diff} días`;
+          
+          return {
+            id: v.id,
+            role: v.cargo,
+            company: v.empresas?.razon_social || "Empresa UCC",
+            logo: v.empresa_logo || (v.empresas?.razon_social?.[0] || "U"),
+            area: v.area_desempeno || "General",
+            mode: v.modalidad || "Presencial",
+            exp: v.nivel_formacion || "Profesional",
+            city: v.ubicacion || v.empresas?.ciudad || "Colombia",
+            salaryMin: parseFloat(v.salario) || 0,
+            salaryLabel: v.salario ? `$${new Intl.NumberFormat('es-CO').format(v.salario)}` : "Salario a convenir",
+            desc: v.descripcion || "",
+            posted: postedText,
+            featured: v.salario > 4000000, // Destacamos vacantes de alto salario
+            tags: [v.programa_requerido, v.tipo_contrato].filter(Boolean)
+          };
+        });
+        setJobs(mappedJobs);
+      }
+    } catch (err) {
+      console.error("Error al cargar vacantes:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filtered = useMemo(() => {
-    let list = ALL_JOBS.filter((j) => {
+    let list = jobs.filter((j) => {
       const q = search.toLowerCase();
       const c = city.toLowerCase();
       return (
@@ -283,7 +199,7 @@ export default function BolsaPage() {
     if (sort === "relevance") list = [...list].sort((a, b) => Number(b.featured) - Number(a.featured));
 
     return list;
-  }, [search, city, area, mode, exp, sort]);
+  }, [jobs, search, city, area, mode, exp, sort]);
 
   function clearAll() {
     setSearch(""); setCity(""); setArea("Todas"); setMode("Todas"); setExp("Todas");
@@ -301,23 +217,23 @@ export default function BolsaPage() {
             Bolsa de <em>empleo</em>
           </h1>
             <p className="be-hero__sub">
-              Vacantes reales de empresas aliadas, filtradas por tu área, ciudad y experiencia.
+              Vacantes reales de empresas aliadas, filtradas por tu área, ciudad y formación.
             </p>
 
           <div className="be-hero__kpis">
             <div>
-              <span className="be-hero__kpi-val">{ALL_JOBS.length}</span>
+              <span className="be-hero__kpi-val">{jobs.length}</span>
               <span className="be-hero__kpi-lbl">Vacantes activas</span>
             </div>
             <div className="be-hero__sep" />
             <div>
               <span className="be-hero__kpi-val">87</span>
-              <span className="be-hero__kpi-lbl">Empresas publicando</span>
+              <span className="be-hero__kpi-lbl">Empresas aliadas</span>
             </div>
             <div className="be-hero__sep" />
             <div>
-              <span className="be-hero__kpi-val">34</span>
-              <span className="be-hero__kpi-lbl">Nuevas esta semana</span>
+              <span className="be-hero__kpi-val">Conexión</span>
+              <span className="be-hero__kpi-lbl">Talento UCC</span>
             </div>
           </div>
         </div>
@@ -338,19 +254,7 @@ export default function BolsaPage() {
             value={city}
             onChange={(e) => setCity(e.target.value)}
           />
-          <button className="be-searchbar__btn">Buscar</button>
-        </div>
-      </div>
-
-      {/* Alerta */}
-      <div className="be-alert">
-        <div className="be-alert__inner">
-          <span className="be-alert__icon">🔔</span>
-          <p className="be-alert__text">
-            <strong>Activa alertas de empleo</strong> — recibe un correo cuando publiquen
-            vacantes que encajan con tu perfil.
-          </p>
-          <button className="be-alert__btn">Activar alerta</button>
+          <button className="be-searchbar__btn" onClick={fetchJobs}>Buscar</button>
         </div>
       </div>
 
@@ -380,7 +284,11 @@ export default function BolsaPage() {
               </select>
             </div>
 
-            {filtered.length === 0 ? (
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: '50px' }}>
+                <p>Cargando vacantes...</p>
+              </div>
+            ) : filtered.length === 0 ? (
               <div className="be-empty">
                 <span className="be-empty__icon">🔍</span>
                 <p>No hay vacantes con estos filtros.</p>
@@ -393,15 +301,6 @@ export default function BolsaPage() {
                 {filtered.map((j) => <JobCard key={j.id} job={j} />)}
               </div>
             )}
-
-            <div className="be-pagination">
-              {[1, 2, 3].map((p) => (
-                <button key={p} className={`be-page-btn${p === 1 ? " be-page-btn--active" : ""}`}>
-                  {p}
-                </button>
-              ))}
-              <button className="be-page-btn">›</button>
-            </div>
           </main>
         </div>
       </div>

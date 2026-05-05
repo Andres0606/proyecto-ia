@@ -13,7 +13,10 @@ app.use(morgan('dev')); // Logs de peticiones
 
 // Rutas
 const userRoutes = require('./routes/userRoutes');
+const jobRoutes = require('./routes/jobRoutes');
+
 app.use('/api/users', userRoutes);
+app.use('/api/vacantes', jobRoutes);
 
 // Ruta de prueba
 app.get('/api/health', (req, res) => {

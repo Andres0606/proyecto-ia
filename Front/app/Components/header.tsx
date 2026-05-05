@@ -40,6 +40,15 @@ export default function Header() {
     // Roles 1 y 4 tienen acceso total
     if (rol === 1 || rol === 4) return;
 
+    // Lógica para Empresa (Rol 3)
+    if (rol === 3) {
+      if (type === 'diagnostico') {
+        e.preventDefault();
+        alert("Este módulo es exclusivo para Egresados y Usuarios Externos. Como empresa, tu función es publicar vacantes.");
+        return;
+      }
+    }
+
     // Lógica para Externos (Rol 2)
     if (rol === 2) {
       if (type === 'diagnostico') {
