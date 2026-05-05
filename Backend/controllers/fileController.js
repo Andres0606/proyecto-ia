@@ -139,17 +139,7 @@ const getResumeUrl = async (req, res) => {
 
     if (error) {
       console.error(`❌ Error de Supabase al crear Signed URL para "${cleanPath}":`, error.message);
-      
-      // Fallback: intentar obtener la URL pública si la Signed URL falla (solo si el bucket es público)
-      const { data: publicData } = supabase.storage
-        .from('hojas-de-vida')
-        .getPublicUrl(cleanPath);
-        
-      if (publicData && publicData.publicUrl) {
-         console.log("ℹ️ Usando fallback de URL pública.");
-         return res.status(200).json({ success: true, url: publicData.publicUrl });
-      }
-      throw error;
+      return res.status(404).json({ success: false, message: 'No se pudo generar el enlace. Es posible que el archivo ya no exista en el servidor.' });
     }
 
     console.log('✅ URL firmada generada exitosamente.');

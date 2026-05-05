@@ -101,7 +101,13 @@ export default function DashboardExterno() {
     try {
       const r = await fetch(`${base()}/api/users/upload-${type === 'avatar' ? 'avatar' : 'cv'}`, {method:'POST', body: fd});
       const d = await r.json();
-      if (d.success) { showToast('¡Subido con éxito!','success'); if (type==='avatar') setUserPhoto(d.url); }
+      if (d.success) { 
+        showToast('¡Subido con éxito!','success'); 
+        if (type==='avatar') setUserPhoto(d.url); 
+        setTimeout(() => fetchProfile(userId), 1500);
+      } else {
+        showToast(d.message || 'Error en la carga', 'error');
+      }
     } catch { showToast('Error en la carga','error'); } finally { setIsUploading(false); }
   };
 
