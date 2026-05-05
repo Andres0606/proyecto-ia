@@ -290,12 +290,21 @@ const subscribe = async (req, res) => {
         estado
       }, { onConflict: 'user_id' });
 
-    if (error) throw error;
+    if (error) {
+      console.error("❌ Error de Supabase en subscribe:", error);
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Error en la base de datos', 
+        error: error.message,
+        details: error.details,
+        hint: error.hint
+      });
+    }
 
     return res.status(200).json({ success: true, message: `Suscripción al ${planType} exitosa` });
   } catch (error) {
-    console.error("❌ Error en subscribe:", error);
-    return res.status(500).json({ success: false, message: error.message });
+    console.error("❌ Error crítico en subscribe:", error);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor', error: error.message });
   }
 };
 
