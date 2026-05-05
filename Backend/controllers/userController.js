@@ -328,4 +328,42 @@ const subscribe = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, getFullProfile, updateProfile, subscribe };
+const updatePlan = async (req, res) => {
+  try {
+    let { userId, tipoPlan, planType } = req.body;
+    const finalPlan = tipoPlan || planType; // Soporta ambos nombres de campo
+    
+    if (!userId || !finalPlan) {
+      return res.status(400).json({ success: false, message: 'userId y tipoPlan son requeridos' });
+    }
+
+    userId = String(userId).trim();
+    const fecha_inicio = new Date().toISOString().split('T')[0];
+    let fecha_fin = null;
+
+    if (finalPlan === 'Plan Completo') {
+      const date = new Date();
+      date.setDate(date.getDate() + 30);
+      fecha_fin = date.toISOString().split('T')[0];
+    }
+
+    const { error } = await supabase
+      .from('suscripciones')
+      .upsert({
+        user_id: userId,
+        tipo_plan: finalPlan,
+        fecha_inicio,
+        fecha_fin,
+        estado: 'activo'
+      }, { onConflict: 'user_id' });
+
+    if (error) throw error;
+
+    return res.status(200).json({ success: true, message: `Plan ${finalPlan} activado con éxito` });
+  } catch (error) {
+    console.error("❌ Error en updatePlan:", error);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor', error: error.message });
+  }
+};
+
+module.exports = { registerUser, loginUser, getFullProfile, updateProfile, subscribe, updatePlan };
