@@ -13,11 +13,19 @@ const SECTIONS = [
 ];
 
 const DIAG_OPTIONS = {
+  Programa: [
+    "Derecho", "Contaduria Publica", "Ingenieria Civil", "Ciencias Economicas",
+    "Medicina", "Psicologia", "Odontologia", "Enfermeria", "Ingenieria de Sistemas",
+    "Medicina Veterinaria y Zootecnia", "Especializacion", "Tecnico Auxiliar en Enfermeria"
+  ],
   Formacion: ["Profesional","Especialista","Magister","Doctorado","Tecnico Profesional"],
   EstadoCivil: ["Casado","Union libre","Soltero","Separado","Viudo"],
   Estrato: ["Uno","Dos","Tres","Cuatro","Cinco","Seis"],
   Ingreso: ["1 SML o menos","2-3 SML","3-5 SML","5 SML o mas"],
   Area: ["Servicios","Administrativa","Salud","Financiera","Industrial","Economica","Gestion Humana","Educacion","Comercial","Contable","Sistemas"],
+  Sector: ["Servicios", "Comercial", "Industrial"],
+  Emprendimiento: ["Si", "No"],
+  Hijos: ["Cero", "Uno", "Dos", "Tres", "Cuatro", "Cinco"],
 };
 
 export default function DashboardExterno() {
@@ -31,9 +39,21 @@ export default function DashboardExterno() {
   const [toast, setToast] = useState<{msg:string,type:'info'|'success'|'error'|'none'}>({msg:'',type:'none'});
   const [isUploading, setIsUploading] = useState(false);
   const [formData, setFormData] = useState({
-    nombre_completo:'',correo:'',telefono:'',cedula:'',fecha_nacimiento:'',genero:'',
-    nivel_formacion:'',estrato:'',estado_civil:'',numero_hijos:'',
-    ingreso_mensual:'',area_desempeno:''
+    nombre_completo: '',
+    correo: '',
+    telefono: '',
+    cedula: '',
+    fecha_nacimiento: '',
+    genero: '',
+    nivel_formacion: '',
+    programa_academico: '',
+    estrato: '',
+    estado_civil: '',
+    numero_hijos: '',
+    ingreso_mensual: '',
+    sector_economico: '',
+    area_desempeno: '',
+    emprendimiento: ''
   });
 
   const avatarRef = React.useRef<HTMLInputElement>(null);
@@ -77,7 +97,23 @@ export default function DashboardExterno() {
         setUserName(u.nombre_completo?.split(' ')[0] || 'Usuario');
         if (u.foto_url) setUserPhoto(u.foto_url);
         const v = (x: any) => x != null && x !== '' ? String(x) : '';
-        setFormData({ nombre_completo: u.nombre_completo||'', correo: u.correo||'', telefono: u.telefono||'', cedula: u.cedula||'', fecha_nacimiento: u.fecha_nacimiento?.split('T')[0]||'', genero: u.genero||'', nivel_formacion: v(p.nivel_formacion), estrato: v(p.estrato), estado_civil: v(p.estado_civil), numero_hijos: v(p.numero_hijos), ingreso_mensual: v(p.ingreso_mensual), area_desempeno: v(p.area_desempeno) });
+        setFormData({ 
+          nombre_completo: u.nombre_completo||'', 
+          correo: u.correo||'', 
+          telefono: u.telefono||'', 
+          cedula: u.cedula||'', 
+          fecha_nacimiento: u.fecha_nacimiento?.split('T')[0]||'', 
+          genero: u.genero||'', 
+          nivel_formacion: v(p.nivel_formacion), 
+          programa_academico: v(p.programa_academico),
+          estrato: v(p.estrato), 
+          estado_civil: v(p.estado_civil), 
+          numero_hijos: v(p.numero_hijos), 
+          ingreso_mensual: v(p.ingreso_mensual), 
+          sector_economico: v(p.sector_economico),
+          area_desempeno: v(p.area_desempeno),
+          emprendimiento: v(p.emprendimiento)
+        });
       }
     } catch(e){ console.error(e); }
   };
@@ -255,11 +291,15 @@ export default function DashboardExterno() {
               </div>
               <div className="responsive-grid-2">
                 {[
-                  { label:'Nivel de Formación', key:'nivel_formacion', opts:DIAG_OPTIONS.Formacion },
-                  { label:'Estado Civil', key:'estado_civil', opts:DIAG_OPTIONS.EstadoCivil },
-                  { label:'Estrato Socioeconómico', key:'estrato', opts:DIAG_OPTIONS.Estrato },
-                  { label:'Ingreso Mensual', key:'ingreso_mensual', opts:DIAG_OPTIONS.Ingreso },
-                  { label:'Área de Desempeño', key:'area_desempeno', opts:DIAG_OPTIONS.Area },
+                  { label: 'Programa Académico', key: 'programa_academico', opts: DIAG_OPTIONS.Programa },
+                  { label: 'Nivel de Formación', key: 'nivel_formacion', opts: DIAG_OPTIONS.Formacion },
+                  { label: 'Estado Civil', key: 'estado_civil', opts: DIAG_OPTIONS.EstadoCivil },
+                  { label: 'Estrato Socioeconómico', key: 'estrato', opts: DIAG_OPTIONS.Estrato },
+                  { label: 'Ingreso Mensual', key: 'ingreso_mensual', opts: DIAG_OPTIONS.Ingreso },
+                  { label: '¿Tienes Emprendimiento?', key: 'emprendimiento', opts: DIAG_OPTIONS.Emprendimiento },
+                  { label: 'Área de Desempeño', key: 'area_desempeno', opts: DIAG_OPTIONS.Area },
+                  { label: 'Sector Económico', key: 'sector_economico', opts: DIAG_OPTIONS.Sector },
+                  { label: 'Número de Hijos', key: 'numero_hijos', opts: DIAG_OPTIONS.Hijos },
                 ].map(f => (
                   <div key={f.key}>
                     <label style={lbl}>{f.label}</label>
