@@ -283,8 +283,11 @@ const updateProfile = async (req, res) => {
 
 const subscribe = async (req, res) => {
   try {
-    const { userId, planType } = req.body;
+    let { userId, planType } = req.body;
     if (!userId || !planType) return res.status(400).json({ success: false, message: 'userId y planType son requeridos' });
+
+    // Limpiar el ID por si viene con espacios
+    userId = String(userId).trim();
 
     const fecha_inicio = new Date().toISOString().split('T')[0];
     let fecha_fin = null;
@@ -295,6 +298,8 @@ const subscribe = async (req, res) => {
       date.setDate(date.getDate() + 30);
       fecha_fin = date.toISOString().split('T')[0];
     }
+
+    console.log(`💳 Procesando suscripción: Usuario [${userId}] -> Plan [${planType}]`);
 
     const { error } = await supabase
       .from('suscripciones')
@@ -307,12 +312,11 @@ const subscribe = async (req, res) => {
       }, { onConflict: 'user_id' });
 
     if (error) {
-      console.error("❌ Error de Supabase en subscribe:", error);
+      console.error("❌ ERROR DETALLADO EN SUSCRIPCIÓN:", JSON.stringify(error, null, 2));
       return res.status(500).json({ 
         success: false, 
-        message: 'Error en la base de datos', 
+        message: 'Error en la base de datos al procesar suscripción', 
         error: error.message,
-        details: error.details,
         hint: error.hint
       });
     }

@@ -235,7 +235,7 @@ export default function DashboardExterno() {
       const r = await fetch(`${base()}/api/users/subscribe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, planType: planName })
+        body: JSON.stringify({ userId: String(userId).trim(), planType: planName })
       });
       const d = await r.json();
       if (d.success) {
