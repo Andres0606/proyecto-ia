@@ -1,16 +1,17 @@
 const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
-// Hardcode temporal para descartar errores de variables de entorno en Railway
-const supabaseUrl = 'https://eqncdpzboevfpagjytqr.supabase.co';
-const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVxbmNkcHpib2V2ZnBhZ2p5dHFyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3Nzg2NjkzOSwiZXhwIjoyMDkzNDQyOTM5fQ.FHHgu_98A-I-TwCuVsTdlUb9sNendWe99nN0HPSjgU4';
+const supabaseUrl = process.env.SUPABASE_URL || 'https://eqncdpzboevfpagjytqr.supabase.co';
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-// Cliente con service_role y opciones para forzar el bypass de RLS
-const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+if (!supabaseServiceKey) {
+  console.error('❌ CRÍTICO: No se encontró SUPABASE_SERVICE_ROLE_KEY en el entorno.');
+}
+
+const supabase = createClient(supabaseUrl, supabaseServiceKey || '', {
   auth: {
     autoRefreshToken: false,
-    persistSession: false,
-    detectSessionInUrl: false
+    persistSession: false
   }
 });
 
