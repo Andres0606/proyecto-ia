@@ -11,11 +11,10 @@ const uploadProfileImage = async (req, res) => {
       return res.status(400).json({ success: false, message: 'No se recibió ningún archivo en la petición.' });
     }
 
-    // 1. Subir a Supabase Storage
     const fileName = `${userId}/${Date.now()}-${file.originalname}`;
     console.log(`📤 Subiendo archivo a Storage: ${fileName}`);
-    
-    const { data, error } = await supabase.storage
+
+    const { error } = await supabase.storage
       .from('fotos-perfil')
       .upload(fileName, file.buffer, {
         contentType: file.mimetype,
@@ -27,12 +26,10 @@ const uploadProfileImage = async (req, res) => {
       throw new Error(`Error en Storage: ${error.message}`);
     }
 
-    // 2. Obtener la URL pública
     const { data: { publicUrl } } = supabase.storage
       .from('fotos-perfil')
       .getPublicUrl(fileName);
 
-    // 3. Actualizar el usuario en la tabla 'users'
     console.log(`💾 Actualizando tabla users con URL: ${publicUrl}`);
     const { error: updateError } = await supabase
       .from('users')
@@ -41,7 +38,7 @@ const uploadProfileImage = async (req, res) => {
 
     if (updateError) {
       console.error('❌ Error al actualizar tabla users:', updateError);
-      throw new Error(`Error en DB: ${updateError.message}. ¿Creaste la columna foto_url?`);
+      throw new Error(`Error en DB: ${updateError.message}`);
     }
 
     return res.status(200).json({
@@ -70,15 +67,14 @@ const uploadResume = async (req, res) => {
     }
 
     if (!userId || userId === 'null' || userId === 'undefined') {
-       return res.status(400).json({ success: false, message: 'ID de usuario no válido.' });
+      return res.status(400).json({ success: false, message: 'ID de usuario no válido.' });
     }
 
-    // Nombre de archivo simplificado al máximo
     const fileName = `cv-${userId}-${Date.now()}.pdf`;
-    
+
     console.log(`📤 Subiendo a bucket 'hojas-de-vida' como: ${fileName}`);
 
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from('hojas-de-vida')
       .upload(fileName, file.buffer, {
         contentType: 'application/pdf',
@@ -92,7 +88,7 @@ const uploadResume = async (req, res) => {
 
     const { error: updateError } = await supabase
       .from('users')
-      .update({ cv_url: fileName }) 
+      .update({ cv_url: fileName })
       .eq('id', userId);
 
     if (updateError) {
@@ -117,12 +113,11 @@ const getResumeUrl = async (req, res) => {
     const { userId } = req.params;
     console.log(`🔍 Buscando CV para el usuario: ${userId}`);
 
-    // 1. Buscar la ruta del CV en la tabla users
     const { data: user, error: userError } = await supabase
       .from('users')
       .select('cv_url')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
 
     if (userError || !user?.cv_url) {
       console.log(`⚠️ No se encontró cv_url en la DB para el usuario ${userId}`);
@@ -132,12 +127,10 @@ const getResumeUrl = async (req, res) => {
     const cleanPath = user.cv_url.trim();
     console.log(`📂 Intentando recuperar archivo de Storage: "${cleanPath}"`);
 
-    // Si la URL ya es un enlace completo, retornarla directamente
     if (cleanPath.startsWith('http')) {
       return res.status(200).json({ success: true, url: cleanPath });
     }
 
-    // 2. Crear una Signed URL (enlace temporal de 60 segundos)
     const { data, error } = await supabase.storage
       .from('hojas-de-vida')
       .createSignedUrl(cleanPath, 60);

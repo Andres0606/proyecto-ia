@@ -2,18 +2,16 @@ const supabase = require('../config/supabase');
 
 const createVacancy = async (req, res) => {
   try {
-    let { 
-      userId, cargo, area_desempeno, programa_requerido, 
-      nivel_formacion, salario, tipo_contrato, 
-      duracion_contrato, modalidad, ubicacion, descripcion 
+    let {
+      userId, cargo, area_desempeno, programa_requerido,
+      nivel_formacion, salario, tipo_contrato,
+      duracion_contrato, modalidad, ubicacion, descripcion
     } = req.body;
 
     if (!userId) return res.status(400).json({ success: false, message: 'userId es requerido' });
-    
-    // Limpieza de ID
+
     const cleanId = String(userId).trim().split(':')[0];
 
-    // 1. Obtener el empresa_id basado en el user_id
     const { data: empresa, error: empError } = await supabase
       .from('empresas')
       .select('id')
@@ -22,12 +20,11 @@ const createVacancy = async (req, res) => {
 
     if (empError || !empresa) {
       console.error('Error buscando empresa para userId:', cleanId, empError);
-      return res.status(404).json({ success: false, message: 'No se encontró la empresa asociada al usuario. Por favor completa tu perfil de empresa.' });
+      return res.status(404).json({ success: false, message: 'No se encontró la empresa asociada al usuario.' });
     }
 
     const empresa_id = empresa.id;
 
-    // 2. Insertar la vacante con estado 'activa' por defecto
     const { data, error } = await supabase
       .from('vacantes')
       .insert([{
@@ -42,16 +39,16 @@ const createVacancy = async (req, res) => {
         modalidad,
         ubicacion,
         descripcion,
-        estado: 'activa' // Estado inicial
+        estado: 'activa'
       }])
       .select();
 
     if (error) throw error;
 
-    return res.status(201).json({ 
-      success: true, 
-      message: 'Vacante publicada con éxito', 
-      vacancy: data[0] 
+    return res.status(201).json({
+      success: true,
+      message: 'Vacante publicada con éxito',
+      vacancy: data[0]
     });
   } catch (error) {
     console.error('❌ Error al crear vacante:', error);
@@ -61,17 +58,9 @@ const createVacancy = async (req, res) => {
 
 const getVacancies = async (req, res) => {
   try {
-    const { data, error } = await supabase
+    const { data: vacancies, error } = await supabase
       .from('vacantes')
-      .select(`
-        *,
-        empresas (
-          razon_social,
-          ciudad,
-          nit,
-          user_id
-        )
-      `)
+      .select('*')
       .or('estado.eq.activa,estado.is.null')
       .order('created_at', { ascending: false });
 
@@ -80,32 +69,49 @@ const getVacancies = async (req, res) => {
       return res.status(500).json({ success: false, message: 'Error al consultar vacantes' });
     }
 
-    console.log(`📊 Bolsa de Empleo: Se encontraron ${data.length} vacantes potenciales.`);
+    if (!vacancies || vacancies.length === 0) {
+      return res.status(200).json({ success: true, vacancies: [] });
+    }
+
+    // Obtener empresas por separado (más seguro que JOIN anidado)
+    const empresaIds = [...new Set(vacancies.filter(v => v.empresa_id).map(v => v.empresa_id))];
+    let empresasMap = new Map();
+
+    if (empresaIds.length > 0) {
+      const { data: empresas, error: empError } = await supabase
+        .from('empresas')
+        .select('*')
+        .in('id', empresaIds);
+
+      if (!empError && empresas) {
+        empresas.forEach(e => empresasMap.set(e.id, e));
+      }
+    }
 
     // Procesar vacantes de forma segura
-    const vacanciesWithLogos = await Promise.all(data.map(async (v) => {
+    const vacanciesWithDetails = await Promise.all(vacancies.map(async (v) => {
+      const empresa = v.empresa_id ? empresasMap.get(v.empresa_id) : null;
       let empresa_logo = null;
-      
-      // Solo buscar logo si la empresa existe y tiene user_id
-      if (v.empresas && v.empresas.user_id) {
+
+      if (empresa?.user_id) {
         const { data: userData } = await supabase
           .from('users')
           .select('foto_url')
-          .eq('id', v.empresas.user_id)
-          .single();
-        
+          .eq('id', empresa.user_id)
+          .maybeSingle();
         empresa_logo = userData?.foto_url || null;
       }
-      
-      return { 
-        ...v, 
+
+      return {
+        ...v,
         empresa_logo,
-        // Asegurar que empresas no sea null para evitar errores en el frontend
-        empresas: v.empresas || { razon_social: 'Empresa UCC', ciudad: 'No definida' }
+        empresas: empresa || { razon_social: 'Empresa no disponible' }
       };
     }));
 
-    return res.status(200).json({ success: true, vacancies: vacanciesWithLogos });
+    console.log(`📊 Bolsa de Empleo: Se encontraron ${vacanciesWithDetails.length} vacantes.`);
+    return res.status(200).json({ success: true, vacancies: vacanciesWithDetails });
+
   } catch (error) {
     console.error('❌ Error crítico al obtener vacantes:', error);
     return res.status(500).json({ success: false, message: 'Error interno al cargar la bolsa de empleo' });
@@ -142,7 +148,7 @@ const getMyVacancies = async (req, res) => {
 const toggleVacancyStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { estado } = req.body; // 'activa' o 'inactiva'
+    const { estado } = req.body;
 
     const { data, error } = await supabase
       .from('vacantes')

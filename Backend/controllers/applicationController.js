@@ -50,35 +50,71 @@ const getUserApplications = async (req, res) => {
 
     if (appsError) {
       console.error('❌ Error en consulta de postulaciones:', appsError);
-      return res.status(500).json({ success: false, message: appsError.message, code: appsError.code });
+      return res.status(500).json({ success: false, message: appsError.message });
     }
 
-    if (!apps || apps.length === 0) return res.status(200).json({ success: true, applications: [] });
+    if (!apps || apps.length === 0) {
+      return res.status(200).json({ success: true, applications: [] });
+    }
 
     // 2. Obtener los IDs de las vacantes
     const vacancyIds = [...new Set(apps.map(a => a.vacante_id))].filter(Boolean);
 
-    // 3. Obtener los detalles de las vacantes y empresas de forma segura
+    if (vacancyIds.length === 0) {
+      return res.status(200).json({ success: true, applications: apps.map(a => ({ ...a, vacantes: null })) });
+    }
+
+    // 3. Obtener vacantes de forma segura - SIN JOIN anidado problemático
     const { data: vacancies, error: vacError } = await supabase
       .from('vacantes')
-      .select('*, empresas(*)')
+      .select('*')
       .in('id', vacancyIds);
 
     if (vacError) {
-      console.warn('⚠️ Advertencia al obtener detalles de vacantes:', vacError.message);
+      console.warn('⚠️ Error obteniendo vacantes:', vacError.message);
+      return res.status(200).json({
+        success: true,
+        applications: apps.map(a => ({ ...a, vacantes: null }))
+      });
     }
 
-    // 4. Mapear los datos manualmente para asegurar compatibilidad total
+    // 4. Obtener empresas para las vacantes que las tienen (separadamente)
+    const empresaIds = [...new Set(vacancies.filter(v => v.empresa_id).map(v => v.empresa_id))];
+    let empresasMap = new Map();
+
+    if (empresaIds.length > 0) {
+      const { data: empresas, error: empError } = await supabase
+        .from('empresas')
+        .select('*')
+        .in('id', empresaIds);
+
+      if (!empError && empresas) {
+        empresas.forEach(e => empresasMap.set(e.id, e));
+      }
+    }
+
+    // 5. Mapear los datos manualmente
     const fullApps = apps.map(app => {
       const vacancy = vacancies?.find(v => v.id === app.vacante_id);
+
+      if (!vacancy) {
+        return { ...app, vacantes: null };
+      }
+
+      const empresaData = vacancy.empresa_id ? empresasMap.get(vacancy.empresa_id) : null;
+
       return {
         ...app,
-        vacantes: vacancy || null
+        vacantes: {
+          ...vacancy,
+          empresas: empresaData || { razon_social: 'Empresa no disponible' }
+        }
       };
     });
 
-    console.log(`✅ Se encontraron ${fullApps.length} postulaciones para el usuario [${cleanUserId}].`);
+    console.log(`✅ Se encontraron ${fullApps.length} postulaciones para el usuario [${cleanUserId}]`);
     return res.status(200).json({ success: true, applications: fullApps });
+
   } catch (error) {
     console.error('❌ Error crítico en getUserApplications:', error);
     return res.status(500).json({ success: false, message: error.message || 'Error interno del servidor' });
