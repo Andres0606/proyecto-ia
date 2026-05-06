@@ -39,6 +39,9 @@ export default function DashboardEmpresa() {
   const [activeSection, setActiveSection] = useState<'none' | 'professional' | 'jobs' | 'my-jobs' | 'candidates' | 'support'>('none');
   const [toast, setToast] = useState<{ msg: string, type: 'info' | 'success' | 'error' | 'none' }>({ msg: '', type: 'none' });
   const [myVacancies, setMyVacancies] = useState<any[]>([]);
+  const [candidates, setCandidates] = useState<any[]>([]);
+  const [selectedCandidate, setSelectedCandidate] = useState<any | null>(null);
+
   
   const [formData, setFormData] = useState({
     razon_social: '', nit: '', sector_economico: '', ciudad: '',
@@ -69,8 +72,10 @@ export default function DashboardEmpresa() {
           setUserId(cleanId); 
           fetchProfile(cleanId);
           fetchMyVacancies(cleanId);
+          fetchCandidates(cleanId);
         }
       } catch (e) { console.error('Error parseando usuario:', e); }
+
     }
   }, []);
 
@@ -102,6 +107,37 @@ export default function DashboardEmpresa() {
       if (d.success) setMyVacancies(d.vacancies);
     } catch (err) { console.error(err); }
   };
+
+  const fetchCandidates = async (id: string) => {
+    try {
+      const res = await fetch(`${base()}/api/postulaciones/company/${id}`);
+      const d = await res.json();
+      if (d.success) setCandidates(d.applications);
+    } catch (err) { console.error(err); }
+  };
+
+  const handleUpdateStatus = async (id: number, newStatus: string) => {
+    try {
+      setToast({ msg: 'Actualizando estado...', type: 'info' });
+      const res = await fetch(`${base()}/api/postulaciones/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ estado: newStatus })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setToast({ msg: `Candidato ${newStatus === 'aceptado' ? 'aceptado' : 'rechazado'}`, type: 'success' });
+        if (userId) fetchCandidates(userId);
+        setSelectedCandidate(null);
+      } else {
+        setToast({ msg: 'Error al actualizar', type: 'error' });
+      }
+    } catch (err) {
+      setToast({ msg: 'Error de conexión', type: 'error' });
+    }
+    finally { setTimeout(() => setToast({ msg: '', type: 'none' }), 3000); }
+  };
+
 
   const handleToggleStatus = async (id: number, currentStatus: string) => {
     const newStatus = (currentStatus || 'activa') === 'activa' ? 'inactiva' : 'activa';
@@ -346,12 +382,122 @@ export default function DashboardEmpresa() {
           )}
 
           {activeSection === 'candidates' && (
-            <div style={{ background: 'white', borderRadius: '32px', padding: '70px 50px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)', textAlign: 'center' }}>
-              <div style={{ width: '90px', height: '90px', borderRadius: '25px', background: '#ecfdf5', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 30px' }}><Icons.Users /></div>
-              <h2 style={{ color: '#1e3a5f', fontWeight: 900 }}>Gestión de Talento</h2>
-              <p style={{ color: '#64748b' }}>Próximamente podrás visualizar las postulaciones de los egresados.</p>
+            <div style={{ background: 'white', borderRadius: '32px', padding: '45px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+                <h2 style={{ color: '#1e3a5f', fontWeight: 900, margin: 0 }}>Gestión de Candidatos</h2>
+                <span style={{ background: '#f1f5f9', color: '#475569', padding: '8px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 700 }}>{candidates.length} Postulaciones</span>
+              </div>
+
+              <div style={{ display: 'grid', gap: '16px' }}>
+                {candidates.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+                    <div style={{ width: '80px', height: '80px', borderRadius: '25px', background: '#f8fafc', color: '#94a3b8', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}><Icons.Users /></div>
+                    <p style={{ color: '#64748b', fontSize: '1.1rem' }}>Aún no hay candidatos postulados a tus vacantes.</p>
+                  </div>
+                ) : (
+                  candidates.map(c => (
+                    <div key={c.id} style={{ padding: '24px', border: '1px solid #f1f5f9', borderRadius: '24px', background: '#f8fafc', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'transform 0.2s' }}>
+                      <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+                        <div style={{ width: '55px', height: '55px', borderRadius: '16px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', boxShadow: '0 4px 10px rgba(0,0,0,0.05)', color: '#1e3a5f', border: '2px solid #f1f5f9' }}>
+                          {c.candidato.nombre.charAt(0)}
+                        </div>
+                        <div>
+                          <h4 style={{ margin: 0, color: '#1e3a5f', fontSize: '1.1rem', fontWeight: 800 }}>{c.candidato.nombre}</h4>
+                          <div style={{ display: 'flex', gap: '12px', fontSize: '0.85rem', color: '#64748b', marginTop: '4px' }}>
+                            <span style={{ fontWeight: 700, color: '#3b82f6' }}>{c.vacante}</span>
+                            <span>📅 {new Date(c.fecha).toLocaleDateString()}</span>
+                            <span style={{ 
+                              background: c.estado === 'aceptado' ? '#dcfce7' : c.estado === 'rechazado' ? '#fee2e2' : '#fef9c3', 
+                              color: c.estado === 'aceptado' ? '#166534' : c.estado === 'rechazado' ? '#991b1b' : '#854d0e',
+                              padding: '2px 8px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase'
+                            }}>
+                              {c.estado}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '10px' }}>
+                        <button onClick={() => setSelectedCandidate(c)} style={{ padding: '10px 20px', borderRadius: '12px', background: '#1e3a5f', color: 'white', border: 'none', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}>
+                          Ver Perfil / CV
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Modal de Detalle de Candidato */}
+              {selectedCandidate && (
+                <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '20px' }}>
+                  <div style={{ background: 'white', borderRadius: '32px', width: '100%', maxWidth: '800px', maxHeight: '90vh', overflowY: 'auto', position: 'relative', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
+                    <button onClick={() => setSelectedCandidate(null)} style={{ position: 'absolute', top: '24px', right: '24px', background: '#f1f5f9', border: 'none', width: '40px', height: '40px', borderRadius: '12px', cursor: 'pointer', fontSize: '1.2rem', color: '#64748b', fontWeight: 'bold' }}>×</button>
+                    
+                    <div style={{ padding: '40px' }}>
+                      <div style={{ display: 'flex', gap: '30px', marginBottom: '35px', alignItems: 'center' }}>
+                        <div style={{ width: '100px', height: '100px', borderRadius: '28px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem', color: '#1e3a5f', border: '4px solid #f1f5f9' }}>
+                          {selectedCandidate.candidato.nombre.charAt(0)}
+                        </div>
+                        <div>
+                          <h2 style={{ margin: 0, color: '#1e3a5f', fontSize: '2rem', fontWeight: 900 }}>{selectedCandidate.candidato.nombre}</h2>
+                          <p style={{ margin: '5px 0 0', color: '#64748b', fontSize: '1.1rem', fontWeight: 600 }}>{selectedCandidate.candidato.perfil.nivel_formacion} - {selectedCandidate.candidato.perfil.programa_academico}</p>
+                          <div style={{ display: 'flex', gap: '15px', marginTop: '10px' }}>
+                            <span style={{ fontSize: '0.9rem', color: '#64748b' }}>📧 {selectedCandidate.candidato.correo}</span>
+                            <span style={{ fontSize: '0.9rem', color: '#64748b' }}>📞 {selectedCandidate.candidato.telefono}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{ background: '#f8fafc', borderRadius: '24px', padding: '30px', marginBottom: '35px' }}>
+                        <h3 style={{ margin: '0 0 20px', color: '#1e3a5f', fontSize: '1.2rem', fontWeight: 800 }}>Información de Postulación</h3>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                          <div>
+                            <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700 }}>Vacante Aplicada</p>
+                            <p style={{ margin: '4px 0 0', color: '#1e3a5f', fontWeight: 700 }}>{selectedCandidate.vacante}</p>
+                          </div>
+                          <div>
+                            <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700 }}>Fecha de Postulación</p>
+                            <p style={{ margin: '4px 0 0', color: '#1e3a5f', fontWeight: 700 }}>{new Date(selectedCandidate.fecha).toLocaleDateString()}</p>
+                          </div>
+                          <div>
+                            <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700 }}>Sector de Interés</p>
+                            <p style={{ margin: '4px 0 0', color: '#1e3a5f', fontWeight: 700 }}>{selectedCandidate.candidato.perfil.sector_economico || 'No especificado'}</p>
+                          </div>
+                          <div>
+                            <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700 }}>Área de Desempeño</p>
+                            <p style={{ margin: '4px 0 0', color: '#1e3a5f', fontWeight: 700 }}>{selectedCandidate.candidato.perfil.area_desempeno || 'No especificada'}</p>
+                          </div>
+                        </div>
+                        
+                        {selectedCandidate.cv_url && (
+                          <div style={{ marginTop: '30px' }}>
+                            <a href={selectedCandidate.cv_url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', background: 'white', color: '#1e3a5f', padding: '12px 24px', borderRadius: '14px', border: '1.5px solid #1e3a5f', fontWeight: 700, textDecoration: 'none', transition: 'all 0.2s' }}>
+                              📄 Ver Hoja de Vida (CV)
+                            </a>
+                          </div>
+                        )}
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '16px' }}>
+                        <button 
+                          onClick={() => handleUpdateStatus(selectedCandidate.id, 'aceptado')}
+                          style={{ flex: 1, padding: '18px', background: '#10b981', color: 'white', border: 'none', borderRadius: '18px', fontWeight: 800, fontSize: '1rem', cursor: 'pointer', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.2)' }}
+                        >
+                          Aceptar Candidato
+                        </button>
+                        <button 
+                          onClick={() => handleUpdateStatus(selectedCandidate.id, 'rechazado')}
+                          style={{ flex: 1, padding: '18px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '18px', fontWeight: 800, fontSize: '1rem', cursor: 'pointer', boxShadow: '0 4px 15px rgba(239, 68, 68, 0.2)' }}
+                        >
+                          Eliminar / Rechazar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
+
         </div>
       </main>
       <Footer />

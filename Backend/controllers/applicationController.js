@@ -90,4 +90,90 @@ const getUserApplications = async (req, res) => {
   }
 };
 
-module.exports = { applyToVacancy, getUserApplications };
+const getCompanyApplications = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const cleanId = String(userId).trim().split(':')[0];
+
+    // 1. Obtener la empresa asociada al usuario
+    const { data: empresa, error: empError } = await supabase
+      .from('empresas')
+      .select('id')
+      .eq('user_id', cleanId)
+      .single();
+
+    if (empError || !empresa) {
+      return res.status(404).json({ success: false, message: 'Empresa no encontrada' });
+    }
+
+    // 2. Obtener todas las postulaciones de las vacantes de esta empresa
+    // Usamos una consulta con join si es posible, o en pasos
+    const { data: apps, error: appsError } = await supabase
+      .from('postulaciones')
+      .select(`
+        id,
+        estado,
+        fecha_postulacion,
+        cv_url,
+        vacante_id,
+        user_id,
+        vacantes!inner(id, cargo, empresa_id),
+        users!inner(id, nombre_completo, correo, telefono)
+      `)
+      .eq('vacantes.empresa_id', empresa.id);
+
+    if (appsError) throw appsError;
+
+    // 3. Obtener perfiles de los usuarios para info extra
+    const userIds = [...new Set(apps.map(a => a.user_id))];
+    let profilesMap = new Map();
+    if (userIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from('perfiles_usuarios')
+        .select('*')
+        .in('user_id', userIds);
+      if (profiles) profiles.forEach(p => profilesMap.set(p.user_id, p));
+    }
+
+    const result = apps.map(app => ({
+      id: app.id,
+      estado: app.estado,
+      fecha: app.fecha_postulacion,
+      cv_url: app.cv_url,
+      vacante: app.vacantes.cargo,
+      candidato: {
+        id: app.users.id,
+        nombre: app.users.nombre_completo,
+        correo: app.users.correo,
+        telefono: app.users.telefono,
+        perfil: profilesMap.get(app.user_id) || {}
+      }
+    }));
+
+    return res.status(200).json({ success: true, applications: result });
+  } catch (error) {
+    console.error('Error getCompanyApplications:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+const updateApplicationStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { estado } = req.body;
+
+    const { data, error } = await supabase
+      .from('postulaciones')
+      .update({ estado })
+      .eq('id', id)
+      .select();
+
+    if (error) throw error;
+
+    return res.status(200).json({ success: true, application: data[0] });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+module.exports = { applyToVacancy, getUserApplications, getCompanyApplications, updateApplicationStatus };
