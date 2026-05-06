@@ -103,6 +103,34 @@ export default function DashboardEmpresa() {
     } catch (err) { console.error(err); }
   };
 
+  const handleToggleStatus = async (id: number, currentStatus: string) => {
+    const newStatus = currentStatus === 'activa' ? 'inactiva' : 'activa';
+    try {
+      const res = await fetch(`${base()}/api/vacantes/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ estado: newStatus })
+      });
+      if ((await res.json()).success) {
+        setToast({ msg: `Vacante ${newStatus === 'activa' ? 'activada' : 'pausada'}`, type: 'success' });
+        if (userId) fetchMyVacancies(userId);
+      }
+    } catch { setToast({ msg: 'Error al cambiar estado', type: 'error' }); }
+    finally { setTimeout(() => setToast({ msg: '', type: 'none' }), 2000); }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm('¿Estás seguro de eliminar esta vacante permanentemente?')) return;
+    try {
+      const res = await fetch(`${base()}/api/vacantes/${id}`, { method: 'DELETE' });
+      if ((await res.json()).success) {
+        setToast({ msg: 'Vacante eliminada', type: 'success' });
+        if (userId) fetchMyVacancies(userId);
+      }
+    } catch { setToast({ msg: 'Error al eliminar', type: 'error' }); }
+    finally { setTimeout(() => setToast({ msg: '', type: 'none' }), 2000); }
+  };
+
   const handleToggleProgram = (prog: string) => {
     setJobData(prev => ({
       ...prev,
@@ -269,16 +297,28 @@ export default function DashboardEmpresa() {
                   <p style={{ textAlign: 'center', color: '#64748b', padding: '40px' }}>Aún no has publicado ninguna vacante.</p>
                 ) : (
                   myVacancies.map(v => (
-                    <div key={v.id} style={{ padding: '24px', border: '1px solid #f1f5f9', borderRadius: '24px', background: '#f8fafc', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div>
-                        <h4 style={{ margin: '0 0 4px', color: '#1e3a5f', fontSize: '1.1rem', fontWeight: 800 }}>{v.cargo}</h4>
+                    <div key={v.id} style={{ padding: '24px', border: '1px solid #f1f5f9', borderRadius: '24px', background: '#f8fafc', display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: v.estado === 'inactiva' ? 0.7 : 1 }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '6px' }}>
+                          <h4 style={{ margin: 0, color: '#1e3a5f', fontSize: '1.1rem', fontWeight: 800 }}>{v.cargo}</h4>
+                          <span style={{ background: v.estado === 'inactiva' ? '#f1f5f9' : '#dcfce7', color: v.estado === 'inactiva' ? '#64748b' : '#166534', padding: '4px 10px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase' }}>
+                            {v.estado || 'activa'}
+                          </span>
+                        </div>
                         <div style={{ display: 'flex', gap: '12px', fontSize: '0.85rem', color: '#64748b' }}>
                           <span>📍 {v.ubicacion}</span>
                           <span>💰 ${v.salario?.toLocaleString()}</span>
                           <span>📅 {new Date(v.created_at).toLocaleDateString()}</span>
                         </div>
                       </div>
-                      <span style={{ background: '#dcfce7', color: '#166534', padding: '6px 12px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 800 }}>ACTIVA</span>
+                      <div style={{ display: 'flex', gap: '10px' }}>
+                        <button onClick={() => handleToggleStatus(v.id, v.estado || 'activa')} style={{ padding: '10px 18px', borderRadius: '12px', border: '1.5px solid #e2e8f0', background: 'white', color: '#1e3a5f', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', transition: 'all 0.2s' }}>
+                          {v.estado === 'inactiva' ? '▶ Reactivar' : '⏸ Pausar'}
+                        </button>
+                        <button onClick={() => handleDelete(v.id)} style={{ padding: '10px 18px', borderRadius: '12px', border: '1.5px solid #fee2e2', background: '#fef2f2', color: '#dc2626', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', transition: 'all 0.2s' }}>
+                          🗑 Eliminar
+                        </button>
+                      </div>
                     </div>
                   ))
                 )}

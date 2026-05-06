@@ -8,4 +8,8 @@ router.post('/', jobController.createVacancy);
 // Ruta para obtener las vacantes de una empresa específica
 router.get('/my-vacancies/:userId', jobController.getMyVacancies);
 
+// Rutas de gestión de vacante (estado y eliminación)
+router.patch('/:id/status', jobController.toggleVacancyStatus);
+router.delete('/:id', jobController.deleteVacancy);
+
 module.exports = router;

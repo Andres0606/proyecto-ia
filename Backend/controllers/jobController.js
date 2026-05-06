@@ -97,7 +97,6 @@ const getMyVacancies = async (req, res) => {
     const { userId } = req.params;
     const cleanId = String(userId).trim().split(':')[0];
 
-    // 1. Obtener empresa_id
     const { data: empresa } = await supabase
       .from('empresas')
       .select('id')
@@ -106,7 +105,6 @@ const getMyVacancies = async (req, res) => {
 
     if (!empresa) return res.status(404).json({ success: false, message: 'Empresa no encontrada' });
 
-    // 2. Obtener sus vacantes
     const { data, error } = await supabase
       .from('vacantes')
       .select('*')
@@ -121,4 +119,40 @@ const getMyVacancies = async (req, res) => {
   }
 };
 
-module.exports = { createVacancy, getVacancies, getMyVacancies };
+const toggleVacancyStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { estado } = req.body; // 'activa' o 'inactiva'
+
+    const { data, error } = await supabase
+      .from('vacantes')
+      .update({ estado })
+      .eq('id', id)
+      .select();
+
+    if (error) throw error;
+
+    return res.status(200).json({ success: true, vacancy: data[0] });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+const deleteVacancy = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { error } = await supabase
+      .from('vacantes')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+
+    return res.status(200).json({ success: true, message: 'Vacante eliminada' });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+module.exports = { createVacancy, getVacancies, getMyVacancies, toggleVacancyStatus, deleteVacancy };
