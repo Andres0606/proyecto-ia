@@ -191,7 +191,7 @@ const getFullProfile = async (req, res) => {
       ...user,
       perfiles_usuarios: profileEntries || [],
       empresa: companyData || null,
-      suscripcion: subscription || (Number(user.rol_id) === 1 ? { tipo_plan: 'Plan Completo' } : { tipo_plan: 'Gratuito' })
+      suscripcion: { tipo_plan: 'Plan Completo' } // Unificado para todos
     };
 
     if (profileData.perfiles_usuarios.length > 0) {
