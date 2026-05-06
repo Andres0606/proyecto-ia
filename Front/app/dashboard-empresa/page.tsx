@@ -104,31 +104,50 @@ export default function DashboardEmpresa() {
   };
 
   const handleToggleStatus = async (id: number, currentStatus: string) => {
-    const newStatus = currentStatus === 'activa' ? 'inactiva' : 'activa';
+    const newStatus = (currentStatus || 'activa') === 'activa' ? 'inactiva' : 'activa';
+    console.log(`🔄 Cambiando estado de vacante ${id}: ${currentStatus} -> ${newStatus}`);
+    
     try {
       const res = await fetch(`${base()}/api/vacantes/${id}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ estado: newStatus })
       });
-      if ((await res.json()).success) {
+      const data = await res.json();
+      
+      if (data.success) {
         setToast({ msg: `Vacante ${newStatus === 'activa' ? 'activada' : 'pausada'}`, type: 'success' });
         if (userId) fetchMyVacancies(userId);
+      } else {
+        console.error('❌ Error del servidor:', data);
+        setToast({ msg: data.error || 'Error al cambiar estado', type: 'error' });
       }
-    } catch { setToast({ msg: 'Error al cambiar estado', type: 'error' }); }
-    finally { setTimeout(() => setToast({ msg: '', type: 'none' }), 2000); }
+    } catch (err) { 
+      console.error('❌ Error de red:', err);
+      setToast({ msg: 'Error de conexión con el servidor', type: 'error' }); 
+    }
+    finally { setTimeout(() => setToast({ msg: '', type: 'none' }), 3000); }
   };
 
   const handleDelete = async (id: number) => {
     if (!confirm('¿Estás seguro de eliminar esta vacante permanentemente?')) return;
+    console.log(`🗑 Eliminando vacante ${id}`);
+    
     try {
       const res = await fetch(`${base()}/api/vacantes/${id}`, { method: 'DELETE' });
-      if ((await res.json()).success) {
-        setToast({ msg: 'Vacante eliminada', type: 'success' });
+      const data = await res.json();
+      
+      if (data.success) {
+        setToast({ msg: 'Vacante eliminada con éxito', type: 'success' });
         if (userId) fetchMyVacancies(userId);
+      } else {
+        setToast({ msg: data.message || 'Error al eliminar', type: 'error' });
       }
-    } catch { setToast({ msg: 'Error al eliminar', type: 'error' }); }
-    finally { setTimeout(() => setToast({ msg: '', type: 'none' }), 2000); }
+    } catch (err) { 
+      console.error('❌ Error de red:', err);
+      setToast({ msg: 'Error de conexión', type: 'error' }); 
+    }
+    finally { setTimeout(() => setToast({ msg: '', type: 'none' }), 3000); }
   };
 
   const handleToggleProgram = (prog: string) => {
