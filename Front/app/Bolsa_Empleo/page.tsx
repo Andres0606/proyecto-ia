@@ -89,41 +89,6 @@ function Filters({ area, setArea, mode, setMode, nivel, setNivel, onClear }: {
 
 function JobCard({ job, delay }: { job: Job; delay: number }) {
   const initials = job.company.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
-  return (
-    <article className={`be-card${job.featured ? " be-card--featured" : ""}`} style={{ animationDelay: `${delay * 60}ms` }}>
-      {job.featured && (
-        <span className="be-card__badge-feat">
-          <Icons.Star /> DESTACADA
-        </span>
-      )}
-
-      <div className="be-card__top">
-        <div className="be-card__logo">
-          {job.logo.startsWith('http')
-            ? <img src={job.logo} alt={job.company} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            : initials
-          }
-        </div>
-        <div className="be-card__heading">
-          <h3 className="be-card__role">{job.role}</h3>
-          <p className="be-card__company">
-            <Icons.Briefcase />
-            {job.company}
-          </p>
-        </div>
-        <span className="be-card__salary">{job.salaryLabel}</span>
-      </div>
-
-      <div className="be-card__badges">
-        <span className={`be-badge ${MODE_BADGE[job.mode] || "be-badge--hibrido"}`}>{job.mode}</span>
-        <span className="be-badge be-badge--area">{job.area}</span>
-        <span className="be-badge be-badge--exp">{job.nivel}</span>
-        <span className="be-badge be-badge--city">
-          <Icons.Location /> {job.city}
-        </span>
-      </div>
-
-      {job.desc && <p className="be-card__desc">{job.desc}</p>}
 
   const handleApply = (e: React.MouseEvent, jobTitle: string) => {
     const saved = sessionStorage.getItem('ucc_user');
