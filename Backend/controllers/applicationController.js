@@ -41,34 +41,27 @@ const getUserApplications = async (req, res) => {
     const cleanId = String(userId || '').trim();
     if (!cleanId) return res.status(400).json({ success: false, message: 'ID no válido' });
 
-    console.log(`🔍 [DEBUG] Buscando postulaciones para: ${cleanId}`);
+    console.log(`🔍 [SISTEMA] Buscando para: ${cleanId}`);
 
-    // Consulta simplificada al máximo
+    // 1. Obtener postulaciones con Join simple a vacantes
     const { data: apps, error } = await supabase
       .from('postulaciones')
-      .select('id, vacante_id, estado, fecha_postulacion')
+      .select('*, vacantes(*, empresas(*))')
       .eq('user_id', cleanId);
 
     if (error) {
       console.error('❌ Error Supabase:', error);
-      // En lugar de 500, devolvemos éxito pero vacío para no romper el front
-      return res.status(200).json({ success: true, applications: [], note: 'Error de permisos en BD' });
+      return res.status(500).json({ success: false, message: error.message });
     }
 
-    // Traer vacantes de forma manual
-    const vacIds = apps.map(a => a.vacante_id).filter(Boolean);
-    const { data: vacs } = await supabase
-      .from('vacantes')
-      .select('id, cargo, ubicacion, empresa_id')
-      .in('id', vacIds);
-
-    // Mapeo ultra-seguro
-    const result = apps.map(app => {
-      const v = vacs?.find(x => x.id === app.vacante_id);
+    // 2. Mapear a estructura PLANA para el frontend
+    const result = (apps || []).map(app => {
+      const v = app.vacantes;
+      const e = v?.empresas;
       return {
         id: app.id,
         vacante_nombre: v?.cargo || 'Vacante',
-        empresa_nombre: 'UCC Empresa', // Simplificado para evitar más errores de JOIN
+        empresa_nombre: e?.razon_social || 'Empresa UCC',
         ubicacion: v?.ubicacion || 'Remoto',
         fecha: app.fecha_postulacion,
         estado: app.estado
@@ -77,8 +70,8 @@ const getUserApplications = async (req, res) => {
 
     return res.status(200).json({ success: true, applications: result });
   } catch (err) {
-    console.error('❌ Error Crítico:', err);
-    return res.status(200).json({ success: true, applications: [], error: 'Excepción en servidor' });
+    console.error('❌ Error:', err);
+    return res.status(500).json({ success: false, message: err.message });
   }
 };
 
