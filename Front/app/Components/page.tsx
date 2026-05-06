@@ -45,31 +45,37 @@ const FEATURES = [
     icon: <Icons.Target />,
     title: "Ofertas a tu medida",
     desc: "Vacantes filtradas por tu programa académico, ciudad y nivel de experiencia.",
+    variant: "red",
   },
   {
     icon: <Icons.BarChart />,
     title: "Índice de estabilidad laboral",
     desc: "Diagnostica tu nivel de estabilidad laboral.",
+    variant: "blue",
   },
   {
     icon: <Icons.FileText />,
     title: "Hoja de vida segura",
     desc: "Sube tu CV en PDF con acceso mediante enlace firmado — solo las empresas autorizadas lo ven.",
+    variant: "purple",
   },
   {
     icon: <Icons.Bell />,
     title: "Alertas de empleo",
     desc: "Recibe notificaciones cuando aparezcan vacantes que encajan con tu perfil.",
+    variant: "amber",
   },
   {
     icon: <Icons.Building />,
     title: "Red de empresas UCC",
     desc: "Accede a nuestra red de más de 540 empresas aliadas que priorizan egresados UCC.",
+    variant: "green",
   },
   {
     icon: <Icons.TrendingUp />,
     title: "Seguimiento de postulaciones",
     desc: "Visualiza el estado de cada aplicación en tiempo real desde tu dashboard.",
+    variant: "indigo",
   },
 ];
 
@@ -157,7 +163,7 @@ function Features() {
       </div>
       <div className="features__grid">
         {FEATURES.map((f, i) => (
-          <div className="feature-card reveal" key={f.title} style={{ transitionDelay: `${i * 0.08}s` }}>
+          <div className={`feature-card reveal feature-card--${f.variant}`} key={f.title} style={{ transitionDelay: `${i * 0.08}s` }}>
             <span className="feature-card__icon">{f.icon}</span>
             <h3 className="feature-card__title">{f.title}</h3>
             <p className="feature-card__desc">{f.desc}</p>
