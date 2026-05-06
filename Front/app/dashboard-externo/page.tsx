@@ -79,9 +79,13 @@ export default function DashboardExterno() {
     if (saved) {
       try {
         const u = JSON.parse(saved);
-        const rawId = u.id || u.user_id || u.profile?.id || (u.profile && u.profile.id);
-        if (!rawId) { console.error('❌ No userId en sesión (externo)'); return; }
-        const cleanId = String(rawId).trim().split(':')[0];
+        // El login guarda: { id: uuid, ...authFields, profile: { id: uuid, rol_id, ... } }
+        const id = u.id || u.profile?.id;
+        if (!id) {
+          console.error('❌ No se encontró id en la sesión externo. Keys:', Object.keys(u));
+          return;
+        }
+        const cleanId = String(id).trim();
         console.log('✅ Dashboard Externo - userId:', cleanId);
         setUserId(cleanId);
         fetchProfile(cleanId);

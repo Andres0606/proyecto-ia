@@ -56,9 +56,13 @@ export default function Dashboard() {
     if (saved) {
       try {
         const u = JSON.parse(saved);
-        const rawId = u.id || u.user_id || u.profile?.id || (u.profile && u.profile.id);
-        if (!rawId) { console.error('❌ No se encontró userId en sesión'); return; }
-        const cleanId = String(rawId).trim().split(':')[0];
+        // El login guarda: { id: uuid, ...authFields, profile: { id: uuid, rol_id, ... } }
+        const id = u.id || u.profile?.id;
+        if (!id) {
+          console.error('❌ No se encontró id en la sesión. Estructura recibida:', Object.keys(u));
+          return;
+        }
+        const cleanId = String(id).trim();
         console.log('✅ Dashboard Egresado - userId:', cleanId);
         setUserId(cleanId);
         fetchProfile(cleanId);
