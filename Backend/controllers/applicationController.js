@@ -39,37 +39,42 @@ const getUserApplications = async (req, res) => {
     const { userId } = req.params;
     console.log(`📂 Buscando postulaciones para UserID: [${userId}]`);
 
-    // Intentar con join completo (Sintaxis estándar de Supabase)
-    const { data, error } = await supabase
+    // 1. Obtener las postulaciones base
+    const { data: apps, error: appsError } = await supabase
       .from('postulaciones')
-      .select(`
-        *,
-        vacantes (
-          *,
-          empresas (
-            razon_social
-          )
-        )
-      `)
+      .select('*')
       .eq('user_id', userId)
       .order('fecha_postulacion', { ascending: false });
 
-    if (error) {
-      console.error('❌ Error con join:', error.message);
-      // Fallback: query simple sin join
-      const { data: simple, error: err2 } = await supabase
-        .from('postulaciones')
-        .select('*')
-        .eq('user_id', userId)
-        .order('fecha_postulacion', { ascending: false });
+    if (appsError) throw appsError;
+    if (!apps || apps.length === 0) return res.status(200).json({ success: true, applications: [] });
 
-      if (err2) return res.status(500).json({ success: false, message: err2.message });
-      
-      return res.status(200).json({ success: true, applications: simple || [] });
+    // 2. Obtener los IDs de las vacantes
+    const vacancyIds = [...new Set(apps.map(a => a.vacante_id))];
+
+    // 3. Obtener los detalles de las vacantes
+    const { data: vacancies, error: vacError } = await supabase
+      .from('vacantes')
+      .select('*, empresas(*)')
+      .in('id', vacancyIds);
+
+    if (vacError) {
+      console.warn('⚠️ No se pudieron obtener detalles de vacantes, enviando datos básicos');
+      return res.status(200).json({ success: true, applications: apps });
     }
 
-    return res.status(200).json({ success: true, applications: data || [] });
+    // 4. Combinar los datos
+    const fullApps = apps.map(app => {
+      const vacancy = vacancies.find(v => v.id === app.vacante_id);
+      return {
+        ...app,
+        vacantes: vacancy || null
+      };
+    });
+
+    return res.status(200).json({ success: true, applications: fullApps });
   } catch (error) {
+    console.error('❌ Error crítico en getUserApplications:', error.message);
     return res.status(500).json({ success: false, message: error.message });
   }
 };
