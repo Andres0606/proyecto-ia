@@ -74,11 +74,14 @@ export default function Dashboard() {
   }, []);
 
   const fetchMyApplications = async (id: string) => {
+    if (!id) return;
     try {
       const r = await fetch(`${base()}/api/postulaciones/user/${id}`);
       const d = await r.json();
-      if (d.success) setMyApplications(d.applications);
-    } catch (e) { console.error("Error cargando postulaciones:", e); }
+      if (d.success) setMyApplications(d.applications || []);
+    } catch (e) { 
+      console.error("Error cargando postulaciones:", e); 
+    }
   };
 
   const fetchProfile = async (id: string) => {
