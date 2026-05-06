@@ -39,10 +39,18 @@ const getUserApplications = async (req, res) => {
     const { userId } = req.params;
     console.log(`📂 Buscando postulaciones para UserID: [${userId}]`);
 
-    // Intentar con join completo primero (usando sintaxis simplificada)
+    // Intentar con join completo (Sintaxis estándar de Supabase)
     const { data, error } = await supabase
       .from('postulaciones')
-      .select('*, vacantes(*, empresas(razon_social))')
+      .select(`
+        *,
+        vacantes (
+          *,
+          empresas (
+            razon_social
+          )
+        )
+      `)
       .eq('user_id', userId)
       .order('fecha_postulacion', { ascending: false });
 
@@ -55,9 +63,8 @@ const getUserApplications = async (req, res) => {
         .eq('user_id', userId)
         .order('fecha_postulacion', { ascending: false });
 
-      if (err2) {
-        return res.status(500).json({ success: false, message: err2.message });
-      }
+      if (err2) return res.status(500).json({ success: false, message: err2.message });
+      
       return res.status(200).json({ success: true, applications: simple || [] });
     }
 
