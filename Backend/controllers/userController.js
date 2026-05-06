@@ -154,14 +154,14 @@ const loginUser = async (req, res) => {
 
 const getFullProfile = async (req, res) => {
   try {
-    const { userId } = req.params;
-    console.log('🔍 Iniciando recuperación de perfil para:', userId);
+    const cleanUserId = String(userId).trim();
+    console.log('🔍 Iniciando recuperación de perfil para:', cleanUserId);
 
     // PASO 1: Obtener el usuario base
     const { data: user, error: userError } = await supabase
       .from('users')
       .select('*')
-      .eq('id', userId)
+      .eq('id', cleanUserId)
       .single();
 
     if (userError || !user) {
@@ -173,19 +173,20 @@ const getFullProfile = async (req, res) => {
     const { data: profileEntries } = await supabase
       .from('perfiles_usuarios')
       .select('*')
-      .eq('user_id', userId);
+      .eq('user_id', cleanUserId);
 
     const { data: companyData } = await supabase
       .from('empresas')
       .select('*')
-      .eq('user_id', userId)
+      .eq('user_id', cleanUserId)
       .single();
 
+    // Usamos maybeSingle() para evitar que lance error si no hay registro
     const { data: subscription } = await supabase
       .from('suscripciones')
       .select('*')
-      .eq('user_id', userId)
-      .single();
+      .eq('user_id', cleanUserId)
+      .maybeSingle();
 
     // Unir los datos
     const profileData = {
@@ -330,8 +331,8 @@ const subscribe = async (req, res) => {
 
 const updatePlan = async (req, res) => {
   try {
-    let { userId, tipoPlan, planType } = req.body;
-    const finalPlan = tipoPlan || planType;
+    let { userId, tipoPlan, planType, tipo_plan } = req.body;
+    const finalPlan = tipoPlan || planType || tipo_plan;
     
     if (!userId || !finalPlan) {
       return res.status(400).json({ success: false, message: 'ID de usuario y Plan son obligatorios' });
@@ -345,7 +346,7 @@ const updatePlan = async (req, res) => {
       .from('users')
       .select('id')
       .eq('id', cleanUserId)
-      .single();
+      .maybeSingle();
 
     if (userError || !userExists) {
       console.error("❌ El usuario no existe en la tabla public.users:", cleanUserId);

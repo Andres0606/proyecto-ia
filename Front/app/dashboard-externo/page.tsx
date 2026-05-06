@@ -101,7 +101,7 @@ export default function DashboardExterno() {
       const r = await fetch(`${base()}/api/postulaciones/user/${id}`);
       const d = await r.json();
       if (d.success) setMyApplications(d.applications);
-    } catch (e) { console.error("Error cargandoooooo postulaciones:", e); }
+    } catch (e) { console.error("Error cargando postulaciones:", e); }
   };
 
   const fetchProfile = async (id: string) => {
