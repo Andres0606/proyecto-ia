@@ -72,7 +72,7 @@ const getVacancies = async (req, res) => {
           user_id
         )
       `)
-      .or('estado.eq.activa,estado.is.null') // Muestra activas O las que no tienen estado aún
+      .or('estado.eq.activa,estado.is.null')
       .order('created_at', { ascending: false });
 
     if (error) {
