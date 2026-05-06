@@ -41,23 +41,44 @@ const getUserApplications = async (req, res) => {
     const cleanUserId = String(userId).trim();
     console.log(`📂 Buscando postulaciones para UserID: [${cleanUserId}]`);
 
-    // Usamos un join de Supabase para obtener todo en una sola consulta
-    // '*, vacantes(*, empresas(*))' trae la postulación, su vacante y la empresa de esa vacante
+    // 1. Obtener las postulaciones base
     const { data: apps, error: appsError } = await supabase
       .from('postulaciones')
-      .select('*, vacantes:vacante_id(*, empresas:empresa_id(*))')
+      .select('*')
       .eq('user_id', cleanUserId)
       .order('fecha_postulacion', { ascending: false });
 
     if (appsError) {
-      console.error('❌ Error en consulta join de postulaciones:', appsError);
+      console.error('❌ Error en consulta de postulaciones:', appsError);
       return res.status(500).json({ success: false, message: appsError.message, code: appsError.code });
     }
 
-    if (!apps) return res.status(200).json({ success: true, applications: [] });
+    if (!apps || apps.length === 0) return res.status(200).json({ success: true, applications: [] });
 
-    console.log(`✅ Se encontraron ${apps.length} postulaciones para el usuario [${cleanUserId}].`);
-    return res.status(200).json({ success: true, applications: apps });
+    // 2. Obtener los IDs de las vacantes
+    const vacancyIds = [...new Set(apps.map(a => a.vacante_id))].filter(Boolean);
+
+    // 3. Obtener los detalles de las vacantes y empresas de forma segura
+    const { data: vacancies, error: vacError } = await supabase
+      .from('vacantes')
+      .select('*, empresas(*)')
+      .in('id', vacancyIds);
+
+    if (vacError) {
+      console.warn('⚠️ Advertencia al obtener detalles de vacantes:', vacError.message);
+    }
+
+    // 4. Mapear los datos manualmente para asegurar compatibilidad total
+    const fullApps = apps.map(app => {
+      const vacancy = vacancies?.find(v => v.id === app.vacante_id);
+      return {
+        ...app,
+        vacantes: vacancy || null
+      };
+    });
+
+    console.log(`✅ Se encontraron ${fullApps.length} postulaciones para el usuario [${cleanUserId}].`);
+    return res.status(200).json({ success: true, applications: fullApps });
   } catch (error) {
     console.error('❌ Error crítico en getUserApplications:', error);
     return res.status(500).json({ success: false, message: error.message || 'Error interno del servidor' });
