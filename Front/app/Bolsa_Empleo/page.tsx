@@ -100,8 +100,10 @@ function JobCard({ job, delay }: { job: Job; delay: number }) {
 
     const user = JSON.parse(saved);
     const rol = Number(user.profile?.rol_id);
-    const plan = user.profile?.suscripcion?.tipo_plan || 'Gratuito';
+    const plan = (user.profile?.suscripcion?.tipo_plan || 'Gratuito').trim();
     const userId = user.id || user.user_id || user.profile?.id;
+
+    console.log(`🔍 Intento de postulación - Rol: ${rol}, Plan: "${plan}"`);
 
     // 1. REGLA: Solo Rol 1 (Egresado) y Rol 2 (Externo con Plan Completo)
     if (rol === 3 || rol === 4) {
@@ -110,6 +112,7 @@ function JobCard({ job, delay }: { job: Job; delay: number }) {
     }
 
     if (rol === 2 && plan !== 'Plan Completo') {
+      console.warn("🚫 Bloqueado por plan insuficiente:", plan);
       alert("Tu plan actual solo permite visualizar ofertas. Actualiza al 'Plan Completo' en tu Dashboard para poder postularte.");
       return;
     }

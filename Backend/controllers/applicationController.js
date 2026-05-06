@@ -31,10 +31,28 @@ const applyToVacancy = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
     }
 
-    // 3. Validar reglas de negocio (Rol)
+    // 3. Validar reglas de negocio (Rol y Plan)
     const rol = Number(userData.rol_id);
+    
+    // Empresas y Admins no pueden postularse
     if (rol === 3 || rol === 4) {
-      return res.status(403).json({ success: false, message: 'Las empresas y administradores no pueden postularse a vacantes.' });
+      return res.status(403).json({ success: false, message: 'Tu cuenta no tiene permisos para postularse a vacantes.' });
+    }
+
+    // SI ES EXTERNO (Rol 2), DEBE TENER PLAN COMPLETO
+    if (rol === 2) {
+      const { data: subData } = await supabase
+        .from('suscripciones')
+        .select('tipo_plan')
+        .eq('user_id', userId)
+        .single();
+
+      if (!subData || subData.tipo_plan !== 'Plan Completo') {
+        return res.status(403).json({ 
+          success: false, 
+          message: 'Tu plan actual no permite postulaciones. Adquiere el "Plan Completo" para continuar.' 
+        });
+      }
     }
 
     // 4. Crear la postulación
