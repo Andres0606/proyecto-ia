@@ -36,96 +36,48 @@ const applyToVacancy = async (req, res) => {
 };
 
 const getUserApplications = async (req, res) => {
-  const { userId } = req.params;
-  const cleanUserId = String(userId).trim();
-  
-  console.log(`--- INICIO RECONSTRUCCIÓN: Postulaciones para [${cleanUserId}] ---`);
-
   try {
-    // PASO 1: Obtener solo las IDs de las postulaciones
-    console.log('1. Consultando tabla postulaciones...');
-    const { data: rawApps, error: appsError } = await supabase
+    const { userId } = req.params;
+    if (!userId) return res.status(400).json({ success: false, message: 'ID requerido' });
+    
+    const cleanId = String(userId).trim();
+    console.log(`🔍 [SISTEMA NUEVO] Buscando postulaciones para: ${cleanId}`);
+
+    // 1. Obtener postulaciones
+    const { data: apps, error: err1 } = await supabase
       .from('postulaciones')
       .select('*')
-      .eq('user_id', cleanUserId);
+      .eq('user_id', cleanId);
 
-    if (appsError) {
-      console.error('❌ Error fatal en paso 1:', appsError);
-      return res.status(500).json({ 
-        success: false, 
-        message: 'Error al conectar con la tabla de postulaciones',
-        debug: appsError.message 
-      });
-    }
+    if (err1) throw err1;
+    if (!apps || apps.length === 0) return res.status(200).json({ success: true, applications: [] });
 
-    if (!rawApps || rawApps.length === 0) {
-      console.log('ℹ️ El usuario no tiene postulaciones registradas.');
-      return res.status(200).json({ success: true, applications: [] });
-    }
+    // 2. Obtener vacantes y sus empresas en una sola consulta plana
+    const vacIds = apps.map(a => a.vacante_id);
+    const { data: vacs, error: err2 } = await supabase
+      .from('vacantes')
+      .select('*, empresas(*)')
+      .in('id', vacIds);
 
-    console.log(`2. Se encontraron ${rawApps.length} registros. Buscando detalles de vacantes...`);
+    if (err2) console.error('Error vacantes:', err2);
 
-    // PASO 2: Obtener vacantes asociadas de forma segura
-    const vacancyIds = rawApps.map(a => a.vacante_id).filter(id => id != null);
-    let vacancies = [];
-    
-    if (vacancyIds.length > 0) {
-      const { data: vData, error: vError } = await supabase
-        .from('vacantes')
-        .select('*')
-        .in('id', vacancyIds);
-      
-      if (!vError && vData) vacancies = vData;
-      else console.warn('⚠️ No se pudieron cargar los detalles de las vacantes:', vError?.message);
-    }
-
-    // PASO 3: Obtener empresas asociadas
-    const empresaIds = vacancies.map(v => v.empresa_id).filter(id => id != null);
-    let companies = [];
-    
-    if (empresaIds.length > 0) {
-      const { data: cData, error: cError } = await supabase
-        .from('empresas')
-        .select('*')
-        .in('id', empresaIds);
-        
-      if (!cError && cData) companies = cData;
-    }
-
-    // PASO 4: Ensamblaje Final (Reverse Engineering)
-    console.log('3. Ensamblando respuesta final...');
-    const formattedApps = rawApps.map(app => {
-      // Buscar la vacante correspondiente
-      const vacancy = vacancies.find(v => v.id === app.vacante_id) || null;
-      
-      // Buscar la empresa si hay vacante
-      let company = null;
-      if (vacancy) {
-        company = companies.find(c => c.id === vacancy.empresa_id) || { razon_social: 'Empresa no disponible' };
-      }
-
+    // 3. Cruzar datos
+    const result = apps.map(app => {
+      const v = vacs?.find(vac => vac.id === app.vacante_id);
       return {
-        ...app,
-        vacantes: vacancy ? {
-          ...vacancy,
-          empresas: company
-        } : { cargo: 'Vacante no disponible', empresas: { razon_social: 'UCC' } }
+        id: app.id,
+        fecha: app.fecha_postulacion,
+        estado: app.estado,
+        vacante_nombre: v?.cargo || 'Vacante no encontrada',
+        empresa_nombre: v?.empresas?.razon_social || 'UCC',
+        ubicacion: v?.ubicacion || 'Remoto'
       };
     });
 
-    console.log(`✅ ÉXITO: Enviando ${formattedApps.length} postulaciones ensambladas.`);
-    return res.status(200).json({
-      success: true,
-      applications: formattedApps
-    });
-
+    return res.status(200).json({ success: true, applications: result });
   } catch (error) {
-    console.error('❌ ERROR CRÍTICO EN RECONSTRUCCIÓN:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Fallo total en el ensamblaje de postulaciones',
-      error: error.message
-    });
+    console.error('Error sistema nuevo:', error);
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 

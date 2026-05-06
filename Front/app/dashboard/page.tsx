@@ -305,9 +305,9 @@ export default function Dashboard() {
                   {myApplications.map(app => (
                     <div key={app.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '24px', borderRadius: '20px', border: '1px solid #f1f5f9', background: '#f8fafc' }}>
                       <div>
-                        <h3 style={{ margin: 0, color: '#1e3a5f', fontSize: '1.1rem', fontWeight: 800 }}>{app.vacantes?.cargo || `Vacante #${app.vacante_id}`}</h3>
-                        <p style={{ margin: '4px 0', color: '#64748b', fontWeight: 500 }}>{app.vacantes?.empresas?.razon_social || 'Empresa UCC'} · {app.vacantes?.modalidad || 'Remoto'}</p>
-                        <small style={{ color: '#94a3b8' }}>Postulado el: {new Date(app.fecha_postulacion).toLocaleDateString()}</small>
+                        <h3 style={{ margin: 0, color: '#1e3a5f', fontSize: '1.1rem', fontWeight: 800 }}>{app.vacante_nombre}</h3>
+                        <p style={{ margin: '4px 0', color: '#64748b', fontWeight: 500 }}>{app.empresa_nombre} · {app.ubicacion}</p>
+                        <small style={{ color: '#94a3b8' }}>Postulado el: {new Date(app.fecha || app.fecha_postulacion).toLocaleDateString()}</small>
                       </div>
                       <span style={{ 
                         padding: '8px 16px', 
