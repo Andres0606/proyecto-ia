@@ -13,6 +13,9 @@ const Icons = {
   Check: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>,
   ArrowRight: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>,
   ArrowLeft: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>,
+  GraduationCap: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>,
+  Briefcase: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>,
+  Building: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M8 10h.01M16 10h.01M12 10h.01M8 14h.01M16 14h.01M12 14h.01"/></svg>,
 };
 
 // ── Tipos ────────────────────────────────────────────────────────────────────
@@ -21,7 +24,7 @@ type RolType = "egresado" | "externo" | "empresa" | null;
 const ROLES = [
   {
     id: "egresado" as RolType,
-    icon: "🎓",
+    icon: <Icons.GraduationCap />,
     iconClass: "auth-role-card__icon--egresado",
     title: "Egresado UCC",
     desc: "Accede a beneficios exclusivos para graduados de nuestra red UCC.",
@@ -29,7 +32,7 @@ const ROLES = [
   },
   {
     id: "externo" as RolType,
-    icon: "💼",
+    icon: <Icons.Briefcase />,
     iconClass: "auth-role-card__icon--externo",
     title: "Usuario externo",
     desc: "Conéctate con las mejores oportunidades laborales del país.",
@@ -37,7 +40,7 @@ const ROLES = [
   },
   {
     id: "empresa" as RolType,
-    icon: "🏛️",
+    icon: <Icons.Building />,
     iconClass: "auth-role-card__icon--empresa",
     title: "Empresa",
     desc: "Encuentra el talento ideal para tus vacantes en nuestra comunidad.",
