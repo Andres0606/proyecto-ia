@@ -79,14 +79,30 @@ const getVacancies = async (req, res) => {
       return res.status(200).json({ success: true, vacancies: [] });
     }
 
-    // 2. Obtener empresas en bloque para evitar consultas repetitivas
+    // 2. Obtener empresas y sus logos en bloque para evitar consultas repetitivas
     const empresaIds = [...new Set(vacancies.map(v => v.empresa_id).filter(Boolean))];
     let empsMap = new Map();
     if (empresaIds.length > 0) {
       try {
-        const { data: emps } = await supabase.from('empresas').select('id, razon_social, ciudad').in('id', empresaIds);
-        if (emps) emps.forEach(e => empsMap.set(e.id, e));
-      } catch (e) { console.error('Error cargando empresas:', e); }
+        // Obtenemos datos básicos de la empresa y el user_id para buscar el logo
+        const { data: emps } = await supabase.from('empresas').select('id, razon_social, ciudad, user_id').in('id', empresaIds);
+        
+        if (emps) {
+          const userIds = emps.map(e => e.user_id).filter(Boolean);
+          // Obtenemos los logos de la tabla users
+          const { data: users } = await supabase.from('users').select('id, foto_url').in('id', userIds);
+          
+          const userLogosMap = new Map();
+          if (users) users.forEach(u => userLogosMap.set(u.id, u.foto_url));
+          
+          emps.forEach(e => {
+            empsMap.set(e.id, {
+              ...e,
+              logo: userLogosMap.get(e.user_id) || null
+            });
+          });
+        }
+      } catch (e) { console.error('Error cargando empresas/logos:', e); }
     }
 
     // 3. Procesamiento defensivo uno a uno
@@ -95,7 +111,7 @@ const getVacancies = async (req, res) => {
         const empresa = empsMap.get(v.empresa_id) || {};
         return {
           ...v,
-          empresa_logo: null, // Desactivado por ahora para evitar 500 de permisos en users
+          empresa_logo: empresa.logo || null, 
           empresas: {
             razon_social: empresa.razon_social || 'Empresa UCC',
             ciudad: empresa.ciudad || 'Colombia'
