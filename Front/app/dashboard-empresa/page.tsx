@@ -388,48 +388,73 @@ export default function DashboardEmpresa() {
 
           {activeSection === 'candidates' && (
             <div style={{ background: 'white', borderRadius: '32px', padding: '45px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-                <h2 style={{ color: '#1e3a5f', fontWeight: 900, margin: 0 }}>Gestión de Candidatos</h2>
-                <span style={{ background: '#f1f5f9', color: '#475569', padding: '8px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 700 }}>{candidates.length} Postulaciones</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '35px' }}>
+                <h2 style={{ color: '#0f172a', fontWeight: 900, margin: 0 }}>Candidatos por Vacante</h2>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <span style={{ background: '#f1f5f9', color: '#475569', padding: '8px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 700 }}>
+                    {Object.keys(candidates.reduce((acc: any, curr: any) => {
+                      const key = curr.vacante || 'Otras';
+                      if (!acc[key]) acc[key] = [];
+                      acc[key].push(curr);
+                      return acc;
+                    }, {})).length} Vacantes activas
+                  </span>
+                </div>
               </div>
 
-              <div style={{ display: 'grid', gap: '16px' }}>
+              <div style={{ display: 'grid', gap: '32px' }}>
                 {candidates.length === 0 ? (
                   <div style={{ textAlign: 'center', padding: '60px 20px' }}>
                     <div style={{ width: '80px', height: '80px', borderRadius: '25px', background: '#f8fafc', color: '#94a3b8', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}><Icons.Users /></div>
                     <p style={{ color: '#64748b', fontSize: '1.1rem' }}>Aún no hay candidatos postulados a tus vacantes.</p>
                   </div>
                 ) : (
-                  candidates.map(c => (
-                    <div key={c.id} style={{ padding: '24px', border: '1px solid #f1f5f9', borderRadius: '24px', background: '#f8fafc', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'transform 0.2s' }}>
-                      <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-                        <div style={{ width: '55px', height: '55px', borderRadius: '16px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', boxShadow: '0 4px 10px rgba(0,0,0,0.05)', color: '#1e3a5f', border: '2px solid #f1f5f9' }}>
-                          {c.candidato.nombre.charAt(0)}
-                        </div>
-                        <div>
-                          <h4 style={{ margin: 0, color: '#1e3a5f', fontSize: '1.1rem', fontWeight: 800 }}>{c.candidato.nombre}</h4>
-                          <div style={{ display: 'flex', gap: '12px', fontSize: '0.85rem', color: '#64748b', marginTop: '4px' }}>
-                            <span style={{ fontWeight: 700, color: '#3b82f6' }}>{c.vacante}</span>
-                            <span>📅 {new Date(c.fecha).toLocaleDateString()}</span>
-                            <span style={{ 
-                              background: c.estado === 'aceptado' ? '#dcfce7' : c.estado === 'rechazado' ? '#fee2e2' : '#fef9c3', 
-                              color: c.estado === 'aceptado' ? '#166534' : c.estado === 'rechazado' ? '#991b1b' : '#854d0e',
-                              padding: '2px 8px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase'
-                            }}>
-                              {c.estado}
-                            </span>
-                          </div>
-                        </div>
+                  Object.entries(
+                    candidates.reduce((acc: any, curr: any) => {
+                      const key = curr.vacante || 'Otras';
+                      if (!acc[key]) acc[key] = [];
+                      acc[key].push(curr);
+                      return acc;
+                    }, {})
+                  ).map(([vacanteTitle, apps]: [string, any]) => (
+                    <div key={vacanteTitle} style={{ border: '1.5px solid #f1f5f9', borderRadius: '28px', overflow: 'hidden', background: '#ffffff' }}>
+                      <div style={{ background: '#f8fafc', padding: '20px 30px', borderBottom: '1.5px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <h3 style={{ margin: 0, color: '#0f172a', fontSize: '1.2rem', fontWeight: 800 }}>{vacanteTitle}</h3>
+                        <span style={{ background: '#0f172a', color: 'white', padding: '4px 12px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: 700 }}>{apps.length} Postulados</span>
                       </div>
-                      <div style={{ display: 'flex', gap: '10px' }}>
-                        <button onClick={() => setSelectedCandidate(c)} style={{ padding: '10px 20px', borderRadius: '12px', background: '#1e3a5f', color: 'white', border: 'none', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}>
-                          Ver Perfil / CV
-                        </button>
+                      <div style={{ padding: '20px', display: 'grid', gap: '12px' }}>
+                        {Array.isArray(apps) && apps.map((c: any) => (
+                          <div key={c.id} style={{ padding: '18px 24px', border: '1px solid #f1f5f9', borderRadius: '20px', background: '#ffffff', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.2s', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+                            <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                              <div style={{ width: '45px', height: '45px', borderRadius: '12px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', color: '#1e40af', fontWeight: 800 }}>
+                                {c.candidato?.nombre?.charAt(0) || 'U'}
+                              </div>
+                              <div>
+                                <h4 style={{ margin: 0, color: '#0f172a', fontSize: '1rem', fontWeight: 800 }}>{c.candidato?.nombre || 'Usuario'}</h4>
+                                <div style={{ display: 'flex', gap: '10px', fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>
+                                  <span>📅 {new Date(c.fecha).toLocaleDateString()}</span>
+                                  <span style={{ 
+                                    background: c.estado === 'aceptado' ? '#dcfce7' : c.estado === 'rechazado' ? '#fee2e2' : '#fef9c3', 
+                                    color: c.estado === 'aceptado' ? '#166534' : c.estado === 'rechazado' ? '#991b1b' : '#854d0e',
+                                    padding: '1px 6px', borderRadius: '4px', fontWeight: 800, textTransform: 'uppercase'
+                                  }}>
+                                    {c.estado}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            <button onClick={() => setSelectedCandidate(c)} style={{ padding: '8px 16px', borderRadius: '10px', background: 'white', color: '#0f172a', border: '1.5px solid #0f172a', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', transition: 'all 0.2s' }}>
+                              Ver Detalles
+                            </button>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   ))
                 )}
               </div>
+
+
 
               {/* Modal de Detalle de Candidato */}
               {selectedCandidate && (
