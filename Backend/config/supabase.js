@@ -5,7 +5,13 @@ require('dotenv').config();
 const supabaseUrl = 'https://eqncdpzboevfpagjytqr.supabase.co';
 const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVxbmNkcHpib2V2ZnBhZ2p5dHFyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3Nzg2NjkzOSwiZXhwIjoyMDkzNDQyOTM5fQ.FHHgu_98A-I-TwCuVsTdlUb9sNendWe99nN0HPSjgU4';
 
-// Cliente con service_role para bypass de RLS en el Backend
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+// Cliente con service_role y opciones para forzar el bypass de RLS
+const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+    detectSessionInUrl: false
+  }
+});
 
 module.exports = supabase;
