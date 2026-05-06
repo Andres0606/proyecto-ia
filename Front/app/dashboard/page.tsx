@@ -136,12 +136,14 @@ export default function Dashboard() {
 
   const handleSectionChange = (id: string) => {
     setActiveSection(id as any);
+    if (id === 'apps' && userId) fetchMyApplications(userId);
   };
 
   const ACTIONS = [
     { title: 'Inicio', icon: Icons.Home, id: 'none', color: '#3b82f6' },
     { title: 'Datos Personales', icon: Icons.User, id: 'personal', color: '#8b5cf6' },
     { title: 'Perfil Profesional', icon: Icons.Briefcase, id: 'professional', color: '#10b981' },
+    { title: 'Mis Postulaciones', icon: Icons.Mail, id: 'apps', color: '#f59e0b' },
     { title: 'Actualizar CV', icon: Icons.File, id: 'cv', color: '#ef4444' },
   ];
 
@@ -184,7 +186,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '40px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '20px', marginBottom: '40px' }}>
           {ACTIONS.map(a => {
             const Icon = a.icon;
             return (
@@ -266,6 +268,47 @@ export default function Dashboard() {
                 ))}
               </div>
               {isEditingProf && <button onClick={handleSave} style={{ width: '100%', marginTop: '30px', padding: '15px', background: '#00A9E0', color: 'white', borderRadius: '14px', border: 'none', fontWeight: 800, cursor: 'pointer' }}>Guardar Perfil</button>}
+            </div>
+          )}
+
+          {activeSection === 'apps' && (
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+                <h2 style={{ margin: 0, color: '#1e3a5f', fontWeight: 900 }}>Mis Postulaciones</h2>
+                <button onClick={() => userId && fetchMyApplications(userId)} style={{ padding: '8px 16px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  🔄 Actualizar
+                </button>
+              </div>
+              {myApplications.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>
+                  <Icons.Mail />
+                  <p style={{ marginTop: '20px' }}>Aún no te has postulado a ninguna vacante.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gap: '15px' }}>
+                  {myApplications.map(app => (
+                    <div key={app.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '24px', borderRadius: '20px', border: '1px solid #f1f5f9', background: '#f8fafc' }}>
+                      <div>
+                        <h3 style={{ margin: 0, color: '#1e3a5f', fontSize: '1.1rem', fontWeight: 800 }}>{app.vacante_nombre}</h3>
+                        <p style={{ margin: '4px 0', color: '#64748b', fontWeight: 500 }}>{app.empresa_nombre} · {app.ubicacion}</p>
+                        <small style={{ color: '#94a3b8' }}>Postulado el: {new Date(app.fecha).toLocaleDateString()}</small>
+                      </div>
+                      <span style={{ 
+                        padding: '8px 16px', 
+                        borderRadius: '12px', 
+                        fontSize: '0.75rem', 
+                        fontWeight: 800, 
+                        textTransform: 'uppercase',
+                        background: app.estado === 'postulado' ? '#eff6ff' : '#ecfdf5',
+                        color: app.estado === 'postulado' ? '#3b82f6' : '#059669',
+                        border: app.estado === 'postulado' ? '1px solid #dbeafe' : '1px solid #d1fae5'
+                      }}>
+                        {app.estado}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
