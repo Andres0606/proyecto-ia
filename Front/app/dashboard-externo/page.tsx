@@ -163,9 +163,24 @@ export default function DashboardExterno() {
   };
 
   const PLANS = [
-    { name: 'Gratuito', price: 'Gratis', icon: <Icons.User />, features: ['Perfil Profesional', 'Subir Hoja de Vida', 'Acceso a Vacantes Básicas'] },
-    { name: 'Acceso al Modelo', price: '$25.000', icon: <Icons.Home />, features: ['Todo lo anterior', 'Diagnóstico IA Estabilidad', 'Reporte PDF'] },
-    { name: 'Plan Completo', price: '$45.000', icon: <Icons.Briefcase />, features: ['Todo lo anterior', 'Bolsa de Empleo UCC', 'Alertas Prioritarias'] }
+    { 
+      name: 'Gratuito', 
+      price: 'Gratis', 
+      icon: <Icons.User />, 
+      features: ['Perfil Profesional', 'Subir Hoja de Vida', 'Ver Bolsa de Empleo (Solo lectura)'] 
+    },
+    { 
+      name: 'Acceso al Modelo', 
+      price: '$25.000', 
+      icon: <Icons.File />, 
+      features: ['Todo lo anterior', 'Diagnóstico IA Estabilidad', 'Reporte PDF Detallado'] 
+    },
+    { 
+      name: 'Plan Completo', 
+      price: '$45.000', 
+      icon: <Icons.Briefcase />, 
+      features: ['Todo lo anterior', 'Postulación en Bolsa de Empleo UCC'] 
+    }
   ];
 
   const ACTIONS = [

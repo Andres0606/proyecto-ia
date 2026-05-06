@@ -125,11 +125,67 @@ function JobCard({ job, delay }: { job: Job; delay: number }) {
 
       {job.desc && <p className="be-card__desc">{job.desc}</p>}
 
+  const handleApply = (e: React.MouseEvent, jobTitle: string) => {
+    const saved = sessionStorage.getItem('ucc_user');
+    if (!saved) {
+      alert("Debes iniciar sesión para postularte.");
+      return;
+    }
+
+    const user = JSON.parse(saved);
+    const rol = Number(user.profile?.rol_id);
+    const plan = user.profile?.suscripcion?.tipo_plan || 'Gratuito';
+
+    // Restricción para Usuarios Externos (Rol 2)
+    if (rol === 2 && plan !== 'Plan Completo') {
+      alert("Tu plan actual solo permite visualizar ofertas. Actualiza al 'Plan Completo' en tu Dashboard para poder postularte a las vacantes de la UCC.");
+      return;
+    }
+
+    alert(`¡Postulación enviada con éxito para: ${jobTitle}!`);
+  };
+
+  return (
+    <article className={`be-card${job.featured ? " be-card--featured" : ""}`} style={{ animationDelay: `${delay * 60}ms` }}>
+      {job.featured && (
+        <span className="be-card__badge-feat">
+          <Icons.Star /> DESTACADA
+        </span>
+      )}
+
+      <div className="be-card__top">
+        <div className="be-card__logo">
+          {job.logo.startsWith('http')
+            ? <img src={job.logo} alt={job.company} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            : initials
+          }
+        </div>
+        <div className="be-card__heading">
+          <h3 className="be-card__role">{job.role}</h3>
+          <p className="be-card__company">
+            <Icons.Briefcase />
+            {job.company}
+          </p>
+        </div>
+        <span className="be-card__salary">{job.salaryLabel}</span>
+      </div>
+
+      <div className="be-card__badges">
+        <span className={`be-badge ${MODE_BADGE[job.mode] || "be-badge--hibrido"}`}>{job.mode}</span>
+        <span className="be-badge be-badge--area">{job.area}</span>
+        <span className="be-badge be-badge--exp">{job.nivel}</span>
+        <span className="be-badge be-badge--city">
+          <Icons.Location /> {job.city}
+        </span>
+      </div>
+
+      {job.desc && <p className="be-card__desc">{job.desc}</p>}
+
       <div className="be-card__footer">
         <span className="be-card__posted">
           <Icons.Clock /> {job.posted}
         </span>
-        <button className="be-card__apply">
+        <button className="be-card__apply" onClick={(e) => handleApply(e, job.role)}>
           Postularme
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </button>

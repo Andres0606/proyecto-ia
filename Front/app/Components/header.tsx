@@ -54,13 +54,13 @@ export default function Header() {
       if (type === 'diagnostico') {
         if (plan === 'Gratuito') {
           e.preventDefault();
-          alert("No tienes acceso a este módulo debido a tu tipo de plan. Adquiere el 'Acceso al Modelo' para continuar.");
+          alert("El Diagnóstico de Estabilidad IA es un beneficio exclusivo del plan 'Acceso al Modelo' o superior. ¡Actualiza tu plan para descubrir tu futuro laboral!");
+          return;
         }
       } else if (type === 'bolsa') {
-        if (plan === 'Gratuito' || plan === 'Acceso al Modelo') {
-          e.preventDefault();
-          alert("No tienes acceso a este módulo debido a tu tipo de plan. Adquiere el 'Plan Completo' para acceder a la bolsa de empleo.");
-        }
+        // Permitimos la entrada a todos los externos para visualizar, 
+        // la restricción de postulación se hace dentro de la página de Bolsa.
+        return;
       }
     }
   };
