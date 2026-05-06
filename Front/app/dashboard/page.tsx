@@ -289,7 +289,12 @@ export default function Dashboard() {
 
           {activeSection === 'apps' && (
             <div>
-              <h2 style={{ marginBottom: '30px', color: '#1e3a5f', fontWeight: 900 }}>Mis Postulaciones</h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+                <h2 style={{ margin: 0, color: '#1e3a5f', fontWeight: 900 }}>Mis Postulaciones</h2>
+                <button onClick={() => userId && fetchMyApplications(userId)} style={{ padding: '8px 16px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  🔄 Actualizar
+                </button>
+              </div>
               {myApplications.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>
                   <Icons.Mail />
@@ -300,8 +305,8 @@ export default function Dashboard() {
                   {myApplications.map(app => (
                     <div key={app.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '24px', borderRadius: '20px', border: '1px solid #f1f5f9', background: '#f8fafc' }}>
                       <div>
-                        <h3 style={{ margin: 0, color: '#1e3a5f', fontSize: '1.1rem', fontWeight: 800 }}>{app.vacantes?.cargo}</h3>
-                        <p style={{ margin: '4px 0', color: '#64748b', fontWeight: 500 }}>{app.vacantes?.empresas?.razon_social} · {app.vacantes?.modalidad}</p>
+                        <h3 style={{ margin: 0, color: '#1e3a5f', fontSize: '1.1rem', fontWeight: 800 }}>{app.vacantes?.cargo || `Vacante #${app.vacante_id}`}</h3>
+                        <p style={{ margin: '4px 0', color: '#64748b', fontWeight: 500 }}>{app.vacantes?.empresas?.razon_social || 'Empresa UCC'} · {app.vacantes?.modalidad || 'Remoto'}</p>
                         <small style={{ color: '#94a3b8' }}>Postulado el: {new Date(app.fecha_postulacion).toLocaleDateString()}</small>
                       </div>
                       <span style={{ 
