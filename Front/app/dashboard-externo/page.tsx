@@ -134,14 +134,10 @@ export default function DashboardExterno() {
       const d = await r.json();
       if (d.success) {
         setToast({ msg: `¡Plan ${planName} activado!`, type: 'success' });
-        // Sincronizar localmente antes de re-cargar para respuesta inmediata
-        const saved = sessionStorage.getItem('ucc_user');
-        if (saved) {
-          const obj = JSON.parse(saved);
-          if (obj.profile) obj.profile.suscripcion = { tipo_plan: planName };
-          sessionStorage.setItem('ucc_user', JSON.stringify(obj));
-        }
-        setTimeout(() => fetchProfile(userId), 500);
+        // Recarga total de la página para actualizar todos los componentes y permisos
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
       } else {
         setToast({ msg: d.message || 'Error al actualizar plan', type: 'error' });
       }
