@@ -381,54 +381,16 @@ const updatePlan = async (req, res) => {
       return res.status(500).json({ success: false, message: 'Error de base de datos', error: subError.message });
     }
 
-    // 4. CAMBIO DE ROL Y CREACIÓN DE PERFIL PROFESIONAL
-    if (finalPlan === 'Plan Completo' || finalPlan === 'Acceso al Modelo') {
-      // A. Actualizar el rol_id en la tabla users
-      const { error: roleError } = await supabase
-        .from('users')
-        .update({ rol_id: 1 })
-        .eq('id', cleanUserId);
-      
-      if (roleError) {
-        console.error("⚠️ Error al actualizar rol_id:", roleError.message);
-      } else {
-        console.log(`✅ Usuario ${cleanUserId} promovido a Rol 1 en tabla users`);
-      }
-
-      // B. Asegurar que tenga un registro en perfiles_usuarios (requerido para Rol 1)
-      const { data: existingProfile } = await supabase
-        .from('perfiles_usuarios')
-        .select('id')
-        .eq('user_id', cleanUserId)
-        .single();
-
-      if (!existingProfile) {
-        console.log("📝 Creando perfil profesional inicial para el nuevo usuario Premium...");
-        await supabase
-          .from('perfiles_usuarios')
-          .insert([{ 
-            user_id: cleanUserId,
-            nivel_formacion: 'Profesional',
-            programa_academico: 'Por definir',
-            estrato: 3,
-            estado_civil: 'Soltero',
-            numero_hijos: 0,
-            ingreso_mensual: 0,
-            emprendimiento: false
-          }]);
-      }
-    }
-
-    console.log("✅ PROCESO DE ACTUALIZACIÓN COMPLETO");
+    console.log("✅ PROCESO DE ACTUALIZACIÓN DE PLAN COMPLETO");
     return res.status(200).json({ 
       success: true, 
-      message: `Plan ${finalPlan} activado. Ahora eres un usuario Premium con acceso total.`,
+      message: `Plan ${finalPlan} actualizado correctamente en tu suscripción.`,
       data: subData[0]
     });
 
   } catch (error) {
     console.error("❌ ERROR GENERAL EN UPDATEPLAN:", error);
-    return res.status(500).json({ success: false, message: 'Error al procesar la suscripción', error: error.message });
+    return res.status(500).json({ success: false, message: 'Error al procesar la actualización del plan', error: error.message });
   }
 };
 
