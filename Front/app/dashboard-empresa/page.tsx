@@ -9,6 +9,7 @@ const Icons = {
   Home: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>,
   Company: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M8 10h.01" /><path d="M16 10h.01" /><path d="M8 14h.01" /><path d="M16 14h.01" /></svg>,
   Announce: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8a3 3 0 0 0-3-3H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a3 3 0 0 0 3-3V8Z" /><path d="M10 8v4" /><path d="M21 15v-2a5 5 0 0 0-5-5" /><path d="M21 9v2" /></svg>,
+  List: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>,
   Users: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M17 7a4 4 0 0 1 0 7.75" /></svg>,
   Support: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6" /><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" /></svg>
 };
@@ -16,9 +17,9 @@ const Icons = {
 const QUICK_ACTIONS = [
   { title: 'Inicio', Icon: Icons.Home, id: 'none', color: '#3b82f6' },
   { title: 'Mi Empresa', Icon: Icons.Company, id: 'professional', color: '#1e3a5f' },
-  { title: 'Publicar Vacante', Icon: Icons.Announce, id: 'jobs', color: '#8b5cf6' },
+  { title: 'Nueva Vacante', Icon: Icons.Announce, id: 'jobs', color: '#8b5cf6' },
+  { title: 'Mis Vacantes', Icon: Icons.List, id: 'my-jobs', color: '#f59e0b' },
   { title: 'Candidatos', Icon: Icons.Users, id: 'candidates', color: '#10b981' },
-  { title: 'Soporte', Icon: Icons.Support, id: 'support', color: '#ef4444' },
 ];
 
 const OPTIONS = {
@@ -35,8 +36,9 @@ export default function DashboardEmpresa() {
   const [companySlogan, setCompanySlogan] = useState('Panel de gestión corporativa');
   const [companyLogo, setCompanyLogo] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-  const [activeSection, setActiveSection] = useState<'none' | 'professional' | 'jobs' | 'candidates' | 'support'>('none');
+  const [activeSection, setActiveSection] = useState<'none' | 'professional' | 'jobs' | 'my-jobs' | 'candidates' | 'support'>('none');
   const [toast, setToast] = useState<{ msg: string, type: 'info' | 'success' | 'error' | 'none' }>({ msg: '', type: 'none' });
+  const [myVacancies, setMyVacancies] = useState<any[]>([]);
   
   const [formData, setFormData] = useState({
     razon_social: '', nit: '', sector_economico: '', ciudad: '',
@@ -64,7 +66,9 @@ export default function DashboardEmpresa() {
         const rawId = userData.id || userData.profile?.id || userData.user_id;
         if (rawId) {
           const cleanId = String(rawId).trim().split(':')[0];
-          setUserId(cleanId); fetchProfile(cleanId);
+          setUserId(cleanId); 
+          fetchProfile(cleanId);
+          fetchMyVacancies(cleanId);
         }
       } catch (e) { console.error('Error parseando usuario:', e); }
     }
@@ -76,19 +80,11 @@ export default function DashboardEmpresa() {
       const data = await res.json();
       if (data.success && data.profile) {
         const u = data.profile;
-        const c = u.empresa || (u.empresas && u.empresas[0]) || {};
+        const c = u.empresa || {};
         const nombreFinal = c.razon_social || u.nombre_completo || 'Empresa UCC';
         setCompanyName(nombreFinal);
         setCompanySlogan(c.eslogan || 'Panel de gestión y talento corporativo');
         if (u.foto_url) setCompanyLogo(`${u.foto_url}?t=${new Date().getTime()}`);
-
-        const savedSession = sessionStorage.getItem('ucc_user');
-        if (savedSession) {
-          const sessionObj = JSON.parse(savedSession);
-          sessionObj.profile = { ...u, nombre_completo: nombreFinal };
-          sessionStorage.setItem('ucc_user', JSON.stringify(sessionObj));
-          window.dispatchEvent(new Event('storage'));
-        }
 
         setFormData({
           razon_social: c.razon_social || '', nit: c.nit || '', sector_economico: c.sector_economico || '',
@@ -96,6 +92,14 @@ export default function DashboardEmpresa() {
           telefono: c.telefono || u.telefono || '', correo: c.correo || u.correo || '', eslogan: c.eslogan || ''
         });
       }
+    } catch (err) { console.error(err); }
+  };
+
+  const fetchMyVacancies = async (id: string) => {
+    try {
+      const res = await fetch(`${base()}/api/vacantes/my-vacancies/${id}`);
+      const d = await res.json();
+      if (d.success) setMyVacancies(d.vacancies);
     } catch (err) { console.error(err); }
   };
 
@@ -135,7 +139,8 @@ export default function DashboardEmpresa() {
           salario: '', tipo_contrato: '', duracion_contrato: '', modalidad: '',
           ubicacion: '', descripcion: ''
         });
-        setActiveSection('none');
+        fetchMyVacancies(userId);
+        setActiveSection('my-jobs');
       } else {
         setToast({ msg: d.message || 'Error al publicar', type: 'error' });
       }
@@ -168,7 +173,7 @@ export default function DashboardEmpresa() {
       )}
 
       <main style={{ paddingTop: '110px', maxWidth: '1120px', margin: '0 auto', paddingBottom: '60px' }}>
-
+        
         {/* Hero Card */}
         <div style={{ background: 'white', borderRadius: '32px', padding: '40px', boxShadow: '0 10px 40px rgba(0,40,85,0.04)', display: 'flex', alignItems: 'center', gap: '40px', marginBottom: '32px', border: '1px solid rgba(226, 232, 240, 0.5)', position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: '-100px', right: '-100px', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%)', zIndex: 0 }} />
@@ -197,7 +202,6 @@ export default function DashboardEmpresa() {
           ))}
         </div>
 
-        {/* Content Area */}
         <div style={{ animation: 'fadeIn 0.4s ease-out' }}>
           {activeSection === 'none' && (
             <div style={{ background: 'white', borderRadius: '32px', padding: '50px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)', display: 'flex', gap: '40px', alignItems: 'center' }}>
@@ -207,6 +211,7 @@ export default function DashboardEmpresa() {
                 <p style={{ color: '#64748b', lineHeight: 1.7, margin: '0 0 28px' }}>Desde aquí podrá gestionar su presencia en la Universidad Cooperativa y conectar con el mejor talento egresado.</p>
                 <div style={{ display: 'flex', gap: '16px' }}>
                   <button onClick={() => setActiveSection('jobs')} style={{ background: '#1e3a5f', color: 'white', border: 'none', borderRadius: '16px', padding: '16px 32px', fontWeight: 800, cursor: 'pointer' }}>Publicar Vacante</button>
+                  <button onClick={() => setActiveSection('my-jobs')} style={{ background: 'white', color: '#1e3a5f', border: '2px solid #1e3a5f', borderRadius: '16px', padding: '16px 32px', fontWeight: 800, cursor: 'pointer' }}>Ver Mis Vacantes</button>
                 </div>
               </div>
             </div>
@@ -216,7 +221,6 @@ export default function DashboardEmpresa() {
             <div style={{ background: 'white', borderRadius: '32px', padding: '45px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)' }}>
               <h2 style={{ margin: '0 0 35px', color: '#1e3a5f', fontWeight: 900 }}>Información Corporativa</h2>
               <div className="responsive-grid-2" style={{ gap: '25px' }}>
-                <div style={{ gridColumn: '1 / -1' }}><label style={lbl}>Eslogan</label><input value={formData.eslogan} disabled style={dis} /></div>
                 {[
                   { l: 'Razón Social', k: 'razon_social' }, { l: 'NIT', k: 'nit' },
                   { l: 'Sector', k: 'sector_economico' }, { l: 'Ciudad', k: 'ciudad' },
@@ -235,24 +239,50 @@ export default function DashboardEmpresa() {
               <div className="responsive-grid-2" style={{ gap: '20px' }}>
                 <div><label style={lbl}>Cargo / Título</label><input style={inp} value={jobData.cargo} onChange={e => setJobData({...jobData, cargo: e.target.value})} placeholder="Ej: Analista de Sistemas" /></div>
                 <div><label style={lbl}>Área de Desempeño</label><select style={inp} value={jobData.area_desempeno} onChange={e => setJobData({...jobData, area_desempeno: e.target.value})}><option value="">Seleccionar...</option>{OPTIONS.Area.map(o => <option key={o} value={o}>{o}</option>)}</select></div>
-                
                 <div style={{ gridColumn: '1 / -1' }}>
-                  <label style={lbl}>Programas Requeridos (Puedes seleccionar varios)</label>
+                  <label style={lbl}>Programas Requeridos</label>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', padding: '15px', border: '1.5px solid #e2e8f0', borderRadius: '16px', background: '#f8fafc' }}>
                     {OPTIONS.Programas.map(p => (
                       <button key={p} onClick={() => handleToggleProgram(p)} style={{ padding: '8px 16px', borderRadius: '30px', border: '1.5px solid', borderColor: jobData.programa_requerido.includes(p) ? '#1e3a5f' : '#e2e8f0', background: jobData.programa_requerido.includes(p) ? '#1e3a5f' : 'white', color: jobData.programa_requerido.includes(p) ? 'white' : '#64748b', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }}>{p}</button>
                     ))}
                   </div>
                 </div>
-
                 <div><label style={lbl}>Nivel de Formación</label><select style={inp} value={jobData.nivel_formacion} onChange={e => setJobData({...jobData, nivel_formacion: e.target.value})}><option value="">Seleccionar...</option>{OPTIONS.Nivel.map(o => <option key={o} value={o}>{o}</option>)}</select></div>
                 <div><label style={lbl}>Salario Mensual</label><input style={inp} type="number" value={jobData.salario} onChange={e => setJobData({...jobData, salario: e.target.value})} placeholder="Ej: 2800000" /></div>
                 <div><label style={lbl}>Tipo de Contrato</label><select style={inp} value={jobData.tipo_contrato} onChange={e => setJobData({...jobData, tipo_contrato: e.target.value})}><option value="">Seleccionar...</option>{OPTIONS.Contrato.map(o => <option key={o} value={o}>{o}</option>)}</select></div>
                 <div><label style={lbl}>Modalidad</label><select style={inp} value={jobData.modalidad} onChange={e => setJobData({...jobData, modalidad: e.target.value})}><option value="">Seleccionar...</option>{OPTIONS.Modalidad.map(o => <option key={o} value={o}>{o}</option>)}</select></div>
                 <div><label style={lbl}>Ubicación de la Empresa</label><input style={inp} value={jobData.ubicacion} onChange={e => setJobData({...jobData, ubicacion: e.target.value})} placeholder="Ej: Villavicencio" /></div>
-                <div style={{ gridColumn: '1 / -1' }}><label style={lbl}>Descripción de la Vacante</label><textarea style={{ ...inp, height: '120px', resize: 'none' }} value={jobData.descripcion} onChange={e => setJobData({...jobData, descripcion: e.target.value})} placeholder="Detalla los requisitos y responsabilidades..." /></div>
+                <div style={{ gridColumn: '1 / -1' }}><label style={lbl}>Descripción</label><textarea style={{ ...inp, height: '120px', resize: 'none' }} value={jobData.descripcion} onChange={e => setJobData({...jobData, descripcion: e.target.value})} placeholder="Detalles de la vacante..." /></div>
               </div>
-              <button onClick={handlePostJob} style={{ width: '100%', marginTop: '30px', padding: '18px', background: '#1e3a5f', color: 'white', borderRadius: '16px', border: 'none', fontWeight: 800, cursor: 'pointer', fontSize: '1rem' }}>Publicar Vacante Ahora</button>
+              <button onClick={handlePostJob} style={{ width: '100%', marginTop: '30px', padding: '18px', background: '#1e3a5f', color: 'white', borderRadius: '16px', border: 'none', fontWeight: 800, cursor: 'pointer' }}>Publicar Vacante</button>
+            </div>
+          )}
+
+          {activeSection === 'my-jobs' && (
+            <div style={{ background: 'white', borderRadius: '32px', padding: '45px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+                <h2 style={{ color: '#1e3a5f', fontWeight: 900, margin: 0 }}>Mis Vacantes Publicadas</h2>
+                <span style={{ background: '#f1f5f9', color: '#475569', padding: '8px 16px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 700 }}>{myVacancies.length} Ofertas</span>
+              </div>
+              <div style={{ display: 'grid', gap: '16px' }}>
+                {myVacancies.length === 0 ? (
+                  <p style={{ textAlign: 'center', color: '#64748b', padding: '40px' }}>Aún no has publicado ninguna vacante.</p>
+                ) : (
+                  myVacancies.map(v => (
+                    <div key={v.id} style={{ padding: '24px', border: '1px solid #f1f5f9', borderRadius: '24px', background: '#f8fafc', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <h4 style={{ margin: '0 0 4px', color: '#1e3a5f', fontSize: '1.1rem', fontWeight: 800 }}>{v.cargo}</h4>
+                        <div style={{ display: 'flex', gap: '12px', fontSize: '0.85rem', color: '#64748b' }}>
+                          <span>📍 {v.ubicacion}</span>
+                          <span>💰 ${v.salario?.toLocaleString()}</span>
+                          <span>📅 {new Date(v.created_at).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                      <span style={{ background: '#dcfce7', color: '#166534', padding: '6px 12px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 800 }}>ACTIVA</span>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           )}
 
@@ -260,17 +290,7 @@ export default function DashboardEmpresa() {
             <div style={{ background: 'white', borderRadius: '32px', padding: '70px 50px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)', textAlign: 'center' }}>
               <div style={{ width: '90px', height: '90px', borderRadius: '25px', background: '#ecfdf5', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 30px' }}><Icons.Users /></div>
               <h2 style={{ color: '#1e3a5f', fontWeight: 900 }}>Gestión de Talento</h2>
-              <p style={{ color: '#64748b' }}>Próximamente podrás visualizar las postulaciones.</p>
-            </div>
-          )}
-
-          {activeSection === 'support' && (
-            <div style={{ background: 'white', borderRadius: '32px', padding: '45px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)' }}>
-              <h2 style={{ color: '#1e3a5f', fontWeight: 900 }}>Soporte</h2>
-              <div className="responsive-grid-2" style={{ gap: '25px' }}>
-                <div style={{ padding: '25px', border: '1px solid #f1f5f9', borderRadius: '24px', background: '#f8fafc' }}>📧 egresados@ucc.edu.co</div>
-                <div style={{ padding: '25px', border: '1px solid #f1f5f9', borderRadius: '24px', background: '#f8fafc' }}>📞 +57 (8) 577 6655</div>
-              </div>
+              <p style={{ color: '#64748b' }}>Próximamente podrás visualizar las postulaciones de los egresados.</p>
             </div>
           )}
         </div>
