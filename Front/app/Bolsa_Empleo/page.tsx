@@ -148,7 +148,7 @@ export default function BolsaPage() {
   const [nivel, setNivel] = useState("Todas");
   const [sort, setSort] = useState("recent");
 
-  const base = () => (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000').replace(/\/$/, '');
+  const base = () => (process.env.NEXT_PUBLIC_BACKEND_URL || 'https://proyecto-ia-production-b7d6.up.railway.app').replace(/\/$/, '');
 
   useEffect(() => { fetchJobs(); }, []);
 
