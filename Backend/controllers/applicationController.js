@@ -36,87 +36,96 @@ const applyToVacancy = async (req, res) => {
 };
 
 const getUserApplications = async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const cleanUserId = String(userId).trim();
-    console.log(`📂 Buscando postulaciones para UserID: [${cleanUserId}]`);
+  const { userId } = req.params;
+  const cleanUserId = String(userId).trim();
+  
+  console.log(`--- INICIO RECONSTRUCCIÓN: Postulaciones para [${cleanUserId}] ---`);
 
-    // 1. Obtener las postulaciones base
-    const { data: apps, error: appsError } = await supabase
+  try {
+    // PASO 1: Obtener solo las IDs de las postulaciones
+    console.log('1. Consultando tabla postulaciones...');
+    const { data: rawApps, error: appsError } = await supabase
       .from('postulaciones')
       .select('*')
-      .eq('user_id', cleanUserId)
-      .order('fecha_postulacion', { ascending: false });
+      .eq('user_id', cleanUserId);
 
     if (appsError) {
-      console.error('❌ Error en consulta de postulaciones:', appsError);
-      return res.status(500).json({ success: false, message: appsError.message });
-    }
-
-    if (!apps || apps.length === 0) {
-      return res.status(200).json({ success: true, applications: [] });
-    }
-
-    // 2. Obtener los IDs de las vacantes
-    const vacancyIds = [...new Set(apps.map(a => a.vacante_id))].filter(Boolean);
-
-    if (vacancyIds.length === 0) {
-      return res.status(200).json({ success: true, applications: apps.map(a => ({ ...a, vacantes: null })) });
-    }
-
-    // 3. Obtener vacantes de forma segura - SIN JOIN anidado problemático
-    const { data: vacancies, error: vacError } = await supabase
-      .from('vacantes')
-      .select('*')
-      .in('id', vacancyIds);
-
-    if (vacError) {
-      console.warn('⚠️ Error obteniendo vacantes:', vacError.message);
-      return res.status(200).json({
-        success: true,
-        applications: apps.map(a => ({ ...a, vacantes: null }))
+      console.error('❌ Error fatal en paso 1:', appsError);
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Error al conectar con la tabla de postulaciones',
+        debug: appsError.message 
       });
     }
 
-    // 4. Obtener empresas para las vacantes que las tienen (separadamente)
-    const empresaIds = [...new Set(vacancies.filter(v => v.empresa_id).map(v => v.empresa_id))];
-    let empresasMap = new Map();
+    if (!rawApps || rawApps.length === 0) {
+      console.log('ℹ️ El usuario no tiene postulaciones registradas.');
+      return res.status(200).json({ success: true, applications: [] });
+    }
 
+    console.log(`2. Se encontraron ${rawApps.length} registros. Buscando detalles de vacantes...`);
+
+    // PASO 2: Obtener vacantes asociadas de forma segura
+    const vacancyIds = rawApps.map(a => a.vacante_id).filter(id => id != null);
+    let vacancies = [];
+    
+    if (vacancyIds.length > 0) {
+      const { data: vData, error: vError } = await supabase
+        .from('vacantes')
+        .select('*')
+        .in('id', vacancyIds);
+      
+      if (!vError && vData) vacancies = vData;
+      else console.warn('⚠️ No se pudieron cargar los detalles de las vacantes:', vError?.message);
+    }
+
+    // PASO 3: Obtener empresas asociadas
+    const empresaIds = vacancies.map(v => v.empresa_id).filter(id => id != null);
+    let companies = [];
+    
     if (empresaIds.length > 0) {
-      const { data: empresas, error: empError } = await supabase
+      const { data: cData, error: cError } = await supabase
         .from('empresas')
         .select('*')
         .in('id', empresaIds);
-
-      if (!empError && empresas) {
-        empresas.forEach(e => empresasMap.set(e.id, e));
-      }
+        
+      if (!cError && cData) companies = cData;
     }
 
-    // 5. Mapear los datos manualmente asegurando que la estructura sea idéntica para todos
-    const fullApps = apps.map(app => {
-      const vacancy = vacancies?.find(v => v.id === app.vacante_id) || null;
-      let empresaData = null;
-
-      if (vacancy && vacancy.empresa_id) {
-        empresaData = empresasMap.get(vacancy.empresa_id) || { razon_social: 'Empresa no disponible' };
+    // PASO 4: Ensamblaje Final (Reverse Engineering)
+    console.log('3. Ensamblando respuesta final...');
+    const formattedApps = rawApps.map(app => {
+      // Buscar la vacante correspondiente
+      const vacancy = vacancies.find(v => v.id === app.vacante_id) || null;
+      
+      // Buscar la empresa si hay vacante
+      let company = null;
+      if (vacancy) {
+        company = companies.find(c => c.id === vacancy.empresa_id) || { razon_social: 'Empresa no disponible' };
       }
 
       return {
         ...app,
         vacantes: vacancy ? {
           ...vacancy,
-          empresas: empresaData || { razon_social: 'Empresa no disponible' }
-        } : null
+          empresas: company
+        } : { cargo: 'Vacante no disponible', empresas: { razon_social: 'UCC' } }
       };
     });
 
-    console.log(`✅ Se encontraron ${fullApps.length} postulaciones para el usuario [${cleanUserId}]`);
-    return res.status(200).json({ success: true, applications: fullApps });
+    console.log(`✅ ÉXITO: Enviando ${formattedApps.length} postulaciones ensambladas.`);
+    return res.status(200).json({
+      success: true,
+      applications: formattedApps
+    });
 
   } catch (error) {
-    console.error('❌ Error crítico en getUserApplications:', error);
-    return res.status(500).json({ success: false, message: error.message || 'Error interno del servidor' });
+    console.error('❌ ERROR CRÍTICO EN RECONSTRUCCIÓN:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Fallo total en el ensamblaje de postulaciones',
+      error: error.message
+    });
   }
 };
 
