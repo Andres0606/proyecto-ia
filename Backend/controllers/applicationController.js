@@ -39,14 +39,18 @@ const getUserApplications = async (req, res) => {
     const { userId } = req.params;
     console.log(`📂 Buscando postulaciones para UserID: [${userId}]`);
 
-    // 1. Obtener las postulaciones base
+    // 1. Obtener las postulaciones base (Forzando esquema public)
     const { data: apps, error: appsError } = await supabase
       .from('postulaciones')
       .select('*')
       .eq('user_id', userId)
       .order('fecha_postulacion', { ascending: false });
 
-    if (appsError) throw appsError;
+    if (appsError) {
+      console.error('❌ Error en appsError:', appsError);
+      return res.status(500).json({ success: false, message: appsError.message, code: appsError.code });
+    }
+
     if (!apps || apps.length === 0) return res.status(200).json({ success: true, applications: [] });
 
     // 2. Obtener los IDs de las vacantes
@@ -58,14 +62,9 @@ const getUserApplications = async (req, res) => {
       .select('*, empresas(*)')
       .in('id', vacancyIds);
 
-    if (vacError) {
-      console.warn('⚠️ No se pudieron obtener detalles de vacantes, enviando datos básicos');
-      return res.status(200).json({ success: true, applications: apps });
-    }
-
-    // 4. Combinar los datos
+    // 4. Combinar los datos (Aun si vacError, enviamos lo que tenemos)
     const fullApps = apps.map(app => {
-      const vacancy = vacancies.find(v => v.id === app.vacante_id);
+      const vacancy = vacancies?.find(v => v.id === app.vacante_id);
       return {
         ...app,
         vacantes: vacancy || null
