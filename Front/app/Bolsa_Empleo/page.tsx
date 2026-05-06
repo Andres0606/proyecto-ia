@@ -120,20 +120,24 @@ function JobCard({ job, delay }: { job: Job; delay: number }) {
     // 2. Ejecutar postulación en el Backend
     try {
       const cleanUserId = String(userId).trim().split(':')[0];
-      const res = await fetch(`${base()}/api/postulaciones`, {
+      const url = `${base()}/api/postulaciones`;
+      console.log(`🚀 Enviando postulación a: ${url} | User: ${cleanUserId} | Vacante: ${vacancyId}`);
+
+      const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: cleanUserId, vacancyId })
       });
       const data = await res.json();
+      console.log("📥 Respuesta del servidor:", data);
 
       if (data.success) {
         alert(`¡Felicidades! Te has postulado exitosamente a: ${jobTitle}`);
       } else {
         alert(data.message || "Error al procesar la postulación");
       }
-    } catch (err) {
-      console.error("Error al postularse:", err);
+    } catch (err: any) {
+      console.error("❌ Error FATAL al postularse:", err);
       alert("Hubo un problema de conexión al intentar postularte.");
     }
   };
