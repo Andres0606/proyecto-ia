@@ -38,11 +38,16 @@ const getUserApplications = async (req, res) => {
   try {
     const { userId } = req.params;
     console.log(`📂 Buscando postulaciones para UserID: [${userId}]`);
-    
+
+    // Intentar con join completo primero
     const { data, error } = await supabase
       .from('postulaciones')
       .select(`
-        *,
+        id,
+        estado,
+        fecha_postulacion,
+        cv_url,
+        vacante_id,
         vacantes (
           id,
           cargo,
@@ -55,9 +60,25 @@ const getUserApplications = async (req, res) => {
       .eq('user_id', userId)
       .order('fecha_postulacion', { ascending: false });
 
-    if (error) throw error;
-    return res.status(200).json({ success: true, applications: data });
+    if (error) {
+      console.error('❌ Error con join:', error.message);
+      // Fallback: query simple sin join
+      const { data: simple, error: err2 } = await supabase
+        .from('postulaciones')
+        .select('id, estado, fecha_postulacion, cv_url, vacante_id')
+        .eq('user_id', userId)
+        .order('fecha_postulacion', { ascending: false });
+
+      if (err2) {
+        console.error('❌ Error fallback:', err2.message);
+        return res.status(500).json({ success: false, message: err2.message });
+      }
+      return res.status(200).json({ success: true, applications: simple || [] });
+    }
+
+    return res.status(200).json({ success: true, applications: data || [] });
   } catch (error) {
+    console.error('❌ Error inesperado getUserApplications:', error.message);
     return res.status(500).json({ success: false, message: error.message });
   }
 };
