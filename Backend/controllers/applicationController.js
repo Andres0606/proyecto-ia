@@ -80,4 +80,33 @@ const applyToVacancy = async (req, res) => {
   }
 };
 
-module.exports = { applyToVacancy };
+const getUserApplications = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    const { data, error } = await supabase
+      .from('postulaciones')
+      .select(`
+        *,
+        vacantes (
+          id,
+          cargo,
+          modalidad,
+          empresas (
+            razon_social
+          )
+        )
+      `)
+      .eq('user_id', userId)
+      .order('fecha_postulacion', { ascending: false });
+
+    if (error) throw error;
+
+    return res.status(200).json({ success: true, applications: data });
+  } catch (error) {
+    console.error('❌ Error al obtener postulaciones:', error);
+    return res.status(500).json({ success: false, message: 'Error al obtener historial de postulaciones' });
+  }
+};
+
+module.exports = { applyToVacancy, getUserApplications };

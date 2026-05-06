@@ -30,7 +30,8 @@ export default function DashboardExterno() {
   const [userName, setUserName] = useState('Usuario');
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-  const [activeSection, setActiveSection] = useState<'none' | 'personal' | 'professional' | 'plans' | 'cv'>('none');
+  const [myApplications, setMyApplications] = useState<any[]>([]);
+  const [activeSection, setActiveSection] = useState<'none' | 'personal' | 'professional' | 'plans' | 'cv' | 'apps'>('none');
   const [isEditingProf, setIsEditingProf] = useState(false);
   const [isEditingPersonal, setIsEditingPersonal] = useState(false);
   const [completionPct, setCompletionPct] = useState(0);
@@ -46,7 +47,7 @@ export default function DashboardExterno() {
   const avatarRef = React.useRef<HTMLInputElement>(null);
   const cvRef = React.useRef<HTMLInputElement>(null);
 
-  const base = () => (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000').replace(/\/$/, '');
+  const base = () => (process.env.NEXT_PUBLIC_BACKEND_URL || 'https://proyecto-ia-production-b7d6.up.railway.app').replace(/\/$/, '');
 
   useEffect(() => {
     const h = new Date().getHours();
@@ -62,10 +63,19 @@ export default function DashboardExterno() {
           const cleanId = String(rawId).trim().split(':')[0];
           setUserId(cleanId);
           fetchProfile(cleanId);
+          fetchMyApplications(cleanId);
         }
       } catch (e) { console.error("Error sesión:", e); }
     }
   }, []);
+
+  const fetchMyApplications = async (id: string) => {
+    try {
+      const r = await fetch(`${base()}/api/postulaciones/user/${id}`);
+      const d = await r.json();
+      if (d.success) setMyApplications(d.applications);
+    } catch (e) { console.error("Error cargando postulaciones:", e); }
+  };
 
   const fetchProfile = async (id: string) => {
     try {
@@ -187,6 +197,7 @@ export default function DashboardExterno() {
     { title: 'Inicio', icon: Icons.Home, id: 'none', color: '#3b82f6' },
     { title: 'Datos Personales', icon: Icons.User, id: 'personal', color: '#8b5cf6' },
     { title: 'Perfil Profesional', icon: Icons.Briefcase, id: 'professional', color: '#10b981' },
+    { title: 'Mis Postulaciones', icon: Icons.File, id: 'apps', color: '#00A9E0' },
     { title: 'Planes', icon: Icons.Card, id: 'plans', color: '#f59e0b' },
     { title: 'Mi Hoja de Vida', icon: Icons.File, id: 'cv', color: '#ef4444' },
   ];
@@ -231,22 +242,27 @@ export default function DashboardExterno() {
           </div>
         </div>
 
-        {/* Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '20px', marginBottom: '40px' }}>
+        {/* Grid de Acciones con Grid-Template-Columns dinámico */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '15px', marginBottom: '40px' }}>
           {ACTIONS.map(a => {
             const Icon = a.icon;
             return (
-              <div key={a.id} onClick={() => setActiveSection(a.id as any)} style={{ background: activeSection === a.id ? 'white' : 'rgba(255, 255, 255, 0.7)', backdropFilter: 'blur(10px)', borderRadius: '28px', padding: '32px 20px', textAlign: 'center', boxShadow: activeSection === a.id ? '0 15px 35px rgba(59, 130, 246, 0.15)' : '0 4px 15px rgba(0,0,0,0.03)', cursor: 'pointer', border: activeSection === a.id ? `2px solid ${a.color}` : '1px solid rgba(255,255,255,0.4)', transition: 'all 0.3s' }}>
-                <div style={{ width: '60px', height: '60px', borderRadius: '18px', background: `${a.color}15`, color: a.color, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}><Icon /></div>
-                <h3 style={{ margin: 0, color: '#1e3a5f', fontWeight: 800, fontSize: '0.95rem' }}>{a.title}</h3>
+              <div key={a.id} onClick={() => setActiveSection(a.id as any)} style={{ background: activeSection === a.id ? 'white' : 'rgba(255, 255, 255, 0.7)', backdropFilter: 'blur(10px)', borderRadius: '24px', padding: '24px 12px', textAlign: 'center', boxShadow: activeSection === a.id ? '0 15px 35px rgba(59, 130, 246, 0.15)' : '0 4px 15px rgba(0,0,0,0.03)', cursor: 'pointer', border: activeSection === a.id ? `2px solid ${a.color}` : '1px solid rgba(255,255,255,0.4)', transition: 'all 0.3s' }}>
+                <div style={{ width: '50px', height: '50px', borderRadius: '15px', background: `${a.color}15`, color: a.color, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}><Icon /></div>
+                <h3 style={{ margin: 0, color: '#1e3a5f', fontWeight: 800, fontSize: '0.85rem' }}>{a.title}</h3>
               </div>
             );
           })}
         </div>
 
-        {/* Contenido */}
+        {/* Contenido Dinámico */}
         <div style={{ background: 'white', borderRadius: '32px', padding: '45px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)' }}>
-          {activeSection === 'none' && <h2 style={{ textAlign: 'center' }}>Bienvenido al Portal Externo</h2>}
+          {activeSection === 'none' && (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <h2 style={{ fontSize: '2rem', color: '#1e3a5f', fontWeight: 900 }}>¡Bienvenido a tu panel personal!</h2>
+              <p style={{ color: '#64748b', fontSize: '1.1rem' }}>Gestiona tu perfil, tus planes y haz seguimiento a tus vacantes.</p>
+            </div>
+          )}
 
           {activeSection === 'personal' && (
              <div>
@@ -276,6 +292,42 @@ export default function DashboardExterno() {
                </div>
                {isEditingPersonal && <button onClick={handleSave} style={{ width: '100%', marginTop: '30px', padding: '15px', background: '#1e3a5f', color: 'white', borderRadius: '14px', border: 'none', fontWeight: 800, cursor: 'pointer' }}>Guardar Cambios</button>}
              </div>
+          )}
+
+          {activeSection === 'apps' && (
+            <div>
+              <h2 style={{ marginBottom: '30px', color: '#1e3a5f', fontWeight: 900 }}>Mis Postulaciones</h2>
+              {myApplications.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>
+                  <Icons.File />
+                  <p style={{ marginTop: '20px' }}>Aún no te has postulado a ninguna vacante.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gap: '15px' }}>
+                  {myApplications.map(app => (
+                    <div key={app.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '24px', borderRadius: '20px', border: '1px solid #f1f5f9', background: '#f8fafc' }}>
+                      <div>
+                        <h3 style={{ margin: 0, color: '#1e3a5f', fontSize: '1.1rem', fontWeight: 800 }}>{app.vacantes?.cargo}</h3>
+                        <p style={{ margin: '4px 0', color: '#64748b', fontWeight: 500 }}>{app.vacantes?.empresas?.razon_social} · {app.vacantes?.modalidad}</p>
+                        <small style={{ color: '#94a3b8' }}>Postulado el: {new Date(app.fecha_postulacion).toLocaleDateString()}</small>
+                      </div>
+                      <span style={{ 
+                        padding: '8px 16px', 
+                        borderRadius: '12px', 
+                        fontSize: '0.75rem', 
+                        fontWeight: 800, 
+                        textTransform: 'uppercase',
+                        background: app.estado === 'postulado' ? '#eff6ff' : '#ecfdf5',
+                        color: app.estado === 'postulado' ? '#3b82f6' : '#059669',
+                        border: app.estado === 'postulado' ? '1px solid #dbeafe' : '1px solid #d1fae5'
+                      }}>
+                        {app.estado}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
 
           {activeSection === 'professional' && (
