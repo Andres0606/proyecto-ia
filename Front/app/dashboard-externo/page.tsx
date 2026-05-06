@@ -6,11 +6,11 @@ import Footer from '../Components/footer';
 import '../css/Dashboard/dashboard.css';
 
 const Icons = {
-  Home: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
-  User: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
-  Briefcase: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>,
-  File: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>,
-  Card: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+  Home: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>,
+  User: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>,
+  Briefcase: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /></svg>,
+  File: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /></svg>,
+  Card: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="5" rx="2" /><line x1="2" y1="10" x2="22" y2="10" /></svg>
 };
 
 const DIAG_OPTIONS = {
@@ -26,22 +26,22 @@ const DIAG_OPTIONS = {
 };
 
 const PLANS = [
-  { 
-    name: 'Gratuito', 
-    price: '$0', 
+  {
+    name: 'Gratuito',
+    price: '$0',
     features: ['Perfil Profesional', 'Subir Hoja de Vida', 'Bolsa de Empleo (Solo lectura)'],
     color: '#64748b'
   },
-  { 
-    name: 'Acceso al Modelo', 
-    price: '$29.900', 
+  {
+    name: 'Acceso al Modelo',
+    price: '$29.900',
     features: ['Todo lo anterior', 'Diagnóstico IA Estabilidad', 'Reporte PDF detallado'],
     color: '#3b82f6',
     popular: true
   },
-  { 
-    name: 'Plan Completo', 
-    price: '$49.900', 
+  {
+    name: 'Plan Completo',
+    price: '$49.900',
     features: ['Todo lo anterior', 'Bolsa de Empleo UCC con postulación'],
     color: '#1e3a5f'
   }
@@ -95,7 +95,7 @@ export default function DashboardExterno() {
       const r = await fetch(`${base()}/api/postulaciones/user/${id}`);
       const d = await r.json();
       if (d.success) setMyApplications(d.applications);
-    } catch (e) { console.error("Error cargando postulaciones:", e); }
+    } catch (e) { console.error("Error cargandoooooo postulaciones:", e); }
   };
 
   const fetchProfile = async (id: string) => {
@@ -107,7 +107,7 @@ export default function DashboardExterno() {
         const p = u.perfiles_usuarios?.[0] || {};
         setUserName(u.nombre_completo?.split(' ')[0] || 'Usuario');
         if (u.foto_url) setUserPhoto(u.foto_url);
-        
+
         const planActual = u.suscripcion?.tipo_plan || 'Gratuito';
         setUserPlan(planActual);
 
@@ -119,7 +119,7 @@ export default function DashboardExterno() {
           estado_civil: val(p.estado_civil), numero_hijos: val(p.numero_hijos), ingreso_mensual: val(p.ingreso_mensual),
           sector_economico: val(p.sector_economico), area_desempeno: val(p.area_desempeno), emprendimiento: p.emprendimiento ? 'Si' : 'No'
         });
-        
+
         let pct = 0;
         if (u.foto_url) pct += 10;
         if (u.cv_url) pct += 20;
@@ -199,7 +199,7 @@ export default function DashboardExterno() {
       )}
 
       <main style={{ paddingTop: '110px', maxWidth: '1120px', margin: '0 auto', paddingBottom: '60px' }}>
-        
+
         {/* Hero Card */}
         <div style={{ background: 'white', borderRadius: '32px', padding: '40px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', gap: '40px', marginBottom: '32px', position: 'relative', overflow: 'hidden', border: '1px solid rgba(226, 232, 240, 0.5)' }}>
           <div style={{ position: 'absolute', top: '-100px', right: '-100px', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%)', zIndex: 0 }} />
@@ -245,33 +245,33 @@ export default function DashboardExterno() {
           )}
 
           {activeSection === 'personal' && (
-             <div>
-               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '35px' }}>
-                 <h2 style={{ margin: 0 }}>Datos Personales</h2>
-                 <button onClick={() => setIsEditingPersonal(!isEditingPersonal)} style={{ background: '#1e3a5f', color: 'white', border: 'none', borderRadius: '12px', padding: '10px 20px', cursor: 'pointer' }}>{isEditingPersonal ? 'Cancelar' : 'Editar'}</button>
-               </div>
-               <div className="responsive-grid-2" style={{ gap: '25px' }}>
-                 {[
-                   { l: 'Nombre Completo', k: 'nombre_completo', gray: false },
-                   { l: 'Cédula', k: 'cedula', gray: false },
-                   { l: 'Correo Electrónico', k: 'correo', gray: false },
-                   { l: 'Teléfono', k: 'telefono', gray: true },
-                   { l: 'Fecha de Nacimiento', k: 'fecha_nacimiento', gray: true },
-                   { l: 'Género', k: 'genero', gray: true }
-                 ].map(f => (
-                   <div key={f.k}>
-                     <label style={lblS}>{f.l}</label>
-                     <input 
-                       value={(formData as any)[f.k]} 
-                       onChange={e => !f.gray && setFormData({ ...formData, [f.k]: e.target.value })} 
-                       disabled={f.gray || !isEditingPersonal} 
-                       style={f.gray ? disS : (!isEditingPersonal ? { ...inpS, background: '#f8fafc' } : inpS)} 
-                     />
-                   </div>
-                 ))}
-               </div>
-               {isEditingPersonal && <button onClick={handleSave} style={{ width: '100%', marginTop: '30px', padding: '15px', background: '#1e3a5f', color: 'white', borderRadius: '14px', border: 'none', fontWeight: 800, cursor: 'pointer' }}>Guardar Cambios</button>}
-             </div>
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '35px' }}>
+                <h2 style={{ margin: 0 }}>Datos Personales</h2>
+                <button onClick={() => setIsEditingPersonal(!isEditingPersonal)} style={{ background: '#1e3a5f', color: 'white', border: 'none', borderRadius: '12px', padding: '10px 20px', cursor: 'pointer' }}>{isEditingPersonal ? 'Cancelar' : 'Editar'}</button>
+              </div>
+              <div className="responsive-grid-2" style={{ gap: '25px' }}>
+                {[
+                  { l: 'Nombre Completo', k: 'nombre_completo', gray: false },
+                  { l: 'Cédula', k: 'cedula', gray: false },
+                  { l: 'Correo Electrónico', k: 'correo', gray: false },
+                  { l: 'Teléfono', k: 'telefono', gray: true },
+                  { l: 'Fecha de Nacimiento', k: 'fecha_nacimiento', gray: true },
+                  { l: 'Género', k: 'genero', gray: true }
+                ].map(f => (
+                  <div key={f.k}>
+                    <label style={lblS}>{f.l}</label>
+                    <input
+                      value={(formData as any)[f.k]}
+                      onChange={e => !f.gray && setFormData({ ...formData, [f.k]: e.target.value })}
+                      disabled={f.gray || !isEditingPersonal}
+                      style={f.gray ? disS : (!isEditingPersonal ? { ...inpS, background: '#f8fafc' } : inpS)}
+                    />
+                  </div>
+                ))}
+              </div>
+              {isEditingPersonal && <button onClick={handleSave} style={{ width: '100%', marginTop: '30px', padding: '15px', background: '#1e3a5f', color: 'white', borderRadius: '14px', border: 'none', fontWeight: 800, cursor: 'pointer' }}>Guardar Cambios</button>}
+            </div>
           )}
 
           {activeSection === 'plans' && (
@@ -293,7 +293,7 @@ export default function DashboardExterno() {
                         </li>
                       ))}
                     </ul>
-                    <button 
+                    <button
                       onClick={() => handleUpdatePlan(p.name)}
                       disabled={userPlan === p.name}
                       style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', background: userPlan === p.name ? '#f1f5f9' : p.color, color: userPlan === p.name ? '#94a3b8' : 'white', fontWeight: 700, cursor: userPlan === p.name ? 'default' : 'pointer' }}
@@ -323,11 +323,11 @@ export default function DashboardExterno() {
                         <p style={{ margin: '4px 0', color: '#64748b', fontWeight: 500 }}>{app.vacantes?.empresas?.razon_social} · {app.vacantes?.modalidad}</p>
                         <small style={{ color: '#94a3b8' }}>Postulado el: {new Date(app.fecha_postulacion).toLocaleDateString()}</small>
                       </div>
-                      <span style={{ 
-                        padding: '8px 16px', 
-                        borderRadius: '12px', 
-                        fontSize: '0.75rem', 
-                        fontWeight: 800, 
+                      <span style={{
+                        padding: '8px 16px',
+                        borderRadius: '12px',
+                        fontSize: '0.75rem',
+                        fontWeight: 800,
                         textTransform: 'uppercase',
                         background: app.estado === 'postulado' ? '#eff6ff' : '#ecfdf5',
                         color: app.estado === 'postulado' ? '#3b82f6' : '#059669',
@@ -343,38 +343,38 @@ export default function DashboardExterno() {
           )}
 
           {activeSection === 'professional' && (
-             <div>
-               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '35px' }}>
-                 <h2 style={{ margin: 0 }}>Perfil Profesional</h2>
-                 <button onClick={() => setIsEditingProf(!isEditingProf)} style={{ background: '#00A9E0', color: 'white', border: 'none', borderRadius: '12px', padding: '10px 20px', cursor: 'pointer' }}>{isEditingProf ? 'Cancelar' : 'Actualizar'}</button>
-               </div>
-               <div className="responsive-grid-2" style={{ gap: '25px' }}>
-                 {[
-                   { l: 'Programa Académico', k: 'programa_academico', o: DIAG_OPTIONS.Programa },
-                   { l: 'Nivel de Formación', k: 'nivel_formacion', o: DIAG_OPTIONS.Formacion },
-                   { l: 'Estrato', k: 'estrato', o: DIAG_OPTIONS.Estrato },
-                   { l: 'Estado Civil', k: 'estado_civil', o: DIAG_OPTIONS.EstadoCivil },
-                   { l: 'Número de Hijos', k: 'numero_hijos', o: DIAG_OPTIONS.Hijos },
-                   { l: 'Ingreso Mensual', k: 'ingreso_mensual', o: DIAG_OPTIONS.Ingreso },
-                   { l: 'Sector Económico', k: 'sector_economico', o: DIAG_OPTIONS.Sector },
-                   { l: 'Área de Desempeño', k: 'area_desempeno', o: DIAG_OPTIONS.Area },
-                   { l: 'Emprendimiento', k: 'emprendimiento', o: DIAG_OPTIONS.Emprendimiento },
-                 ].map(f => (
-                   <div key={f.k}>
-                     <label style={lblS}>{f.l}</label>
-                     {isEditingProf ? (
-                       <select value={(formData as any)[f.k]} onChange={e => setFormData({ ...formData, [f.k]: e.target.value })} style={inpS}>
-                         <option value="">Seleccionar...</option>
-                         {f.o.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                       </select>
-                     ) : (
-                       <input value={(formData as any)[f.k] || 'No registrado'} disabled style={{ ...inpS, background: '#f8fafc' }} />
-                     )}
-                   </div>
-                 ))}
-               </div>
-               {isEditingProf && <button onClick={handleSave} style={{ width: '100%', marginTop: '30px', padding: '15px', background: '#00A9E0', color: 'white', borderRadius: '14px', border: 'none', fontWeight: 800, cursor: 'pointer' }}>Guardar Perfil</button>}
-             </div>
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '35px' }}>
+                <h2 style={{ margin: 0 }}>Perfil Profesional</h2>
+                <button onClick={() => setIsEditingProf(!isEditingProf)} style={{ background: '#00A9E0', color: 'white', border: 'none', borderRadius: '12px', padding: '10px 20px', cursor: 'pointer' }}>{isEditingProf ? 'Cancelar' : 'Actualizar'}</button>
+              </div>
+              <div className="responsive-grid-2" style={{ gap: '25px' }}>
+                {[
+                  { l: 'Programa Académico', k: 'programa_academico', o: DIAG_OPTIONS.Programa },
+                  { l: 'Nivel de Formación', k: 'nivel_formacion', o: DIAG_OPTIONS.Formacion },
+                  { l: 'Estrato', k: 'estrato', o: DIAG_OPTIONS.Estrato },
+                  { l: 'Estado Civil', k: 'estado_civil', o: DIAG_OPTIONS.EstadoCivil },
+                  { l: 'Número de Hijos', k: 'numero_hijos', o: DIAG_OPTIONS.Hijos },
+                  { l: 'Ingreso Mensual', k: 'ingreso_mensual', o: DIAG_OPTIONS.Ingreso },
+                  { l: 'Sector Económico', k: 'sector_economico', o: DIAG_OPTIONS.Sector },
+                  { l: 'Área de Desempeño', k: 'area_desempeno', o: DIAG_OPTIONS.Area },
+                  { l: 'Emprendimiento', k: 'emprendimiento', o: DIAG_OPTIONS.Emprendimiento },
+                ].map(f => (
+                  <div key={f.k}>
+                    <label style={lblS}>{f.l}</label>
+                    {isEditingProf ? (
+                      <select value={(formData as any)[f.k]} onChange={e => setFormData({ ...formData, [f.k]: e.target.value })} style={inpS}>
+                        <option value="">Seleccionar...</option>
+                        {f.o.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                      </select>
+                    ) : (
+                      <input value={(formData as any)[f.k] || 'No registrado'} disabled style={{ ...inpS, background: '#f8fafc' }} />
+                    )}
+                  </div>
+                ))}
+              </div>
+              {isEditingProf && <button onClick={handleSave} style={{ width: '100%', marginTop: '30px', padding: '15px', background: '#00A9E0', color: 'white', borderRadius: '14px', border: 'none', fontWeight: 800, cursor: 'pointer' }}>Guardar Perfil</button>}
+            </div>
           )}
 
           {activeSection === 'cv' && (
