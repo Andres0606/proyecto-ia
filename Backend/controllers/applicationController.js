@@ -41,37 +41,55 @@ const getUserApplications = async (req, res) => {
     const cleanId = String(userId || '').trim();
     if (!cleanId) return res.status(400).json({ success: false, message: 'ID no válido' });
 
-    console.log(`🔍 [SISTEMA] Buscando para: ${cleanId}`);
+    console.log(`🔍 [PROCESO SEGURO] Buscando postulaciones para: ${cleanId}`);
 
-    // 1. Obtener postulaciones con Join simple a vacantes
-    const { data: apps, error } = await supabase
+    // Paso 1: Obtener postulaciones base
+    const { data: apps, error: appsError } = await supabase
       .from('postulaciones')
-      .select('*, vacantes(*, empresas(*))')
+      .select('*')
       .eq('user_id', cleanId);
 
-    if (error) {
-      console.error('❌ Error Supabase:', error);
-      return res.status(500).json({ success: false, message: error.message });
-    }
+    if (appsError) throw appsError;
+    if (!apps || apps.length === 0) return res.status(200).json({ success: true, applications: [] });
 
-    // 2. Mapear a estructura PLANA para el frontend
-    const result = (apps || []).map(app => {
-      const v = app.vacantes;
-      const e = v?.empresas;
+    // Paso 2: Obtener vacantes asociadas
+    const vacIds = [...new Set(apps.map(a => a.vacante_id))];
+    const { data: vacs, error: vacError } = await supabase
+      .from('vacantes')
+      .select('*')
+      .in('id', vacIds);
+
+    if (vacError) console.error('Error vacantes:', vacError);
+
+    // Paso 3: Obtener empresas asociadas
+    const empIds = [...new Set(vacs?.map(v => v.empresa_id).filter(Boolean) || [])];
+    const { data: emps, error: empError } = await supabase
+      .from('empresas')
+      .select('*')
+      .in('id', empIds);
+
+    if (empError) console.error('Error empresas:', empError);
+
+    // Paso 4: Ensamblaje Manual (Cero dependencias de Joins)
+    const result = apps.map(app => {
+      const v = vacs?.find(x => x.id === app.vacante_id);
+      const e = emps?.find(y => y.id === v?.empresa_id);
       return {
         id: app.id,
-        vacante_nombre: v?.cargo || 'Vacante',
-        empresa_nombre: e?.razon_social || 'Empresa UCC',
+        vacante_nombre: v?.cargo || 'Vacante no disponible',
+        empresa_nombre: e?.razon_social || 'UCC / Empresa externa',
         ubicacion: v?.ubicacion || 'Remoto',
         fecha: app.fecha_postulacion,
         estado: app.estado
       };
     });
 
+    console.log(`✅ [PROCESO SEGURO] Éxito: ${result.length} encontradas.`);
     return res.status(200).json({ success: true, applications: result });
+
   } catch (err) {
-    console.error('❌ Error:', err);
-    return res.status(500).json({ success: false, message: err.message });
+    console.error('❌ Error Crítico en getUserApplications:', err);
+    return res.status(500).json({ success: false, message: 'Error interno al procesar postulaciones' });
   }
 };
 
