@@ -41,47 +41,26 @@ const getUserApplications = async (req, res) => {
     const cleanUserId = String(userId).trim();
     console.log(`📂 Buscando postulaciones para UserID: [${cleanUserId}]`);
 
-    // 1. Obtener las postulaciones base
+    // Usamos un join de Supabase para obtener todo en una sola consulta
+    // '*, vacantes(*, empresas(*))' trae la postulación, su vacante y la empresa de esa vacante
     const { data: apps, error: appsError } = await supabase
       .from('postulaciones')
-      .select('*')
+      .select('*, vacantes:vacante_id(*, empresas:empresa_id(*))')
       .eq('user_id', cleanUserId)
       .order('fecha_postulacion', { ascending: false });
 
     if (appsError) {
-      console.error('❌ Error en appsError:', appsError);
+      console.error('❌ Error en consulta join de postulaciones:', appsError);
       return res.status(500).json({ success: false, message: appsError.message, code: appsError.code });
     }
 
-    if (!apps || apps.length === 0) return res.status(200).json({ success: true, applications: [] });
+    if (!apps) return res.status(200).json({ success: true, applications: [] });
 
-    // 2. Obtener los IDs de las vacantes
-    const vacancyIds = [...new Set(apps.map(a => a.vacante_id))];
-
-    // 3. Obtener los detalles de las vacantes
-    const { data: vacancies, error: vacError } = await supabase
-      .from('vacantes')
-      .select('*, empresas(*)')
-      .in('id', vacancyIds);
-
-    if (vacError) {
-      console.warn('⚠️ Advertencia en vacError (continuando):', vacError.message);
-    }
-
-    // 4. Combinar los datos
-    const fullApps = apps.map(app => {
-      const vacancy = vacancies?.find(v => v.id === app.vacante_id);
-      return {
-        ...app,
-        vacantes: vacancy || null
-      };
-    });
-
-    console.log(`✅ Se encontraron ${fullApps.length} postulaciones para el usuario.`);
-    return res.status(200).json({ success: true, applications: fullApps });
+    console.log(`✅ Se encontraron ${apps.length} postulaciones para el usuario [${cleanUserId}].`);
+    return res.status(200).json({ success: true, applications: apps });
   } catch (error) {
     console.error('❌ Error crítico en getUserApplications:', error);
-    return res.status(500).json({ success: false, message: error.message });
+    return res.status(500).json({ success: false, message: error.message || 'Error interno del servidor' });
   }
 };
 

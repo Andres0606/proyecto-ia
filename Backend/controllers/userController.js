@@ -215,6 +215,7 @@ const getFullProfile = async (req, res) => {
       console.log('✅ Datos profesionales encontrados y mapeados:', p);
     }
 
+    console.log(`📤 Enviando perfil completo para [${cleanUserId}]. Suscripción: ${profileData.suscripcion?.tipo_plan || 'Ninguna'}`);
     return res.status(200).json({ success: true, profile: profileData });
   } catch (error) {
     console.error('❌ Error crítico en getFullProfile:', error.message);
