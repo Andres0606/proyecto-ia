@@ -72,25 +72,41 @@ const getVacancies = async (req, res) => {
           user_id
         )
       `)
-      .eq('estado', 'activa') // FILTRO CRÍTICO: Solo mostrar vacantes activas
+      .eq('estado', 'activa')
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ Error Supabase getVacancies:', error);
+      return res.status(500).json({ success: false, message: 'Error al consultar vacantes' });
+    }
 
+    // Procesar vacantes de forma segura
     const vacanciesWithLogos = await Promise.all(data.map(async (v) => {
-      const { data: userData } = await supabase
-        .from('users')
-        .select('foto_url')
-        .eq('id', v.empresas.user_id)
-        .single();
+      let empresa_logo = null;
       
-      return { ...v, empresa_logo: userData?.foto_url || null };
+      // Solo buscar logo si la empresa existe y tiene user_id
+      if (v.empresas && v.empresas.user_id) {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('foto_url')
+          .eq('id', v.empresas.user_id)
+          .single();
+        
+        empresa_logo = userData?.foto_url || null;
+      }
+      
+      return { 
+        ...v, 
+        empresa_logo,
+        // Asegurar que empresas no sea null para evitar errores en el frontend
+        empresas: v.empresas || { razon_social: 'Empresa UCC', ciudad: 'No definida' }
+      };
     }));
 
     return res.status(200).json({ success: true, vacancies: vacanciesWithLogos });
   } catch (error) {
-    console.error('❌ Error al obtener vacantes:', error);
-    return res.status(500).json({ success: false, message: 'Error al obtener vacantes', error: error.message });
+    console.error('❌ Error crítico al obtener vacantes:', error);
+    return res.status(500).json({ success: false, message: 'Error interno al cargar la bolsa de empleo' });
   }
 };
 
