@@ -364,33 +364,42 @@ const updatePlan = async (req, res) => {
       fecha_fin = date.toISOString().split('T')[0];
     }
 
-    // 3. UPSERT FORZADO DE LA SUSCRIPCIÓN
+    // 3. OPERACIÓN DE BD: Crear o Actualizar Suscripción
+    console.log(`💾 Intentando escribir en suscripciones para: ${cleanUserId} con plan: ${finalPlan}`);
+    
     const { data: subData, error: subError } = await supabase
       .from('suscripciones')
       .upsert({
         user_id: cleanUserId,
         tipo_plan: finalPlan,
-        fecha_inicio,
-        fecha_fin,
-        estado: 'activo'
-      }, { onConflict: 'user_id' })
-      .select();
+        fecha_inicio: fecha_inicio,
+        fecha_fin: fecha_fin,
+        estado: 'activo' // Aseguramos que el estado siempre sea activo al actualizar
+      }, { onConflict: 'user_id' });
 
     if (subError) {
-      console.error("❌ ERROR SUPABASE SUSCRIPCIÓN:", subError);
-      return res.status(500).json({ success: false, message: 'Error de base de datos', error: subError.message });
+      console.error("❌ ERROR ESPECÍFICO DE SUPABASE:", subError);
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Error al escribir en la base de datos de suscripciones', 
+        error: subError.message,
+        details: subError.details
+      });
     }
 
-    console.log("✅ PROCESO DE ACTUALIZACIÓN DE PLAN COMPLETO");
+    console.log("✅ OPERACIÓN EXITOSA");
     return res.status(200).json({ 
       success: true, 
-      message: `Plan ${finalPlan} actualizado correctamente en tu suscripción.`,
-      data: subData[0]
+      message: `Plan ${finalPlan} actualizado con éxito.`,
     });
 
   } catch (error) {
-    console.error("❌ ERROR GENERAL EN UPDATEPLAN:", error);
-    return res.status(500).json({ success: false, message: 'Error al procesar la actualización del plan', error: error.message });
+    console.error("❌ ERROR CRÍTICO NO CONTROLADO:", error);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Fallo crítico en el servidor', 
+      error: error.message 
+    });
   }
 };
 
