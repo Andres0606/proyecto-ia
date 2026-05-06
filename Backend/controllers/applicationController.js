@@ -61,7 +61,7 @@ const getUserApplications = async (req, res) => {
       .order('fecha_postulacion', { ascending: false });
 
     if (error) {
-      console.error('❌ Error con join:', error.message);
+      console.error('❌ Error con join:', error.message, error.details, error.hint);
       // Fallback: query simple sin join
       const { data: simple, error: err2 } = await supabase
         .from('postulaciones')
@@ -70,16 +70,16 @@ const getUserApplications = async (req, res) => {
         .order('fecha_postulacion', { ascending: false });
 
       if (err2) {
-        console.error('❌ Error fallback:', err2.message);
-        return res.status(500).json({ success: false, message: err2.message });
+        console.error('❌ Error fallback:', err2.message, err2.details, err2.hint);
+        return res.status(500).json({ success: false, message: 'Error en Supabase (fallback)', error: err2.message, details: err2.details });
       }
-      return res.status(200).json({ success: true, applications: simple || [] });
+      return res.status(200).json({ success: true, applications: simple || [], warning: 'Join failed but fallback succeeded' });
     }
 
     return res.status(200).json({ success: true, applications: data || [] });
   } catch (error) {
     console.error('❌ Error inesperado getUserApplications:', error.message);
-    return res.status(500).json({ success: false, message: error.message });
+    return res.status(500).json({ success: false, message: 'Error inesperado en el servidor', error: error.message });
   }
 };
 
