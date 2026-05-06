@@ -56,11 +56,16 @@ export default function Dashboard() {
     if (saved) {
       try {
         const u = JSON.parse(saved);
-        const id = String(u.id || u.profile?.id || u.user_id).trim().split(':')[0];
-        setUserId(id); 
-        fetchProfile(id);
-        fetchMyApplications(id);
-      } catch (e) { console.error(e); }
+        const rawId = u.id || u.user_id || u.profile?.id || (u.profile && u.profile.id);
+        if (!rawId) { console.error('❌ No se encontró userId en sesión'); return; }
+        const cleanId = String(rawId).trim().split(':')[0];
+        console.log('✅ Dashboard Egresado - userId:', cleanId);
+        setUserId(cleanId);
+        fetchProfile(cleanId);
+        fetchMyApplications(cleanId);
+      } catch (e) { console.error('❌ Error leyendo sesión:', e); }
+    } else {
+      console.warn('⚠️ No hay sesión guardada en sessionStorage');
     }
   }, []);
 
@@ -125,6 +130,13 @@ export default function Dashboard() {
     } catch { setToast({ msg: 'Error', type: 'error' }); } finally { setTimeout(() => setToast({ msg: '', type: 'none' }), 3000); }
   };
 
+  const handleSectionChange = (id: string) => {
+    setActiveSection(id as any);
+    if (id === 'apps' && userId) {
+      fetchMyApplications(userId);
+    }
+  };
+
   const ACTIONS = [
     { title: 'Inicio', icon: Icons.Home, id: 'none', color: '#3b82f6' },
     { title: 'Datos Personales', icon: Icons.User, id: 'personal', color: '#8b5cf6' },
@@ -178,7 +190,7 @@ export default function Dashboard() {
           {ACTIONS.map(a => {
             const Icon = a.icon;
             return (
-              <div key={a.id} onClick={() => setActiveSection(a.id as any)} style={{ background: activeSection === a.id ? 'white' : 'rgba(255, 255, 255, 0.7)', backdropFilter: 'blur(10px)', borderRadius: '28px', padding: '32px 20px', textAlign: 'center', boxShadow: activeSection === a.id ? '0 15px 35px rgba(59, 130, 246, 0.15)' : '0 4px 15px rgba(0,0,0,0.03)', cursor: 'pointer', border: activeSection === a.id ? `2px solid ${a.color}` : '1px solid rgba(255,255,255,0.4)', transition: 'all 0.3s' }}>
+              <div key={a.id} onClick={() => handleSectionChange(a.id)} style={{ background: activeSection === a.id ? 'white' : 'rgba(255, 255, 255, 0.7)', backdropFilter: 'blur(10px)', borderRadius: '28px', padding: '32px 20px', textAlign: 'center', boxShadow: activeSection === a.id ? '0 15px 35px rgba(59, 130, 246, 0.15)' : '0 4px 15px rgba(0,0,0,0.03)', cursor: 'pointer', border: activeSection === a.id ? `2px solid ${a.color}` : '1px solid rgba(255,255,255,0.4)', transition: 'all 0.3s' }}>
                 <div style={{ width: '60px', height: '60px', borderRadius: '18px', background: `${a.color}15`, color: a.color, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}><Icon /></div>
                 <h3 style={{ margin: 0, color: '#1e3a5f', fontWeight: 800, fontSize: '0.95rem' }}>{a.title}</h3>
               </div>
