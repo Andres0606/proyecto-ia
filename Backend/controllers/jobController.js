@@ -72,13 +72,15 @@ const getVacancies = async (req, res) => {
           user_id
         )
       `)
-      .eq('estado', 'activa')
+      .or('estado.eq.activa,estado.is.null') // Muestra activas O las que no tienen estado aún
       .order('created_at', { ascending: false });
 
     if (error) {
       console.error('❌ Error Supabase getVacancies:', error);
       return res.status(500).json({ success: false, message: 'Error al consultar vacantes' });
     }
+
+    console.log(`📊 Bolsa de Empleo: Se encontraron ${data.length} vacantes potenciales.`);
 
     // Procesar vacantes de forma segura
     const vacanciesWithLogos = await Promise.all(data.map(async (v) => {
