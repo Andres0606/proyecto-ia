@@ -27,7 +27,7 @@ const createVacancy = async (req, res) => {
 
     const empresa_id = empresa.id;
 
-    // 2. Insertar la vacante
+    // 2. Insertar la vacante con estado 'activa' por defecto
     const { data, error } = await supabase
       .from('vacantes')
       .insert([{
@@ -41,7 +41,8 @@ const createVacancy = async (req, res) => {
         duracion_contrato,
         modalidad,
         ubicacion,
-        descripcion
+        descripcion,
+        estado: 'activa' // Estado inicial
       }])
       .select();
 
@@ -71,6 +72,7 @@ const getVacancies = async (req, res) => {
           user_id
         )
       `)
+      .eq('estado', 'activa') // FILTRO CRÍTICO: Solo mostrar vacantes activas
       .order('created_at', { ascending: false });
 
     if (error) throw error;
