@@ -2,7 +2,18 @@
 
 import { useState } from "react";
 import "../css/Auth/auth.css";
-import { createClient } from "@/utils/supabase/client";
+
+// ── Icons ──────────────────────────────────────────────────────────────────
+const Icons = {
+  User: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+  Mail: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>,
+  Phone: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>,
+  Id: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 21v-4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v4"/><circle cx="12" cy="11" r="3"/><path d="M7 3h10"/></svg>,
+  Lock: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
+  Check: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>,
+  ArrowRight: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>,
+  ArrowLeft: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>,
+};
 
 // ── Tipos ────────────────────────────────────────────────────────────────────
 type RolType = "egresado" | "externo" | "empresa" | null;
@@ -10,71 +21,64 @@ type RolType = "egresado" | "externo" | "empresa" | null;
 const ROLES = [
   {
     id: "egresado" as RolType,
-    icon: "E",
+    icon: "🎓",
     iconClass: "auth-role-card__icon--egresado",
     title: "Egresado UCC",
-    desc: "Graduado de la Universidad Cooperativa de Colombia.",
-    badge: "Gratis",
+    desc: "Accede a beneficios exclusivos para graduados de nuestra red UCC.",
+    badge: "Gratuito",
   },
   {
     id: "externo" as RolType,
-    icon: "U",
+    icon: "💼",
     iconClass: "auth-role-card__icon--externo",
     title: "Usuario externo",
-    desc: "Profesional de otra universidad o institución.",
+    desc: "Conéctate con las mejores oportunidades laborales del país.",
     badge: null,
   },
   {
     id: "empresa" as RolType,
-    icon: "Emp",
+    icon: "🏛️",
     iconClass: "auth-role-card__icon--empresa",
     title: "Empresa",
-    desc: "Publica vacantes y encuentra talento UCC.",
+    desc: "Encuentra el talento ideal para tus vacantes en nuestra comunidad.",
     badge: null,
   },
 ];
 
-const GENEROS = [
-  { value: "", label: "Seleccionar..." },
-  { value: "masculino", label: "Hombre" },
-  { value: "femenino", label: "Mujer" },
-];
-
 const SECTORES = [
-  { value: "", label: "Seleccionar..." },
-  { value: "tecnologia", label: "Tecnología" },
-  { value: "salud", label: "Salud" },
-  { value: "educacion", label: "Educación" },
+  { value: "", label: "Seleccionar sector..." },
+  { value: "tecnologia", label: "Tecnología e Innovación" },
+  { value: "salud", label: "Salud y Medicina" },
+  { value: "educacion", label: "Educación y Academia" },
   { value: "finanzas", label: "Finanzas y Banca" },
-  { value: "construccion", label: "Construcción" },
-  { value: "comercio", label: "Comercio" },
-  { value: "manufactura", label: "Manufactura" },
-  { value: "servicios", label: "Servicios" },
-  { value: "gobierno", label: "Gobierno" },
-  { value: "otro", label: "Otro" },
+  { value: "construccion", label: "Construcción e Inmobiliaria" },
+  { value: "comercio", label: "Comercio y Retail" },
+  { value: "manufactura", label: "Manufactura e Industria" },
+  { value: "servicios", label: "Servicios Profesionales" },
+  { value: "gobierno", label: "Sector Público / Gobierno" },
+  { value: "otro", label: "Otros Sectores" },
 ];
 
 const TAMANOS = [
-  { value: "", label: "Seleccionar..." },
-  { value: "microempresa", label: "Microempresa (1-10)" },
-  { value: "pequena", label: "Pequeña (11-50)" },
-  { value: "mediana", label: "Mediana (51-200)" },
-  { value: "grande", label: "Grande (200+)" },
+  { value: "", label: "Seleccionar tamaño..." },
+  { value: "microempresa", label: "Microempresa (1-10 empleados)" },
+  { value: "pequena", label: "Pequeña (11-50 empleados)" },
+  { value: "mediana", label: "Mediana (51-200 empleados)" },
+  { value: "grande", label: "Grande (+200 empleados)" },
 ];
 
 // ── Stepper ──────────────────────────────────────────────────────────────────
 function Stepper({ step, rol }: { step: number; rol: RolType }) {
-  const totalSteps = rol === "empresa" ? 3 : 2;
   const steps =
     rol === "empresa"
       ? [
-          { num: 1, label: "Tipo de cuenta" },
-          { num: 2, label: "Datos personales" },
-          { num: 3, label: "Datos empresa" },
+          { num: 1, label: "Cuenta" },
+          { num: 2, label: "Perfil" },
+          { num: 3, label: "Empresa" },
         ]
       : [
-          { num: 1, label: "Tipo de cuenta" },
-          { num: 2, label: "Datos personales" },
+          { num: 1, label: "Cuenta" },
+          { num: 2, label: "Perfil" },
         ];
 
   return (
@@ -91,7 +95,7 @@ function Stepper({ step, rol }: { step: number; rol: RolType }) {
                   : ""
               }`}
             >
-              {step > s.num ? "✓" : s.num}
+              {step > s.num ? <Icons.Check /> : s.num}
             </span>
             <span
               className={`auth-stepper__label ${
@@ -152,11 +156,11 @@ function StepRol({
 
       <button
         className="auth-form__submit"
-        style={{ marginTop: "1.2rem" }}
+        style={{ marginTop: "2rem" }}
         disabled={!rol}
         onClick={onNext}
       >
-        Continuar →
+        Continuar <Icons.ArrowRight />
       </button>
     </div>
   );
@@ -179,84 +183,79 @@ function StepDatosPersonales({
   loading: boolean;
 }) {
   const { password: pw1, confirmPassword: pw2 } = formData;
-  const isMatch = pw1.length > 0 && pw1 === pw2;
-
+  const isMatch = pw1.length >= 8 && pw1 === pw2;
 
   return (
     <div className="auth-step">
-      <div className="auth-form" style={{ gap: "1rem" }}>
-        {/* Nombre completo */}
+      <div className="auth-form">
         <div className="auth-field">
-          <label className="auth-field__label" htmlFor="reg-nombre">
-            Nombre completo
-          </label>
+          <label className="auth-field__label">Nombre completo</label>
+          <div style={{ position: 'relative' }}>
+            <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}><Icons.User /></span>
             <input
-              id="reg-nombre"
               className="auth-field__input"
+              style={{ paddingLeft: '48px' }}
               type="text"
-              placeholder="Juan Pérez López"
+              placeholder="Juan Pérez"
               value={formData.nombre}
               onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
               required
             />
           </div>
+        </div>
 
-          {/* Correo & Teléfono */}
-          <div className="auth-form__row">
-            <div className="auth-field">
-              <label className="auth-field__label" htmlFor="reg-correo">
-                Correo electrónico
-              </label>
+        <div className="auth-form__row">
+          <div className="auth-field">
+            <label className="auth-field__label">Correo electrónico</label>
+            <div style={{ position: 'relative' }}>
+              <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}><Icons.Mail /></span>
               <input
-                id="reg-correo"
                 className="auth-field__input"
+                style={{ paddingLeft: '48px' }}
                 type="email"
-                placeholder="tucorreo@ejemplo.com"
+                placeholder="juan@ejemplo.com"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
               />
             </div>
-            <div className="auth-field">
-              <label className="auth-field__label" htmlFor="reg-telefono">
-                Teléfono
-              </label>
+          </div>
+          <div className="auth-field">
+            <label className="auth-field__label">Teléfono</label>
+            <div style={{ position: 'relative' }}>
+              <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}><Icons.Phone /></span>
               <input
-                id="reg-telefono"
                 className="auth-field__input"
+                style={{ paddingLeft: '48px' }}
                 type="tel"
-                placeholder="Ej: 3001234567"
-                minLength={10}
-                maxLength={10}
+                placeholder="300 123 4567"
                 value={formData.telefono}
                 onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
                 required
               />
+            </div>
           </div>
         </div>
 
-        {/* Cédula & Fecha nacimiento */}
         <div className="auth-form__row">
           <div className="auth-field">
-            <label className="auth-field__label" htmlFor="reg-cedula">
-              Cédula
-            </label>
-            <input
-              id="reg-cedula"
-              className="auth-field__input"
-              type="text"
-              placeholder="1.234.567.890"
-              value={formData.cedula}
-              onChange={(e) => setFormData({ ...formData, cedula: e.target.value })}
-              required
-            />
+            <label className="auth-field__label">Identificación</label>
+            <div style={{ position: 'relative' }}>
+              <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}><Icons.Id /></span>
+              <input
+                className="auth-field__input"
+                style={{ paddingLeft: '48px' }}
+                type="text"
+                placeholder="C.C. o NIT"
+                value={formData.cedula}
+                onChange={(e) => setFormData({ ...formData, cedula: e.target.value })}
+                required
+              />
+            </div>
           </div>
           <div className="auth-field">
-            <label className="auth-field__label" htmlFor="reg-fecha">
-              Fecha de nacimiento
-            </label>
+            <label className="auth-field__label">Nacimiento</label>
             <input
-              id="reg-fecha"
               className="auth-field__input"
               type="date"
               value={formData.fecha_nacimiento}
@@ -266,74 +265,45 @@ function StepDatosPersonales({
           </div>
         </div>
 
-        {/* Género */}
-        <div className="auth-field">
-          <label className="auth-field__label" htmlFor="reg-genero">
-            Género
-          </label>
-          <select 
-            id="reg-genero" 
-            className="auth-field__select"
-            value={formData.genero}
-            onChange={(e) => setFormData({ ...formData, genero: e.target.value })}
-            required
-          >
-            {GENEROS.map((g) => (
-              <option key={g.value} value={g.value}>
-                {g.label}
-              </option>
-            ))}
-          </select>
+        <div className="auth-form__row">
+          <div className="auth-field">
+            <label className="auth-field__label">Contraseña</label>
+            <div style={{ position: 'relative' }}>
+              <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}><Icons.Lock /></span>
+              <input
+                className="auth-field__input"
+                style={{ paddingLeft: '48px' }}
+                type="password"
+                placeholder="Min. 8 caracteres"
+                value={pw1}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                required
+              />
+            </div>
+          </div>
+          <div className="auth-field">
+            <label className="auth-field__label">Confirmar</label>
+            <div style={{ position: 'relative' }}>
+              <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}><Icons.Lock /></span>
+              <input
+                className="auth-field__input"
+                style={{ paddingLeft: '48px', borderColor: isMatch ? '#10b981' : '' }}
+                type="password"
+                placeholder="Repite contraseña"
+                value={pw2}
+                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                required
+              />
+            </div>
+          </div>
         </div>
 
-        {/* Contraseña */}
-        <div className="auth-field">
-          <label className="auth-field__label" htmlFor="reg-password">
-            Contraseña
-          </label>
-          <input
-            id="reg-password"
-            className="auth-field__input"
-            type="password"
-            placeholder="Mínimo 8 caracteres"
-            value={pw1}
-            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-            style={isMatch ? { borderColor: '#10b981', boxShadow: '0 0 0 1px #10b981' } : {}}
-            required
-            minLength={8}
-          />
-        </div>
-
-        {/* Confirmar contraseña */}
-        <div className="auth-field">
-          <label className="auth-field__label" htmlFor="reg-password2">
-            Confirmar contraseña
-          </label>
-          <input
-            id="reg-password2"
-            className="auth-field__input"
-            type="password"
-            placeholder="Repite tu contraseña"
-            onPaste={(e) => e.preventDefault()}
-            value={pw2}
-            onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-            style={isMatch ? { borderColor: '#10b981', boxShadow: '0 0 0 1px #10b981' } : {}}
-            required
-          />
-          {isMatch && (
-            <p style={{ color: '#10b981', fontSize: '0.75rem', marginTop: '4px', fontWeight: 600 }}>
-              ✓ Las contraseñas coinciden
-            </p>
-          )}
-        </div>
-
-        {/* Navigation */}
         <div className="auth-form__nav">
           <button className="auth-form__back" type="button" onClick={onBack} disabled={loading}>
-            ← Atrás
+            <Icons.ArrowLeft /> Atrás
           </button>
           <button className="auth-form__next" type="button" onClick={onNext} disabled={loading || (isLastStep && !isMatch)}>
-            {loading ? "Registrando..." : isLastStep ? "Crear cuenta" : "Continuar →"}
+            {loading ? "Procesando..." : isLastStep ? "Finalizar Registro" : "Continuar"}
           </button>
         </div>
       </div>
@@ -342,116 +312,68 @@ function StepDatosPersonales({
 }
 
 // ── Step 3: Empresa Data (only for empresas) ─────────────────────────────────
-function StepDatosEmpresa({
-  onBack,
-  onSubmit,
-  formData,
-  setFormData,
-}: {
-  onBack: () => void;
-  onSubmit: () => void;
-  formData: any;
-  setFormData: (d: any) => void;
-}) {
+function StepDatosEmpresa({ onBack, onSubmit, formData, setFormData, loading }: any) {
   return (
     <div className="auth-step">
-      <div className="auth-form" style={{ gap: "1rem" }}>
-        {/* Razón social & NIT */}
+      <div className="auth-form">
         <div className="auth-form__row">
           <div className="auth-field">
-            <label className="auth-field__label" htmlFor="reg-razon">
-              Razón social
-            </label>
+            <label className="auth-field__label">Razón Social</label>
             <input
-              id="reg-razon"
               className="auth-field__input"
               type="text"
-              placeholder="Mi Empresa S.A.S"
-              value={formData.razon_social || ''}
+              placeholder="Ej: Tech Solutions S.A.S"
+              value={formData.razon_social}
               onChange={(e) => setFormData({ ...formData, razon_social: e.target.value })}
               required
             />
           </div>
           <div className="auth-field">
-            <label className="auth-field__label" htmlFor="reg-nit">
-              NIT
-            </label>
+            <label className="auth-field__label">NIT</label>
             <input
-              id="reg-nit"
               className="auth-field__input"
               type="text"
-              placeholder="900.123.456-7"
-              value={formData.nit || ''}
+              placeholder="900.000.000-0"
+              value={formData.nit}
               onChange={(e) => setFormData({ ...formData, nit: e.target.value })}
               required
             />
           </div>
         </div>
 
-        {/* Sector económico */}
         <div className="auth-field">
-          <label className="auth-field__label" htmlFor="reg-sector">
-            Sector económico
-          </label>
-          <select id="reg-sector" className="auth-field__select" value={formData.sector_economico || ''} onChange={(e) => setFormData({ ...formData, sector_economico: e.target.value })}>
-            {SECTORES.map((s) => (
-              <option key={s.value} value={s.value}>
-                {s.label}
-              </option>
-            ))}
+          <label className="auth-field__label">Sector Económico</label>
+          <select className="auth-field__select" value={formData.sector_economico} onChange={(e) => setFormData({ ...formData, sector_economico: e.target.value })}>
+            {SECTORES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
           </select>
         </div>
 
-        {/* Tamaño & Tipo */}
         <div className="auth-form__row">
           <div className="auth-field">
-            <label className="auth-field__label" htmlFor="reg-tamano">
-              Tamaño de empresa
-            </label>
-            <select id="reg-tamano" className="auth-field__select" value={formData.tamano_empresa || ''} onChange={(e) => setFormData({ ...formData, tamano_empresa: e.target.value })}>
-              {TAMANOS.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
-                </option>
-              ))}
+            <label className="auth-field__label">Tamaño</label>
+            <select className="auth-field__select" value={formData.tamano_empresa} onChange={(e) => setFormData({ ...formData, tamano_empresa: e.target.value })}>
+              {TAMANOS.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
             </select>
           </div>
           <div className="auth-field">
-            <label className="auth-field__label" htmlFor="reg-tipo-emp">
-              Tipo de empresa
-            </label>
-            <select id="reg-tipo-emp" className="auth-field__select" value={formData.tipo_empresa || ''} onChange={(e) => setFormData({ ...formData, tipo_empresa: e.target.value })}>
-              <option value="">Seleccionar...</option>
-              <option value="publica">Pública</option>
-              <option value="privada">Privada</option>
-              <option value="mixta">Mixta</option>
-              <option value="ong">ONG / Fundación</option>
-            </select>
+            <label className="auth-field__label">Ubicación</label>
+            <input
+              className="auth-field__input"
+              type="text"
+              placeholder="Ciudad, País"
+              value={formData.ciudad}
+              onChange={(e) => setFormData({ ...formData, ciudad: e.target.value })}
+              required
+            />
           </div>
         </div>
 
-        {/* Ciudad */}
-        <div className="auth-field">
-          <label className="auth-field__label" htmlFor="reg-ciudad">
-            Ciudad
-          </label>
-          <input
-            id="reg-ciudad"
-            className="auth-field__input"
-            type="text"
-            placeholder="Bogotá, Medellín, Cali..."
-            value={formData.ciudad || ''}
-            onChange={(e) => setFormData({ ...formData, ciudad: e.target.value })}
-          />
-        </div>
-
-        {/* Navigation */}
         <div className="auth-form__nav">
-          <button className="auth-form__back" type="button" onClick={onBack}>
-            ← Atrás
+          <button className="auth-form__back" type="button" onClick={onBack} disabled={loading}>
+            <Icons.ArrowLeft /> Atrás
           </button>
-          <button className="auth-form__next" type="button" onClick={onSubmit}>
-            Crear cuenta
+          <button className="auth-form__next" type="button" onClick={onSubmit} disabled={loading}>
+            {loading ? "Registrando..." : "Crear Empresa"}
           </button>
         </div>
       </div>
@@ -459,56 +381,29 @@ function StepDatosEmpresa({
   );
 }
 
-// ══════════════════════════════════════════════════════
-// MAIN REGISTRO PAGE
-// ══════════════════════════════════════════════════════
-
 export default function RegistroPage() {
   const [step, setStep] = useState(1);
   const [rol, setRol] = useState<RolType>(null);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  // Form states
   const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    confirmPassword: "",
-    nombre: "",
-    telefono: "",
-    cedula: "",
-    fecha_nacimiento: "",
-    genero: "",
-    // Empresa fields
-    razon_social: "",
-    nit: "",
-    sector_economico: "",
-    tamano_empresa: "",
-    tipo_empresa: "",
-    ciudad: "",
+    email: "", password: "", confirmPassword: "", nombre: "", telefono: "", cedula: "", fecha_nacimiento: "", genero: "masculino",
+    razon_social: "", nit: "", sector_economico: "", tamano_empresa: "", tipo_empresa: "privada", ciudad: "",
   });
-
-  const email = formData.email;
-  const password = formData.password;
-  const nombre = formData.nombre;
-
-  const supabase = createClient();
-
 
   const handleRegister = async () => {
     setLoading(true);
     setErrorMsg("");
-
     try {
-      // 1. Enviar TODO al NUESTRO BACKEND para que él haga el Auth y el Perfil
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
-      const backendRes = await fetch(`${backendUrl}/api/users/register`, {
+      const res = await fetch(`${backendUrl}/api/users/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email,
-          password,
-          nombre_completo: nombre,
+          email: formData.email,
+          password: formData.password,
+          nombre_completo: formData.nombre,
           telefono: formData.telefono,
           cedula: formData.cedula,
           fecha_nacimiento: formData.fecha_nacimiento,
@@ -518,19 +413,11 @@ export default function RegistroPage() {
         })
       });
 
-      const backendData = await backendRes.json();
-      
-      if (!backendData.success) {
-        throw new Error(backendData.message || 'Error en el servidor backend.');
-      }
-
-      // 2. ¡Éxito!
-      setLoading(false);
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message || 'Error en el registro');
       window.location.href = "/login?registered=true";
-
     } catch (err: any) {
-      console.error("Error en el registro:", err);
-      setErrorMsg(err.message || "Ocurrió un error inesperado.");
+      setErrorMsg(err.message || "Error inesperado.");
       setLoading(false);
     }
   };
@@ -538,86 +425,51 @@ export default function RegistroPage() {
   const totalSteps = rol === "empresa" ? 3 : 2;
   const isLastPersonalStep = rol !== "empresa";
 
-  const handleNext = () => {
-    if (step < totalSteps) setStep(step + 1);
-  };
-
-  const handleBack = () => {
-    if (step > 1) setStep(step - 1);
-  };
-
-  const handleSubmit = handleRegister;
-
-
-  const subtitles: Record<number, string> = {
-    1: "Selecciona el tipo de cuenta que deseas crear",
-    2: "Completa tus datos personales para continuar",
-    3: "Ingresa los datos de tu empresa",
-  };
-
   return (
     <div className="auth-page">
-      {/* Background */}
       <div className="auth-page__bg-grid" />
       <div className="auth-page__blob auth-page__blob--1" />
       <div className="auth-page__blob auth-page__blob--2" />
       <div className="auth-page__blob auth-page__blob--3" />
 
-      {/* Back link */}
-      <a href="/" className="auth-home-link">
-        ← Volver al inicio
-      </a>
+      <a href="/" className="auth-home-link">← Inicio</a>
 
-      {/* Card */}
       <div className="auth-card auth-card--wide">
-        {/* Brand */}
         <div className="auth-card__brand">
           <span className="auth-card__logo">UCC</span>
           <span className="auth-card__brand-text">Portal del Egresado</span>
         </div>
 
-        <h1 className="auth-card__title">Crear cuenta</h1>
-        <p className="auth-card__subtitle">{subtitles[step]}</p>
+        <h1 className="auth-card__title">Únete a la Red</h1>
+        <p className="auth-card__subtitle">Empieza hoy tu camino profesional con nosotros</p>
 
-        {errorMsg && (
-          <div style={{ color: '#e53e3e', background: '#fff5f5', padding: '0.8rem', borderRadius: '8px', fontSize: '0.85rem', border: '1px solid #feb2b2', marginBottom: '1rem' }}>
-            ⚠ {errorMsg}
-          </div>
-        )}
+        {errorMsg && <div className="auth-message auth-message--error">⚠️ {errorMsg}</div>}
 
-        {/* Stepper */}
         <Stepper step={step} rol={rol} />
 
-        {/* Steps */}
-        {step === 1 && (
-          <StepRol rol={rol} onSelect={setRol} onNext={handleNext} />
-        )}
-
+        {step === 1 && <StepRol rol={rol} onSelect={setRol} onNext={() => setStep(2)} />}
         {step === 2 && (
           <StepDatosPersonales
-            onBack={handleBack}
-            onNext={isLastPersonalStep ? handleSubmit : handleNext}
+            onBack={() => setStep(1)}
+            onNext={isLastPersonalStep ? handleRegister : () => setStep(3)}
             isLastStep={isLastPersonalStep}
             formData={formData}
             setFormData={setFormData}
             loading={loading}
           />
         )}
-
         {step === 3 && rol === "empresa" && (
-          <StepDatosEmpresa onBack={handleBack} onSubmit={handleSubmit} formData={formData} setFormData={setFormData} />
+          <StepDatosEmpresa onBack={() => setStep(2)} onSubmit={handleRegister} formData={formData} setFormData={setFormData} loading={loading} />
         )}
 
-        {/* Divider + link */}
-        <div className="auth-divider" style={{ marginTop: "1rem" }}>
+        <div className="auth-divider">
           <div className="auth-divider__line" />
           <span className="auth-divider__text">o</span>
           <div className="auth-divider__line" />
         </div>
 
         <p className="auth-card__link">
-          ¿Ya tienes cuenta?{" "}
-          <a href="/login">Ingresa aquí</a>
+          ¿Ya tienes una cuenta? <a href="/login">Inicia sesión</a>
         </p>
       </div>
     </div>
