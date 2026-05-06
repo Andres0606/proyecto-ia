@@ -57,6 +57,7 @@ export default function Dashboard() {
       try {
         const u = JSON.parse(saved);
         const id = String(u.id || u.profile?.id || u.user_id).trim().split(':')[0];
+        console.log("🆔 Cargando Dashboard para ID:", id);
         setUserId(id); 
         fetchProfile(id);
         fetchMyApplications(id);
@@ -66,8 +67,10 @@ export default function Dashboard() {
 
   const fetchMyApplications = async (id: string) => {
     try {
+      console.log(`📡 Solicitando postulaciones para: ${id}`);
       const r = await fetch(`${base()}/api/postulaciones/user/${id}`);
       const d = await r.json();
+      console.log("📥 Respuesta postulaciones:", d);
       if (d.success) setMyApplications(d.applications);
     } catch (e) { console.error("Error cargando postulaciones:", e); }
   };
@@ -188,7 +191,12 @@ export default function Dashboard() {
 
         {/* Áreas de Contenido */}
         <div style={{ background: 'white', borderRadius: '32px', padding: '45px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)' }}>
-          {activeSection === 'none' && <h2 style={{ textAlign: 'center' }}>Bienvenido al Panel de Control</h2>}
+          {activeSection === 'none' && (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <h2 style={{ fontSize: '2rem', color: '#1e3a5f', fontWeight: 900 }}>¡Bienvenido a tu panel de control!</h2>
+              <p style={{ color: '#64748b', fontSize: '1.1rem' }}>Desde aquí puedes gestionar tu perfil profesional y revisar tus postulaciones.</p>
+            </div>
+          )}
 
           {activeSection === 'personal' && (
              <div>
@@ -263,6 +271,42 @@ export default function Dashboard() {
                 <button onClick={() => { if (!userId) return; fetch(`${base()}/api/users/get-cv-url/${userId}`).then(r => r.json()).then(d => d.success ? window.open(d.url, '_blank') : setToast({ msg: 'No tienes CV subido', type: 'info' })) }} style={{ padding: '15px 30px', background: '#1e3a5f', color: 'white', border: 'none', borderRadius: '14px', fontWeight: 700, cursor: 'pointer' }}>Ver CV Actual</button>
                 <button onClick={() => cvInputRef.current?.click()} style={{ padding: '15px 30px', background: '#f8fafc', color: '#1e3a5f', border: '2px solid #1e3a5f', borderRadius: '14px', fontWeight: 700, cursor: 'pointer' }}>Subir Nuevo CV (.pdf)</button>
               </div>
+            </div>
+          )}
+
+          {activeSection === 'apps' && (
+            <div>
+              <h2 style={{ marginBottom: '30px', color: '#1e3a5f', fontWeight: 900 }}>Mis Postulaciones</h2>
+              {myApplications.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>
+                  <Icons.Mail />
+                  <p style={{ marginTop: '20px' }}>Aún no te has postulado a ninguna vacante.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gap: '15px' }}>
+                  {myApplications.map(app => (
+                    <div key={app.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '24px', borderRadius: '20px', border: '1px solid #f1f5f9', background: '#f8fafc' }}>
+                      <div>
+                        <h3 style={{ margin: 0, color: '#1e3a5f', fontSize: '1.1rem', fontWeight: 800 }}>{app.vacantes?.cargo}</h3>
+                        <p style={{ margin: '4px 0', color: '#64748b', fontWeight: 500 }}>{app.vacantes?.empresas?.razon_social} · {app.vacantes?.modalidad}</p>
+                        <small style={{ color: '#94a3b8' }}>Postulado el: {new Date(app.fecha_postulacion).toLocaleDateString()}</small>
+                      </div>
+                      <span style={{ 
+                        padding: '8px 16px', 
+                        borderRadius: '12px', 
+                        fontSize: '0.75rem', 
+                        fontWeight: 800, 
+                        textTransform: 'uppercase',
+                        background: app.estado === 'postulado' ? '#eff6ff' : '#ecfdf5',
+                        color: app.estado === 'postulado' ? '#3b82f6' : '#059669',
+                        border: app.estado === 'postulado' ? '1px solid #dbeafe' : '1px solid #d1fae5'
+                      }}>
+                        {app.estado}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>

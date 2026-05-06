@@ -83,9 +83,11 @@ const applyToVacancy = async (req, res) => {
 const getUserApplications = async (req, res) => {
   try {
     const { userId } = req.params;
+    console.log(`📂 Buscando postulaciones para UserID: [${userId}]`);
     
     const { data, error } = await supabase
       .from('postulaciones')
+// ...
       .select(`
         *,
         vacantes (
