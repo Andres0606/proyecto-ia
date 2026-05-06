@@ -47,7 +47,7 @@ const registerUser = async (req, res) => {
           numero_hijos: parseInt(extraData.numero_hijos),
           ingreso_mensual: parseFloat(extraData.ingreso_mensual),
           sector_economico: extraData.sector_economico,
-          area_desempeno: extraData.area_desempeno,
+          area_desempeno: extraData.area_desempeno || extraData.area_desempeño,
           emprendimiento: extraData.emprendimiento === 'si'
         }]);
       if (profileError) throw profileError;
@@ -254,7 +254,7 @@ const updateProfile = async (req, res) => {
       numero_hijos: hijosMap[profileData.numero_hijos] || 0,
       ingreso_mensual: ingresoMap[profileData.ingreso_mensual] || null,
       sector_economico: profileData.sector_economico,
-      area_desempeno: profileData.area_desempeno,
+      area_desempeno: profileData.area_desempeno || profileData.area_desempeño || profileData.Area || null,
       emprendimiento: profileData.emprendimiento === 'Si'
     };
 

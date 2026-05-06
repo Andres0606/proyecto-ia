@@ -99,7 +99,7 @@ export default function Dashboard() {
           cedula: u.cedula || '', fecha_nacimiento: u.fecha_nacimiento?.split('T')[0] || '', genero: u.genero || '',
           nivel_formacion: val(p.nivel_formacion), programa_academico: val(p.programa_academico), estrato: val(p.estrato),
           estado_civil: val(p.estado_civil), numero_hijos: val(p.numero_hijos), ingreso_mensual: val(p.ingreso_mensual),
-          sector_economico: val(p.sector_economico), area_desempeno: val(p.area_desempeno), emprendimiento: p.emprendimiento ? 'Si' : 'No'
+          sector_economico: val(p.sector_economico), area_desempeno: val(p.area_desempeno || p.area_desempeño || p.Area), emprendimiento: p.emprendimiento ? 'Si' : 'No'
         });
 
         let pct = 0;
