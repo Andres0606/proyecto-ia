@@ -57,7 +57,6 @@ export default function Dashboard() {
       try {
         const u = JSON.parse(saved);
         const id = String(u.id || u.profile?.id || u.user_id).trim().split(':')[0];
-        console.log("🆔 Cargando Dashboard para ID:", id);
         setUserId(id); 
         fetchProfile(id);
         fetchMyApplications(id);
@@ -67,10 +66,8 @@ export default function Dashboard() {
 
   const fetchMyApplications = async (id: string) => {
     try {
-      console.log(`📡 Solicitando postulaciones para: ${id}`);
       const r = await fetch(`${base()}/api/postulaciones/user/${id}`);
       const d = await r.json();
-      console.log("📥 Respuesta postulaciones:", d);
       if (d.success) setMyApplications(d.applications);
     } catch (e) { console.error("Error cargando postulaciones:", e); }
   };
@@ -189,7 +186,7 @@ export default function Dashboard() {
           })}
         </div>
 
-        {/* Áreas de Contenido */}
+        {/* Contenido Dinámico */}
         <div style={{ background: 'white', borderRadius: '32px', padding: '45px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)' }}>
           {activeSection === 'none' && (
             <div style={{ textAlign: 'center', padding: '40px' }}>
