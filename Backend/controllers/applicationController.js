@@ -162,18 +162,52 @@ const updateApplicationStatus = async (req, res) => {
     const { id } = req.params;
     const { estado } = req.body;
 
-    const { data, error } = await supabase
+    // 1. Actualizar el estado de la postulación
+    const { data: updatedApp, error } = await supabase
       .from('postulaciones')
       .update({ estado })
       .eq('id', id)
-      .select();
+      .select('id, vacante_id, estado')
+      .single();
 
     if (error) throw error;
 
-    return res.status(200).json({ success: true, application: data[0] });
+    // 2. Si el nuevo estado es 'aceptado', verificar el límite de la vacante
+    if (estado === 'aceptado') {
+      const vacanteId = updatedApp.vacante_id;
+
+      // Obtener el límite de vacantes
+      const { data: vacante } = await supabase
+        .from('vacantes')
+        .select('numero_vacantes')
+        .eq('id', vacanteId)
+        .single();
+
+      if (vacante) {
+        // Contar cuántos han sido aceptados para esta vacante
+        const { count } = await supabase
+          .from('postulaciones')
+          .select('*', { count: 'exact', head: true })
+          .eq('vacante_id', vacanteId)
+          .eq('estado', 'aceptado');
+
+        // Si se alcanzó el límite, desactivar la vacante
+        if (count >= vacante.numero_vacantes) {
+          console.log(`🚀 Límite alcanzado para vacante ${vacanteId} (${count}/${vacante.numero_vacantes}). Desactivando...`);
+          await supabase
+            .from('vacantes')
+            .update({ estado: 'inactiva' })
+            .eq('id', vacanteId);
+        }
+      }
+    }
+
+    return res.status(200).json({ success: true, application: updatedApp });
   } catch (error) {
+    console.error('Error updateApplicationStatus:', error);
     return res.status(500).json({ success: false, error: error.message });
   }
 };
+
 
 module.exports = { applyToVacancy, getUserApplications, getCompanyApplications, updateApplicationStatus };

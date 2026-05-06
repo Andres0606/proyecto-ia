@@ -51,8 +51,9 @@ export default function DashboardEmpresa() {
   const [jobData, setJobData] = useState({
     cargo: '', area_desempeno: '', programa_requerido: [] as string[], nivel_formacion: '',
     salario: '', tipo_contrato: '', duracion_contrato: '', modalidad: '',
-    ubicacion: '', descripcion: ''
+    ubicacion: '', descripcion: '', numero_vacantes: '1'
   });
+
 
   const logoInputRef = React.useRef<HTMLInputElement>(null);
   const base = () => (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000').replace(/\/$/, '');
@@ -220,8 +221,9 @@ export default function DashboardEmpresa() {
         setJobData({
           cargo: '', area_desempeno: '', programa_requerido: [], nivel_formacion: '',
           salario: '', tipo_contrato: '', duracion_contrato: '', modalidad: '',
-          ubicacion: '', descripcion: ''
+          ubicacion: '', descripcion: '', numero_vacantes: '1'
         });
+
         fetchMyVacancies(userId);
         setActiveSection('my-jobs');
       } else {
@@ -268,9 +270,10 @@ export default function DashboardEmpresa() {
           </div>
           <div style={{ flex: 1, zIndex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '10px' }}>
-              <h1 style={{ margin: 0, color: '#1e3a5f', fontSize: '2.4rem', fontWeight: 900 }}>{greeting}, {companyName}</h1>
-              <span style={{ background: '#eff6ff', color: '#1e40af', padding: '8px 18px', borderRadius: '30px', fontSize: '0.75rem', fontWeight: 800 }}>EMPRESA ALIADA UCC</span>
+              <h1 style={{ margin: 0, color: '#0f172a', fontSize: '2.4rem', fontWeight: 900 }}>{greeting}, {companyName}</h1>
+              <span style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)', color: 'white', padding: '8px 18px', borderRadius: '30px', fontSize: '0.75rem', fontWeight: 800, boxShadow: '0 4px 12px rgba(15, 23, 42, 0.2)' }}>EMPRESA ALIADA UCC</span>
             </div>
+
             <p style={{ color: '#64748b', margin: 0, fontSize: '1.2rem', fontWeight: 600 }}>"{companySlogan}"</p>
           </div>
         </div>
@@ -334,12 +337,14 @@ export default function DashboardEmpresa() {
                 <div><label style={lbl}>Salario Mensual</label><input style={inp} type="number" value={jobData.salario} onChange={e => setJobData({...jobData, salario: e.target.value})} placeholder="Ej: 2800000" /></div>
                 <div><label style={lbl}>Tipo de Contrato</label><select style={inp} value={jobData.tipo_contrato} onChange={e => setJobData({...jobData, tipo_contrato: e.target.value})}><option value="">Seleccionar...</option>{OPTIONS.Contrato.map(o => <option key={o} value={o}>{o}</option>)}</select></div>
                 <div><label style={lbl}>Modalidad</label><select style={inp} value={jobData.modalidad} onChange={e => setJobData({...jobData, modalidad: e.target.value})}><option value="">Seleccionar...</option>{OPTIONS.Modalidad.map(o => <option key={o} value={o}>{o}</option>)}</select></div>
-                <div><label style={lbl}>Ubicación de la Empresa</label><input style={inp} value={jobData.ubicacion} onChange={e => setJobData({...jobData, ubicacion: e.target.value})} placeholder="Ej: Villavicencio" /></div>
+                <div><label style={lbl}>Número de Vacantes</label><input style={inp} type="number" min="1" value={jobData.numero_vacantes} onChange={e => setJobData({...jobData, numero_vacantes: e.target.value})} placeholder="Ej: 5" /></div>
+                <div style={{ gridColumn: '1 / -1' }}><label style={lbl}>Ubicación de la Empresa</label><input style={inp} value={jobData.ubicacion} onChange={e => setJobData({...jobData, ubicacion: e.target.value})} placeholder="Ej: Villavicencio" /></div>
                 <div style={{ gridColumn: '1 / -1' }}><label style={lbl}>Descripción</label><textarea style={{ ...inp, height: '120px', resize: 'none' }} value={jobData.descripcion} onChange={e => setJobData({...jobData, descripcion: e.target.value})} placeholder="Detalles de la vacante..." /></div>
               </div>
-              <button onClick={handlePostJob} style={{ width: '100%', marginTop: '30px', padding: '18px', background: '#1e3a5f', color: 'white', borderRadius: '16px', border: 'none', fontWeight: 800, cursor: 'pointer' }}>Publicar Vacante</button>
+              <button onClick={handlePostJob} style={{ width: '100%', marginTop: '30px', padding: '18px', background: '#0f172a', color: 'white', borderRadius: '16px', border: 'none', fontWeight: 800, cursor: 'pointer', boxShadow: '0 10px 30px rgba(15, 23, 42, 0.2)' }}>Publicar Vacante</button>
             </div>
           )}
+
 
           {activeSection === 'my-jobs' && (
             <div style={{ background: 'white', borderRadius: '32px', padding: '45px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)' }}>

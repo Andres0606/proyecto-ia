@@ -5,7 +5,8 @@ const createVacancy = async (req, res) => {
     let {
       userId, cargo, area_desempeno, programa_requerido,
       nivel_formacion, salario, tipo_contrato,
-      duracion_contrato, modalidad, ubicacion, descripcion
+      duracion_contrato, modalidad, ubicacion, descripcion,
+      numero_vacantes
     } = req.body;
 
     if (!userId) return res.status(400).json({ success: false, message: 'userId es requerido' });
@@ -39,9 +40,11 @@ const createVacancy = async (req, res) => {
         modalidad,
         ubicacion,
         descripcion,
+        numero_vacantes: parseInt(numero_vacantes) || 1,
         estado: 'activa'
       }])
       .select();
+
 
     if (error) throw error;
 
