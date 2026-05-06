@@ -30,6 +30,7 @@ export default function Dashboard() {
   const [userName, setUserName] = useState('Egresado');
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [myApplications, setMyApplications] = useState<any[]>([]);
   const [activeSection, setActiveSection] = useState<'none' | 'personal' | 'professional' | 'apps' | 'cv'>('none');
   const [isEditingProf, setIsEditingProf] = useState(false);
   const [isEditingPersonal, setIsEditingPersonal] = useState(false);
@@ -45,7 +46,7 @@ export default function Dashboard() {
   const avatarInputRef = React.useRef<HTMLInputElement>(null);
   const cvInputRef = React.useRef<HTMLInputElement>(null);
 
-  const base = () => (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000').replace(/\/$/, '');
+  const base = () => (process.env.NEXT_PUBLIC_BACKEND_URL || 'https://proyecto-ia-production-b7d6.up.railway.app').replace(/\/$/, '');
 
   useEffect(() => {
     const h = new Date().getHours();
@@ -56,10 +57,20 @@ export default function Dashboard() {
       try {
         const u = JSON.parse(saved);
         const id = String(u.id || u.profile?.id || u.user_id).trim().split(':')[0];
-        setUserId(id); fetchProfile(id);
+        setUserId(id); 
+        fetchProfile(id);
+        fetchMyApplications(id);
       } catch (e) { console.error(e); }
     }
   }, []);
+
+  const fetchMyApplications = async (id: string) => {
+    try {
+      const r = await fetch(`${base()}/api/postulaciones/user/${id}`);
+      const d = await r.json();
+      if (d.success) setMyApplications(d.applications);
+    } catch (e) { console.error("Error cargando postulaciones:", e); }
+  };
 
   const fetchProfile = async (id: string) => {
     try {
