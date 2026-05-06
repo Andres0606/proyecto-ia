@@ -254,7 +254,7 @@ export default function Dashboard() {
                   { l: 'Número de Hijos', k: 'numero_hijos', o: DIAG_OPTIONS.Hijos },
                   { l: 'Ingreso Mensual', k: 'ingreso_mensual', o: DIAG_OPTIONS.Ingreso },
                   { l: 'Sector Económico', k: 'sector_economico', o: DIAG_OPTIONS.Sector },
-                  { l: 'Área de Desempeño', k: 'area_desempeño', o: DIAG_OPTIONS.Area },
+                  { l: 'Área de Desempeño', k: 'area_desempeno', o: DIAG_OPTIONS.Area },
                   { l: 'Emprendimiento', k: 'emprendimiento', o: DIAG_OPTIONS.Emprendimiento },
                 ].map(f => (
                   <div key={f.k}>
