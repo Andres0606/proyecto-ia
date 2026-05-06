@@ -105,8 +105,18 @@ function JobCard({ job, delay }: { job: Job; delay: number }) {
 
     console.log(`🔍 Intento de postulación - Rol: ${rol}, Plan: "${plan}"`);
 
-    // 1. REGLA: Permitir a todos los usuarios logueados postularse (Sin restricciones de plan o rol por ahora)
-    // Se ha eliminado la validación de Plan Completo y de Empresa/Admin para facilitar el flujo.
+    // 1. REGLA DE ACCESO: 
+    // Egresados (Rol 1) pasan siempre. Externos (Rol 2) requieren Plan Completo.
+    if (rol === 2 && plan !== 'Plan Completo') {
+      console.warn("🚫 Acceso denegado: Usuario externo sin Plan Completo. Plan actual:", plan);
+      alert("Tu plan actual solo permite visualizar ofertas. Actualiza al 'Plan Completo' en tu Dashboard para poder postularte.");
+      return;
+    }
+
+    if (rol === 3 || rol === 4) {
+      alert("Tu cuenta de Empresa/Admin no permite postularse a vacantes.");
+      return;
+    }
 
     // 2. Ejecutar postulación en el Backend
     try {
