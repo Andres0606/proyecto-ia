@@ -93,22 +93,21 @@ const getUserApplications = async (req, res) => {
       }
     }
 
-    // 5. Mapear los datos manualmente
+    // 5. Mapear los datos manualmente asegurando que la estructura sea idéntica para todos
     const fullApps = apps.map(app => {
-      const vacancy = vacancies?.find(v => v.id === app.vacante_id);
+      const vacancy = vacancies?.find(v => v.id === app.vacante_id) || null;
+      let empresaData = null;
 
-      if (!vacancy) {
-        return { ...app, vacantes: null };
+      if (vacancy && vacancy.empresa_id) {
+        empresaData = empresasMap.get(vacancy.empresa_id) || { razon_social: 'Empresa no disponible' };
       }
-
-      const empresaData = vacancy.empresa_id ? empresasMap.get(vacancy.empresa_id) : null;
 
       return {
         ...app,
-        vacantes: {
+        vacantes: vacancy ? {
           ...vacancy,
           empresas: empresaData || { razon_social: 'Empresa no disponible' }
-        }
+        } : null
       };
     });
 
