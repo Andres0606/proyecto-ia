@@ -9,8 +9,8 @@ const Icons = {
   Home: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
   User: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
   Briefcase: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>,
-  Card: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>,
-  File: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+  File: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>,
+  Card: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
 };
 
 const DIAG_OPTIONS = {
@@ -24,6 +24,28 @@ const DIAG_OPTIONS = {
   Emprendimiento: ["Si", "No"],
   Hijos: ["Cero", "Uno", "Dos", "Tres", "Cuatro", "Cinco"],
 };
+
+const PLANS = [
+  { 
+    name: 'Gratuito', 
+    price: '$0', 
+    features: ['Perfil Profesional', 'Subir Hoja de Vida', 'Bolsa de Empleo (Solo lectura)'],
+    color: '#64748b'
+  },
+  { 
+    name: 'Acceso al Modelo', 
+    price: '$29.900', 
+    features: ['Todo lo anterior', 'Diagnóstico IA Estabilidad', 'Reporte PDF detallado'],
+    color: '#3b82f6',
+    popular: true
+  },
+  { 
+    name: 'Plan Completo', 
+    price: '$49.900', 
+    features: ['Todo lo anterior', 'Bolsa de Empleo UCC con postulación'],
+    color: '#1e3a5f'
+  }
+];
 
 export default function DashboardExterno() {
   const [greeting, setGreeting] = useState('Buenos días');
@@ -57,7 +79,6 @@ export default function DashboardExterno() {
     if (saved) {
       try {
         const u = JSON.parse(saved);
-        // Obtener el ID de forma ultra-segura
         const rawId = u.id || u.user_id || (u.profile && u.profile.id);
         if (rawId) {
           const cleanId = String(rawId).trim().split(':')[0];
@@ -84,20 +105,12 @@ export default function DashboardExterno() {
       if (d.success && d.profile) {
         const u = d.profile;
         const p = u.perfiles_usuarios?.[0] || {};
-        
-        // Actualizar sessionStorage para que el Header reconozca el cambio
-        const savedSession = sessionStorage.getItem('ucc_user');
-        if (savedSession) {
-          const sessionObj = JSON.parse(savedSession);
-          sessionObj.profile = u;
-          sessionObj.profile.suscripcion = u.suscripcion; // Sincronizar plan
-          sessionStorage.setItem('ucc_user', JSON.stringify(sessionObj));
-          // Disparar evento para que componentes como Header se enteren del cambio
-          window.dispatchEvent(new Event('storage'));
-        }
-
         setUserName(u.nombre_completo?.split(' ')[0] || 'Usuario');
         if (u.foto_url) setUserPhoto(u.foto_url);
+        
+        const planActual = u.suscripcion?.tipo_plan || 'Gratuito';
+        setUserPlan(planActual);
+
         const val = (v: any) => (v !== null && v !== undefined && v !== '') ? String(v) : '';
         setFormData({
           nombre_completo: u.nombre_completo || '', correo: u.correo || '', telefono: u.telefono || '',
@@ -107,9 +120,6 @@ export default function DashboardExterno() {
           sector_economico: val(p.sector_economico), area_desempeno: val(p.area_desempeno), emprendimiento: p.emprendimiento ? 'Si' : 'No'
         });
         
-        const planActual = u.suscripcion?.tipo_plan || 'Gratuito';
-        setUserPlan(planActual);
-
         let pct = 0;
         if (u.foto_url) pct += 10;
         if (u.cv_url) pct += 20;
@@ -118,7 +128,7 @@ export default function DashboardExterno() {
         pct += (filled / fields.length) * 70;
         setCompletionPct(Math.round(pct));
       }
-    } catch (e) { console.error(e); }
+    } catch (err) { console.error(err); }
   };
 
   const handleSave = async () => {
@@ -128,70 +138,40 @@ export default function DashboardExterno() {
     try {
       const r = await fetch(`${base()}/api/users/profile/${userId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userData: payload, profileData: payload }) });
       const d = await r.json();
-      if (d.success) { setToast({ msg: '¡Datos Guardados!', type: 'success' }); setIsEditingProf(false); setIsEditingPersonal(false); fetchProfile(userId); }
+      if (d.success) { setToast({ msg: '¡Éxito!', type: 'success' }); setIsEditingProf(false); setIsEditingPersonal(false); fetchProfile(userId); }
     } catch { setToast({ msg: 'Error', type: 'error' }); } finally { setTimeout(() => setToast({ msg: '', type: 'none' }), 3000); }
-  };
-
-  const handleUpdatePlan = async (planName: string) => {
-    if (!userId) return;
-    setToast({ msg: `Activando ${planName}...`, type: 'info' });
-    try {
-      const r = await fetch(`${base()}/api/users/update-plan`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, planType: planName }) // Usamos planType que es más estándar en el backend
-      });
-      const d = await r.json();
-      if (d.success) {
-        setToast({ msg: `¡Plan ${planName} activado!`, type: 'success' });
-        // Recarga total de la página para actualizar todos los componentes y permisos
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
-      } else {
-        setToast({ msg: d.message || 'Error al actualizar plan', type: 'error' });
-      }
-    } catch (err) {
-      console.error("Error updating plan:", err);
-      setToast({ msg: 'Error de conexión', type: 'error' });
-    } finally {
-      setTimeout(() => setToast({ msg: '', type: 'none' }), 3000);
-    }
   };
 
   const handleUpload = async (file: File, type: 'avatar' | 'cv') => {
     if (!userId) return;
-    setToast({ msg: 'Subiendo...', type: 'info' });
+    setToast({ msg: 'Subiendo archivo...', type: 'info' });
     const fd = new FormData();
     fd.append(type === 'avatar' ? 'image' : 'cv', file);
-    fd.append('userId', String(userId).trim());
+    fd.append('userId', userId);
     try {
       const r = await fetch(`${base()}/api/users/upload-${type === 'avatar' ? 'avatar' : 'cv'}`, { method: 'POST', body: fd });
       const d = await r.json();
-      if (d.success) { setToast({ msg: '¡Subido con éxito!', type: 'success' }); setTimeout(() => fetchProfile(userId), 1500); }
+      if (d.success) { setToast({ msg: '¡Éxito!', type: 'success' }); fetchProfile(userId); }
     } catch { setToast({ msg: 'Error', type: 'error' }); } finally { setTimeout(() => setToast({ msg: '', type: 'none' }), 3000); }
   };
 
-  const PLANS = [
-    { 
-      name: 'Gratuito', 
-      price: 'Gratis', 
-      icon: <Icons.User />, 
-      features: ['Perfil Profesional', 'Subir Hoja de Vida', 'Ver Bolsa de Empleo (Solo lectura)'] 
-    },
-    { 
-      name: 'Acceso al Modelo', 
-      price: '$25.000', 
-      icon: <Icons.File />, 
-      features: ['Todo lo anterior', 'Diagnóstico IA Estabilidad', 'Reporte PDF Detallado'] 
-    },
-    { 
-      name: 'Plan Completo', 
-      price: '$45.000', 
-      icon: <Icons.Briefcase />, 
-      features: ['Todo lo anterior', 'Postulación en Bolsa de Empleo UCC'] 
-    }
-  ];
+  const handleUpdatePlan = async (plan: string) => {
+    if (!userId) return;
+    setToast({ msg: 'Actualizando plan...', type: 'info' });
+    try {
+      const r = await fetch(`${base()}/api/users/update-plan`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, tipo_plan: plan })
+      });
+      const d = await r.json();
+      if (d.success) {
+        setToast({ msg: `¡Plan ${plan} activado!`, type: 'success' });
+        fetchProfile(userId);
+      }
+    } catch { setToast({ msg: 'Error al actualizar plan', type: 'error' }); }
+    finally { setTimeout(() => setToast({ msg: '', type: 'none' }), 3000); }
+  };
 
   const ACTIONS = [
     { title: 'Inicio', icon: Icons.Home, id: 'none', color: '#3b82f6' },
@@ -242,7 +222,7 @@ export default function DashboardExterno() {
           </div>
         </div>
 
-        {/* Grid de Acciones con Grid-Template-Columns dinámico */}
+        {/* Grid de Acciones */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '15px', marginBottom: '40px' }}>
           {ACTIONS.map(a => {
             const Icon = a.icon;
@@ -292,6 +272,38 @@ export default function DashboardExterno() {
                </div>
                {isEditingPersonal && <button onClick={handleSave} style={{ width: '100%', marginTop: '30px', padding: '15px', background: '#1e3a5f', color: 'white', borderRadius: '14px', border: 'none', fontWeight: 800, cursor: 'pointer' }}>Guardar Cambios</button>}
              </div>
+          )}
+
+          {activeSection === 'plans' && (
+            <div>
+              <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+                <h2 style={{ fontSize: '2.2rem', color: '#1e3a5f', fontWeight: 900 }}>Planes de Membresía</h2>
+                <p style={{ color: '#64748b' }}>Tu plan actual: <span style={{ color: '#3b82f6', fontWeight: 800 }}>{userPlan}</span></p>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '30px' }}>
+                {PLANS.map(p => (
+                  <div key={p.name} style={{ background: 'white', borderRadius: '24px', padding: '32px', border: userPlan === p.name ? `3px solid ${p.color}` : '1px solid #e2e8f0', boxShadow: '0 10px 20px rgba(0,0,0,0.02)', position: 'relative' }}>
+                    {p.popular && <span style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', background: p.color, color: 'white', padding: '4px 12px', borderRadius: '12px', fontSize: '0.7rem', fontWeight: 800 }}>MÁS POPULAR</span>}
+                    <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#1e3a5f' }}>{p.name}</h3>
+                    <div style={{ fontSize: '2rem', fontWeight: 900, margin: '15px 0', color: '#1e3a5f' }}>{p.price}<span style={{ fontSize: '0.9rem', color: '#94a3b8' }}>/mes</span></div>
+                    <ul style={{ padding: 0, listStyle: 'none', margin: '20px 0' }}>
+                      {p.features.map(f => (
+                        <li key={f} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px', fontSize: '0.9rem', color: '#475569' }}>
+                          <span style={{ color: '#10b981' }}>✓</span> {f}
+                        </li>
+                      ))}
+                    </ul>
+                    <button 
+                      onClick={() => handleUpdatePlan(p.name)}
+                      disabled={userPlan === p.name}
+                      style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', background: userPlan === p.name ? '#f1f5f9' : p.color, color: userPlan === p.name ? '#94a3b8' : 'white', fontWeight: 700, cursor: userPlan === p.name ? 'default' : 'pointer' }}
+                    >
+                      {userPlan === p.name ? 'Plan Actual' : 'Seleccionar Plan'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
 
           {activeSection === 'apps' && (
@@ -365,40 +377,13 @@ export default function DashboardExterno() {
              </div>
           )}
 
-          {activeSection === 'plans' && (
-             <div>
-               <h2 style={{ textAlign: 'center', marginBottom: '40px', color: '#1e3a5f', fontWeight: 900 }}>Planes y Membresía</h2>
-               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '30px' }}>
-                 {PLANS.map(p => (
-                   <div key={p.name} style={{ padding: '40px 30px', borderRadius: '32px', border: userPlan === p.name ? '3px solid #3b82f6' : '1px solid #e2e8f0', textAlign: 'center', position: 'relative', background: userPlan === p.name ? '#f8fafc' : 'white' }}>
-                     {userPlan === p.name && <span style={{ position: 'absolute', top: '-15px', left: '50%', transform: 'translateX(-50%)', background: '#3b82f6', color: 'white', padding: '6px 20px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 800 }}>PLAN ACTUAL</span>}
-                     <div style={{ fontSize: '3.5rem', marginBottom: '20px' }}>{p.icon}</div>
-                     <h3 style={{ color: '#1e3a5f', fontWeight: 800, fontSize: '1.4rem', marginBottom: '10px' }}>{p.name}</h3>
-                     <p style={{ fontSize: '2.2rem', fontWeight: 900, color: '#1e3a5f', marginBottom: '25px' }}>{p.price}</p>
-                     <ul style={{ listStyle: 'none', padding: 0, textAlign: 'left', margin: '0 0 30px' }}>
-                       {p.features.map(f => <li key={f} style={{ marginBottom: '12px', fontSize: '0.9rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                         <span style={{ color: '#10b981', fontWeight: 900 }}>✓</span> {f}
-                       </li>)}
-                     </ul>
-                     <button 
-                       onClick={() => handleUpdatePlan(p.name)}
-                       disabled={userPlan === p.name} 
-                       style={{ width: '100%', padding: '15px', borderRadius: '16px', background: userPlan === p.name ? '#e2e8f0' : '#1e3a5f', color: userPlan === p.name ? '#94a3b8' : 'white', fontWeight: 800, border: 'none', cursor: userPlan === p.name ? 'default' : 'pointer' }}>
-                       {userPlan === p.name ? 'Activo' : 'Seleccionar'}
-                     </button>
-                   </div>
-                 ))}
-               </div>
-             </div>
-          )}
-          
           {activeSection === 'cv' && (
             <div style={{ textAlign: 'center', padding: '40px' }}>
-              <div style={{ width: '80px', height: '80px', borderRadius: '20px', background: '#eff6ff', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}><Icons.File /></div>
-              <h2 style={{ color: '#1e3a5f', fontWeight: 900, fontSize: '1.8rem' }}>Mi Hoja de Vida</h2>
+              <div style={{ width: '80px', height: '80px', borderRadius: '20px', background: '#fee2e2', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}><Icons.File /></div>
+              <h2 style={{ color: '#1e3a5f', fontWeight: 900, fontSize: '1.8rem' }}>Gestión de Hoja de Vida</h2>
               <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', marginTop: '30px' }}>
-                <button onClick={() => { if (!userId) return; fetch(`${base()}/api/users/get-cv-url/${userId}`).then(r => r.json()).then(d => d.success ? window.open(d.url, '_blank') : setToast({ msg: 'No tienes CV', type: 'info' })) }} style={{ padding: '15px 30px', background: '#1e3a5f', color: 'white', border: 'none', borderRadius: '14px', fontWeight: 700, cursor: 'pointer' }}>Ver Hoja de Vida</button>
-                <button onClick={() => cvRef.current?.click()} style={{ padding: '15px 30px', background: '#f8fafc', color: '#1e3a5f', border: '2px solid #1e3a5f', borderRadius: '14px', fontWeight: 700, cursor: 'pointer' }}>Subir Nueva (.pdf)</button>
+                <button onClick={() => { if (!userId) return; fetch(`${base()}/api/users/get-cv-url/${userId}`).then(r => r.json()).then(d => d.success ? window.open(d.url, '_blank') : setToast({ msg: 'No tienes CV subido', type: 'info' })) }} style={{ padding: '15px 30px', background: '#1e3a5f', color: 'white', border: 'none', borderRadius: '14px', fontWeight: 700, cursor: 'pointer' }}>Ver CV Actual</button>
+                <button onClick={() => cvRef.current?.click()} style={{ padding: '15px 30px', background: '#f8fafc', color: '#1e3a5f', border: '2px solid #1e3a5f', borderRadius: '14px', fontWeight: 700, cursor: 'pointer' }}>Subir Nuevo CV (.pdf)</button>
               </div>
             </div>
           )}
