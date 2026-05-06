@@ -89,8 +89,9 @@ function Filters({ area, setArea, mode, setMode, nivel, setNivel, onClear }: {
 
 function JobCard({ job, delay }: { job: Job; delay: number }) {
   const initials = job.company.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+  const base = () => (process.env.NEXT_PUBLIC_BACKEND_URL || 'https://proyecto-ia-production-b7d6.up.railway.app').replace(/\/$/, '');
 
-  const handleApply = (e: React.MouseEvent, jobTitle: string) => {
+  const handleApply = async (e: React.MouseEvent, jobTitle: string, vacancyId: number) => {
     const saved = sessionStorage.getItem('ucc_user');
     if (!saved) {
       alert("Debes iniciar sesión para postularte.");
@@ -100,14 +101,38 @@ function JobCard({ job, delay }: { job: Job; delay: number }) {
     const user = JSON.parse(saved);
     const rol = Number(user.profile?.rol_id);
     const plan = user.profile?.suscripcion?.tipo_plan || 'Gratuito';
+    const userId = user.id || user.user_id || user.profile?.id;
 
-    // Restricción para Usuarios Externos (Rol 2)
-    if (rol === 2 && plan !== 'Plan Completo') {
-      alert("Tu plan actual solo permite visualizar ofertas. Actualiza al 'Plan Completo' en tu Dashboard para poder postularte a las vacantes de la UCC.");
+    // 1. REGLA: Solo Rol 1 (Egresado) y Rol 2 (Externo con Plan Completo)
+    if (rol === 3 || rol === 4) {
+      alert("Tu cuenta de Empresa/Admin no permite postularse a vacantes.");
       return;
     }
 
-    alert(`¡Postulación enviada con éxito para: ${jobTitle}!`);
+    if (rol === 2 && plan !== 'Plan Completo') {
+      alert("Tu plan actual solo permite visualizar ofertas. Actualiza al 'Plan Completo' en tu Dashboard para poder postularte.");
+      return;
+    }
+
+    // 2. Ejecutar postulación en el Backend
+    try {
+      const cleanUserId = String(userId).trim().split(':')[0];
+      const res = await fetch(`${base()}/api/postulaciones`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: cleanUserId, vacancyId })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        alert(`¡Felicidades! Te has postulado exitosamente a: ${jobTitle}`);
+      } else {
+        alert(data.message || "Error al procesar la postulación");
+      }
+    } catch (err) {
+      console.error("Error al postularse:", err);
+      alert("Hubo un problema de conexión al intentar postularte.");
+    }
   };
 
   return (
@@ -150,7 +175,7 @@ function JobCard({ job, delay }: { job: Job; delay: number }) {
         <span className="be-card__posted">
           <Icons.Clock /> {job.posted}
         </span>
-        <button className="be-card__apply" onClick={(e) => handleApply(e, job.role)}>
+        <button className="be-card__apply" onClick={(e) => handleApply(e, job.role, job.id)}>
           Postularme
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </button>
