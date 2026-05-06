@@ -64,7 +64,11 @@ const getUserApplications = async (req, res) => {
       .select('*, empresas(*)')
       .in('id', vacancyIds);
 
-    // 4. Combinar los datos (Aun si vacError, enviamos lo que tenemos)
+    if (vacError) {
+      console.warn('⚠️ Advertencia en vacError (continuando):', vacError.message);
+    }
+
+    // 4. Combinar los datos
     const fullApps = apps.map(app => {
       const vacancy = vacancies?.find(v => v.id === app.vacante_id);
       return {
@@ -73,9 +77,10 @@ const getUserApplications = async (req, res) => {
       };
     });
 
+    console.log(`✅ Se encontraron ${fullApps.length} postulaciones para el usuario.`);
     return res.status(200).json({ success: true, applications: fullApps });
   } catch (error) {
-    console.error('❌ Error crítico en getUserApplications:', error.message);
+    console.error('❌ Error crítico en getUserApplications:', error);
     return res.status(500).json({ success: false, message: error.message });
   }
 };

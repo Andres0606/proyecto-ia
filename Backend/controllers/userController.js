@@ -127,7 +127,7 @@ const loginUser = async (req, res) => {
       .from('suscripciones')
       .select('*')
       .eq('user_id', data.user.id)
-      .single();
+      .maybeSingle();
 
     return res.status(200).json({
       success: true,
@@ -154,6 +154,7 @@ const loginUser = async (req, res) => {
 
 const getFullProfile = async (req, res) => {
   try {
+    const { userId } = req.params;
     const cleanUserId = String(userId).trim();
     console.log('🔍 Iniciando recuperación de perfil para:', cleanUserId);
 
@@ -162,7 +163,7 @@ const getFullProfile = async (req, res) => {
       .from('users')
       .select('*')
       .eq('id', cleanUserId)
-      .single();
+      .maybeSingle();
 
     if (userError || !user) {
       console.error('❌ Error obteniendo usuario:', userError?.message);
@@ -179,7 +180,7 @@ const getFullProfile = async (req, res) => {
       .from('empresas')
       .select('*')
       .eq('user_id', cleanUserId)
-      .single();
+      .maybeSingle();
 
     // Usamos maybeSingle() para evitar que lance error si no hay registro
     const { data: subscription } = await supabase
