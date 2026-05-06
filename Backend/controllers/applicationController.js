@@ -41,50 +41,39 @@ const getUserApplications = async (req, res) => {
     const cleanId = String(userId || '').trim();
     if (!cleanId) return res.status(400).json({ success: false, message: 'ID no válido' });
 
-    console.log(`🔍 [DIAGNÓSTICO] Consultando postulaciones para: ${cleanId}`);
+    console.log(`🔍 [PROCESO FINAL] Consultando postulaciones para: ${cleanId}`);
 
-    // 1. Consulta ultra-básica
+    // 1. Postulaciones base
     const { data: apps, error: appsError } = await supabase
       .from('postulaciones')
-      .select('id, vacante_id, estado, fecha_postulacion, user_id')
+      .select('id, vacante_id, estado, fecha_postulacion')
       .eq('user_id', cleanId);
 
-    if (appsError) {
-      console.error('❌ Error de Base de Datos:', appsError);
-      return res.status(500).json({ 
-        success: false, 
-        message: 'Error de base de datos', 
-        details: appsError.message,
-        code: appsError.code
-      });
-    }
+    if (appsError) throw appsError;
+    if (!apps || apps.length === 0) return res.status(200).json({ success: true, applications: [] });
 
-    if (!apps || apps.length === 0) {
-      return res.status(200).json({ success: true, applications: [] });
-    }
-
-    // 2. Obtener vacantes de forma segura
+    // 2. Vacantes en bloque
     const vacIds = [...new Set(apps.map(a => a.vacante_id))];
-    const { data: vacs, error: vacError } = await supabase
+    const { data: vacs } = await supabase
       .from('vacantes')
       .select('id, cargo, ubicacion, empresa_id')
       .in('id', vacIds);
 
-    // 3. Obtener empresas de forma segura
+    // 3. Empresas en bloque
     const empIds = [...new Set(vacs?.map(v => v.empresa_id).filter(Boolean) || [])];
     const { data: emps } = await supabase
       .from('empresas')
       .select('id, razon_social')
       .in('id', empIds);
 
-    // 4. Formatear
+    // 4. Mapeo plano
     const result = apps.map(app => {
       const v = vacs?.find(x => x.id === app.vacante_id);
       const e = emps?.find(y => y.id === v?.empresa_id);
       return {
         id: app.id,
         vacante_nombre: v?.cargo || 'Vacante',
-        empresa_nombre: e?.razon_social || 'Empresa UCC',
+        empresa_nombre: e?.razon_social || 'UCC Empresa',
         ubicacion: v?.ubicacion || 'Remoto',
         fecha: app.fecha_postulacion,
         estado: app.estado
@@ -95,7 +84,7 @@ const getUserApplications = async (req, res) => {
 
   } catch (err) {
     console.error('❌ Error Crítico:', err);
-    return res.status(500).json({ success: false, message: 'Error de servidor', error: err.message });
+    return res.status(500).json({ success: false, message: 'Error de servidor' });
   }
 };
 

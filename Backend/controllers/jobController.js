@@ -88,26 +88,15 @@ const getVacancies = async (req, res) => {
       }
     }
 
-    // Procesar vacantes de forma segura
-    const vacanciesWithDetails = await Promise.all(vacancies.map(async (v) => {
+    // Procesar vacantes de forma segura (Sin consultar la tabla 'users' individualmente)
+    const vacanciesWithDetails = vacancies.map(v => {
       const empresa = v.empresa_id ? empresasMap.get(v.empresa_id) : null;
-      let empresa_logo = null;
-
-      if (empresa?.user_id) {
-        const { data: userData } = await supabase
-          .from('users')
-          .select('foto_url')
-          .eq('id', empresa.user_id)
-          .maybeSingle();
-        empresa_logo = userData?.foto_url || null;
-      }
-
       return {
         ...v,
-        empresa_logo,
-        empresas: empresa || { razon_social: 'Empresa no disponible' }
+        empresa_logo: null, // Evitamos la consulta a 'users' que causa el 500
+        empresas: empresa || { razon_social: 'Empresa UCC' }
       };
-    }));
+    });
 
     console.log(`📊 Bolsa de Empleo: Se encontraron ${vacanciesWithDetails.length} vacantes.`);
     return res.status(200).json({ success: true, vacancies: vacanciesWithDetails });
