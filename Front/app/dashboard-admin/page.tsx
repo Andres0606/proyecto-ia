@@ -27,7 +27,10 @@ const ADMIN_SECTIONS = [
 export default function DashboardAdmin() {
   const [userName, setUserName] = useState('Administrador');
   const [activeSection, setActiveSection] = useState<'overview' | 'users' | 'jobs' | 'reports' | 'settings'>('overview');
-  const [stats] = useState({ total_users: 1542, total_companies: 87, total_jobs: 124, active_plans: 312 });
+  const [stats, setStats] = useState({ total_users: 0, total_companies: 0, total_jobs: 0, active_plans: 0 });
+  const [users, setUsers] = useState<any[]>([]);
+
+  const base = () => (process.env.NEXT_PUBLIC_BACKEND_URL || 'https://proyecto-ia-production-b7d6.up.railway.app').replace(/\/$/, '');
 
   useEffect(() => {
     const savedUser = sessionStorage.getItem('ucc_user');
@@ -39,7 +42,32 @@ export default function DashboardAdmin() {
       else if (rolId === 1) window.location.href = '/dashboard';
       else setUserName(userData.profile?.nombre_completo?.split(' ')[0] || 'Admin');
     }
+    fetchStats();
+    fetchUsers();
   }, []);
+
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredUsers = users.filter(u => 
+    u.nombre_completo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    u.correo?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const fetchStats = async () => {
+    try {
+      const r = await fetch(`${base()}/api/admin/stats`);
+      const d = await r.json();
+      if (d.success) setStats(d.stats);
+    } catch (e) { console.error("Error fetching stats:", e); }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const r = await fetch(`${base()}/api/admin/users`);
+      const d = await r.json();
+      if (d.success) setUsers(d.users);
+    } catch (e) { console.error("Error fetching users:", e); }
+  };
 
   const STAT_CARDS = [
     { label: 'Total Usuarios', value: stats.total_users, icon: AdminIcons.Users, color: '#3b82f6', bg: '#eff6ff' },
@@ -123,7 +151,12 @@ export default function DashboardAdmin() {
               <div style={{ background: 'white', borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
                 <div style={{ padding: '20px 28px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontWeight: 700, color: 'var(--ucc-navy)' }}>Todos los usuarios</span>
-                  <input placeholder="Buscar usuario..." style={{ padding: '10px 16px', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '0.9rem', outline: 'none', width: '220px' }} />
+                  <input 
+                    placeholder="Buscar usuario..." 
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    style={{ padding: '10px 16px', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '0.9rem', outline: 'none', width: '220px' }} 
+                  />
                 </div>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
@@ -132,18 +165,25 @@ export default function DashboardAdmin() {
                     </tr>
                   </thead>
                   <tbody>
-                    {[
-                      { nombre: 'Juan Pérez', correo: 'juan@gmail.com', rol: 'Egresado', color: '#fee2e2', tc: '#b91c1c' },
-                      { nombre: 'Tech Solutions', correo: 'hr@tech.com', rol: 'Empresa', color: '#fef3c7', tc: '#92400e' },
-                      { nombre: 'María Rodríguez', correo: 'maria@gmail.com', rol: 'Externo', color: '#dcfce7', tc: '#166534' },
-                    ].map((u, i) => (
-                      <tr key={i} style={{ borderBottom: '1px solid #f8fafc' }}>
-                        <td style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--ucc-navy)' }}>{u.nombre}</td>
-                        <td style={{ padding: '16px 20px', color: '#64748b', fontSize: '0.9rem' }}>{u.correo}</td>
-                        <td style={{ padding: '16px 20px' }}><span style={{ background: u.color, color: u.tc, padding: '4px 12px', borderRadius: '20px', fontSize: '0.78rem', fontWeight: 700 }}>{u.rol}</span></td>
-                        <td style={{ padding: '16px 20px' }}><button style={{ background: 'none', border: 'none', color: '#3b82f6', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem' }}>Editar</button></td>
-                      </tr>
-                    ))}
+                    {filteredUsers.length === 0 ? (
+                      <tr><td colSpan={4} style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>{users.length === 0 ? "Cargando usuarios..." : "No se encontraron usuarios"}</td></tr>
+                    ) : (
+                      filteredUsers.map((u, i) => {
+                        const rolMap: any = { 1: 'Egresado', 2: 'Externo', 3: 'Empresa', 4: 'Admin' };
+                        const colorMap: any = { 1: { bg: '#fee2e2', tc: '#b91c1c' }, 2: { bg: '#dcfce7', tc: '#166534' }, 3: { bg: '#fef3c7', tc: '#92400e' }, 4: { bg: '#e0f2fe', tc: '#0369a1' } };
+                        const rol = rolMap[u.rol_id] || 'Desconocido';
+                        const colors = colorMap[u.rol_id] || { bg: '#f1f5f9', tc: '#64748b' };
+                        
+                        return (
+                          <tr key={u.id} style={{ borderBottom: '1px solid #f8fafc' }}>
+                            <td style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--ucc-navy)' }}>{u.nombre_completo}</td>
+                            <td style={{ padding: '16px 20px', color: '#64748b', fontSize: '0.9rem' }}>{u.correo}</td>
+                            <td style={{ padding: '16px 20px' }}><span style={{ background: colors.bg, color: colors.tc, padding: '4px 12px', borderRadius: '20px', fontSize: '0.78rem', fontWeight: 700 }}>{rol}</span></td>
+                            <td style={{ padding: '16px 20px' }}><button style={{ background: 'none', border: 'none', color: '#3b82f6', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem' }}>Editar</button></td>
+                          </tr>
+                        );
+                      })
+                    )}
                   </tbody>
                 </table>
               </div>

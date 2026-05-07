@@ -1,0 +1,40 @@
+const supabase = require('../config/supabase');
+
+const getStats = async (req, res) => {
+  try {
+    const { count: totalUsers } = await supabase.from('users').select('*', { count: 'exact', head: true });
+    const { count: totalCompanies } = await supabase.from('empresas').select('*', { count: 'exact', head: true });
+    const { count: totalJobs } = await supabase.from('vacantes').select('*', { count: 'exact', head: true });
+    const { count: activePlans } = await supabase.from('suscripciones').select('*', { count: 'exact', head: true }).eq('estado', 'activo');
+
+    return res.status(200).json({
+      success: true,
+      stats: {
+        total_users: totalUsers || 0,
+        total_companies: totalCompanies || 0,
+        total_jobs: totalJobs || 0,
+        active_plans: activePlans || 0
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching admin stats:', error);
+    return res.status(500).json({ success: false, message: 'Error al obtener estadísticas', error: error.message });
+  }
+};
+
+const getAllUsers = async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    return res.status(200).json({ success: true, users: data });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+module.exports = { getStats, getAllUsers };
