@@ -214,6 +214,18 @@ function ResultCard({ resultado }: { resultado: ResultadoAPI }) {
           ))}
         </div>
       </div>
+
+      {/* Explicación de los términos */}
+      <div style={{ padding: '1.5rem 2rem', background: '#f8fafc', borderTop: '1px solid #e2e8f0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+        <div>
+          <h4 style={{ color: '#15803d', fontSize: '0.9rem', marginBottom: '6px', fontWeight: 700 }}>¿Qué es Estabilidad Larga?</h4>
+          <p style={{ color: '#64748b', fontSize: '0.8rem', lineHeight: 1.5 }}>Indica una tendencia a permanecer en el mismo empleo por periodos prolongados (años). Sugiere una baja rotación laboral y una adaptación sólida a la cultura organizacional.</p>
+        </div>
+        <div>
+          <h4 style={{ color: '#ef4444', fontSize: '0.9rem', marginBottom: '6px', fontWeight: 700 }}>¿Qué es Estabilidad Corta?</h4>
+          <p style={{ color: '#64748b', fontSize: '0.8rem', lineHeight: 1.5 }}>Indica una tendencia a cambios frecuentes de empleo o contratos de duración reducida. Puede sugerir una rotación laboral más alta o una búsqueda constante de nuevas oportunidades.</p>
+        </div>
+      </div>
     </div>
   );
 }
