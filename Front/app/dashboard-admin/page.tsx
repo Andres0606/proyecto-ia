@@ -21,7 +21,7 @@ const ADMIN_SECTIONS = [
   { title: 'Resumen', icon: AdminIcons.Overview, id: 'overview' },
   { title: 'Usuarios', icon: AdminIcons.Users, id: 'users' },
   { title: 'Vacantes', icon: AdminIcons.Jobs, id: 'jobs' },
-  { title: 'Reportes', icon: AdminIcons.Reports, id: 'reports' },
+  { title: 'Distribución', icon: AdminIcons.Reports, id: 'reports' },
 ];
 
 export default function DashboardAdmin() {
@@ -30,6 +30,7 @@ export default function DashboardAdmin() {
   const [stats, setStats] = useState({ total_users: 0, total_companies: 0, total_jobs: 0, active_plans: 0 });
   const [users, setUsers] = useState<any[]>([]);
   const [vacancies, setVacancies] = useState<any[]>([]);
+  const [distributions, setDistributions] = useState<any[]>([]);
 
   const base = () => (process.env.NEXT_PUBLIC_BACKEND_URL || 'https://proyecto-ia-production-b7d6.up.railway.app').replace(/\/$/, '');
 
@@ -46,6 +47,7 @@ export default function DashboardAdmin() {
     fetchStats();
     fetchUsers();
     fetchVacancies();
+    fetchDistributions();
   }, []);
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -83,6 +85,14 @@ export default function DashboardAdmin() {
       const d = await r.json();
       if (d.success) setVacancies(d.vacancies);
     } catch (e) { console.error("Error fetching vacancies:", e); }
+  };
+
+  const fetchDistributions = async () => {
+    try {
+      const r = await fetch(`${base()}/api/admin/distributions`);
+      const d = await r.json();
+      if (d.success) setDistributions(d.data);
+    } catch (e) { console.error("Error fetching distributions:", e); }
   };
 
   const STAT_CARDS = [
@@ -257,28 +267,63 @@ export default function DashboardAdmin() {
 
           {activeSection === 'reports' && (
             <div>
-              <h1 style={{ color: 'var(--ucc-navy)', fontSize: '1.8rem', fontWeight: 800, marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}><AdminIcons.Reports /> Reportes del Sistema</h1>
-              <div className="responsive-grid-2" style={{ gap: '20px' }}>
-                {[
-                  { title: 'Egresados por Programa', desc: 'Distribución de egresados por carrera académica', icon: AdminIcons.Graduation },
-                  { title: 'Tasa de Empleo', desc: 'Porcentaje de egresados empleados vs desempleados', icon: AdminIcons.Reports },
-                  { title: 'Planes Activos', desc: 'Detalle de suscripciones y membresías activas', icon: AdminIcons.Card },
-                  { title: 'Actividad Mensual', desc: 'Logins y acciones en el portal por mes', icon: AdminIcons.Calendar },
-                ].map(r => {
-                  const Icon = r.icon;
-                  return (
-                    <div key={r.title} style={{ background: 'white', borderRadius: '20px', padding: '28px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', display: 'flex', gap: '20px', alignItems: 'center' }}>
-                      <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--ucc-navy)', flexShrink: 0 }}>
-                        <Icon />
+              <h1 style={{ color: 'var(--ucc-navy)', fontSize: '1.8rem', fontWeight: 800, marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}><AdminIcons.Reports /> Distribución de Egresados</h1>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '24px' }}>
+                {/* Distribución por Programa */}
+                <div style={{ background: 'white', borderRadius: '24px', padding: '30px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--ucc-navy)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <AdminIcons.Graduation /> Por Programa Académico
+                  </h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {Object.entries(
+                      distributions.reduce((acc: any, curr) => {
+                        const prog = curr.perfiles_usuarios?.[0]?.programa_academico || 'No definido';
+                        acc[prog] = (acc[prog] || 0) + 1;
+                        return acc;
+                      }, {})
+                    ).sort((a: any, b: any) => b[1] - a[1]).map(([prog, count]: any) => (
+                      <div key={prog}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '6px' }}>
+                          <span style={{ fontWeight: 600, color: '#475569' }}>{prog}</span>
+                          <span style={{ fontWeight: 700, color: 'var(--ucc-navy)' }}>{count}</span>
+                        </div>
+                        <div style={{ width: '100%', height: '8px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
+                          <div style={{ width: `${(count / distributions.length) * 100}%`, height: '100%', background: 'linear-gradient(90deg, #3b82f6, #60a5fa)', borderRadius: '4px' }} />
+                        </div>
                       </div>
-                      <div>
-                        <h3 style={{ margin: '0 0 6px', color: 'var(--ucc-navy)', fontWeight: 700 }}>{r.title}</h3>
-                        <p style={{ margin: '0 0 12px', color: '#64748b', fontSize: '0.85rem' }}>{r.desc}</p>
-                        <button style={{ background: 'var(--ucc-navy)', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 18px', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}>Próximamente</button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Distribución por Género */}
+                <div style={{ background: 'white', borderRadius: '24px', padding: '30px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--ucc-navy)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <AdminIcons.Users /> Por Género
+                  </h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    {Object.entries(
+                      distributions.reduce((acc: any, curr) => {
+                        const gen = curr.genero === 'M' ? 'Masculino' : curr.genero === 'F' ? 'Femenino' : 'Otro/No definido';
+                        acc[gen] = (acc[gen] || 0) + 1;
+                        return acc;
+                      }, {})
+                    ).map(([gen, count]: any) => (
+                      <div key={gen} style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                        <div style={{ width: '50px', height: '50px', borderRadius: '12px', background: gen === 'Femenino' ? '#fdf2f8' : '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', color: gen === 'Femenino' ? '#db2777' : '#2563eb' }}>
+                          {gen === 'Femenino' ? '👩' : '👨'}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                            <span style={{ fontWeight: 600, color: '#475569' }}>{gen}</span>
+                            <span style={{ fontWeight: 700, color: 'var(--ucc-navy)' }}>{Math.round((count / distributions.length) * 100)}%</span>
+                          </div>
+                          <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{count} egresados registrados</div>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           )}

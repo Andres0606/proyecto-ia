@@ -252,10 +252,13 @@ export default function DiagnosticoPage() {
     setError(null);
 
     try {
+      const savedUser = sessionStorage.getItem('ucc_user');
+      const userId = savedUser ? JSON.parse(savedUser).id : null;
+
       const res = await fetch("/api/diagnostico", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, userId }),
       });
 
       const data = await res.json();

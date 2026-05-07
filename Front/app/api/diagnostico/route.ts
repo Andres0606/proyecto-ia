@@ -42,6 +42,28 @@ export async function POST(req: NextRequest) {
     }
 
     const data = await flaskRes.json();
+
+    // Guardar resultado si hay userId
+    if (body.userId) {
+      try {
+        const { cookies } = await import("next/headers");
+        const { createClient } = await import("@/utils/supabase/server");
+        const cookieStore = await cookies();
+        const supabase = createClient(cookieStore);
+        
+        // El score es la probabilidad de estabilidad (usamos Larga si existe, o la predicción principal)
+        const score = data.Larga ?? data.estabilidad ?? data.prediction ?? 0;
+        const finalScore = score <= 1 ? score * 100 : score;
+
+        await supabase.from("resultados_modelo").insert({
+          user_id: body.userId,
+          resultado_estabilidad: finalScore,
+        });
+      } catch (dbErr) {
+        console.error("❌ Error persistiendo resultado:", dbErr);
+      }
+    }
+
     return NextResponse.json(data);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Error desconocido";
