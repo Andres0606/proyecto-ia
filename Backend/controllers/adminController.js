@@ -60,6 +60,7 @@ const getUserDistributions = async (req, res) => {
         id,
         nombre_completo,
         genero,
+        fecha_nacimiento,
         perfiles_usuarios (
           programa_academico,
           nivel_formacion

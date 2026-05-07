@@ -304,22 +304,53 @@ export default function DashboardAdmin() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                     {Object.entries(
                       distributions.reduce((acc: any, curr) => {
-                        const gen = curr.genero === 'M' ? 'Masculino' : curr.genero === 'F' ? 'Femenino' : 'Otro/No definido';
+                        const gen = curr.genero === 'M' || curr.genero === 'Masculino' ? 'Masculino' : curr.genero === 'F' || curr.genero === 'Femenino' ? 'Femenino' : 'Sin definir';
                         acc[gen] = (acc[gen] || 0) + 1;
                         return acc;
                       }, {})
                     ).map(([gen, count]: any) => (
                       <div key={gen} style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                        <div style={{ width: '50px', height: '50px', borderRadius: '12px', background: gen === 'Femenino' ? '#fdf2f8' : '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', color: gen === 'Femenino' ? '#db2777' : '#2563eb' }}>
-                          {gen === 'Femenino' ? '👩' : '👨'}
+                        <div style={{ width: '50px', height: '50px', borderRadius: '12px', background: gen === 'Femenino' ? '#fdf2f8' : gen === 'Masculino' ? '#eff6ff' : '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', color: gen === 'Femenino' ? '#db2777' : gen === 'Masculino' ? '#2563eb' : '#94a3b8' }}>
+                          {gen === 'Femenino' ? '👩' : gen === 'Masculino' ? '👨' : '👤'}
                         </div>
                         <div style={{ flex: 1 }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                             <span style={{ fontWeight: 600, color: '#475569' }}>{gen}</span>
-                            <span style={{ fontWeight: 700, color: 'var(--ucc-navy)' }}>{Math.round((count / distributions.length) * 100)}%</span>
+                            <span style={{ fontWeight: 700, color: 'var(--ucc-navy)' }}>{distributions.length > 0 ? Math.round((count / distributions.length) * 100) : 0}%</span>
                           </div>
-                          <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{count} egresados registrados</div>
+                          <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{count} egresados</div>
                         </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Distribución por Edad */}
+                <div style={{ background: 'white', borderRadius: '24px', padding: '30px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', gridColumn: 'span 2' }}>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--ucc-navy)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <AdminIcons.Calendar /> Distribución por Edad
+                  </h3>
+                  <div style={{ display: 'flex', justifyContent: 'space-around', gap: '20px', flexWrap: 'wrap' }}>
+                    {Object.entries(
+                      distributions.reduce((acc: any, curr) => {
+                        if (!curr.fecha_nacimiento) { acc['Desconocido'] = (acc['Desconocido'] || 0) + 1; return acc; }
+                        const birth = new Date(curr.fecha_nacimiento);
+                        const age = new Date().getFullYear() - birth.getFullYear();
+                        let range = '';
+                        if (age < 25) range = '20-25';
+                        else if (age < 30) range = '26-30';
+                        else if (age < 40) range = '31-40';
+                        else range = '41+';
+                        acc[range] = (acc[range] || 0) + 1;
+                        return acc;
+                      }, {})
+                    ).map(([range, count]: any) => (
+                      <div key={range} style={{ textAlign: 'center' }}>
+                        <div style={{ width: '80px', height: '120px', background: '#f8fafc', borderRadius: '12px', position: 'relative', display: 'flex', alignItems: 'flex-end', marginBottom: '12px' }}>
+                          <div style={{ width: '100%', height: `${(count / distributions.length) * 100}%`, background: 'var(--ucc-navy)', borderRadius: '0 0 12px 12px', transition: 'height 1s ease' }} />
+                          <span style={{ position: 'absolute', top: '-25px', left: '50%', transform: 'translateX(-50%)', fontWeight: 700, color: 'var(--ucc-navy)' }}>{count}</span>
+                        </div>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748b' }}>{range} años</span>
                       </div>
                     ))}
                   </div>

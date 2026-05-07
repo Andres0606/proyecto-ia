@@ -58,6 +58,8 @@ export async function POST(req: NextRequest) {
         await supabase.from("resultados_modelo").insert({
           user_id: body.userId,
           resultado_estabilidad: finalScore,
+          programa_academico: body.Programa, // Guardamos el programa usado en el test
+          genero: body.Genero, // Guardamos el género usado en el test
         });
       } catch (dbErr) {
         console.error("❌ Error persistiendo resultado:", dbErr);
