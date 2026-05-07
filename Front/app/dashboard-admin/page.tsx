@@ -21,7 +21,6 @@ const ADMIN_SECTIONS = [
   { title: 'Resumen', icon: AdminIcons.Overview, id: 'overview' },
   { title: 'Usuarios', icon: AdminIcons.Users, id: 'users' },
   { title: 'Vacantes', icon: AdminIcons.Jobs, id: 'jobs' },
-  { title: 'Distribución', icon: AdminIcons.Reports, id: 'reports' },
 ];
 
 export default function DashboardAdmin() {
@@ -30,7 +29,6 @@ export default function DashboardAdmin() {
   const [stats, setStats] = useState({ total_users: 0, total_companies: 0, total_jobs: 0, active_plans: 0 });
   const [users, setUsers] = useState<any[]>([]);
   const [vacancies, setVacancies] = useState<any[]>([]);
-  const [distributions, setDistributions] = useState<any[]>([]);
 
   const base = () => (process.env.NEXT_PUBLIC_BACKEND_URL || 'https://proyecto-ia-production-b7d6.up.railway.app').replace(/\/$/, '');
 
@@ -47,28 +45,10 @@ export default function DashboardAdmin() {
     fetchStats();
     fetchUsers();
     fetchVacancies();
-    fetchDistributions();
   }, []);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [searchJobs, setSearchJobs] = useState('');
-  const [reportProgram, setReportProgram] = useState('all');
-
-  const uniquePrograms = Array.from(new Set(distributions.map(d => d.perfiles_usuarios?.[0]?.programa_academico).filter(Boolean)));
-
-  const filteredDistributions = distributions.map(d => {
-    // Buscar el test más reciente
-    const latestTest = d.resultados_modelo?.sort((a: any, b: any) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())[0];
-    
-    return {
-      ...d,
-      // Prioridad: Perfil > Último Test > No definido
-      finalProgram: d.perfiles_usuarios?.[0]?.programa_academico || latestTest?.programa_academico || 'No definido',
-      finalGender: d.genero || latestTest?.genero || 'Sin definir'
-    };
-  }).filter(d => 
-    reportProgram === 'all' || d.finalProgram === reportProgram
-  );
 
   const filteredUsers = users.filter(u => 
     u.nombre_completo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -102,14 +82,6 @@ export default function DashboardAdmin() {
       const d = await r.json();
       if (d.success) setVacancies(d.vacancies);
     } catch (e) { console.error("Error fetching vacancies:", e); }
-  };
-
-  const fetchDistributions = async () => {
-    try {
-      const r = await fetch(`${base()}/api/admin/distributions`);
-      const d = await r.json();
-      if (d.success) setDistributions(d.data);
-    } catch (e) { console.error("Error fetching distributions:", e); }
   };
 
   const STAT_CARDS = [
@@ -282,119 +254,6 @@ export default function DashboardAdmin() {
             </div>
           )}
 
-          {activeSection === 'reports' && (
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', gap: '20px', flexWrap: 'wrap' }}>
-                <div>
-                  <h1 style={{ color: 'var(--ucc-navy)', fontSize: '1.8rem', fontWeight: 800, margin: 0 }}>Análisis de Egresados</h1>
-                  <p style={{ color: '#64748b', margin: '4px 0 0' }}>Cruza variables para obtener estadísticas funcionales</p>
-                </div>
-                
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'white', padding: '10px 20px', borderRadius: '16px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0' }}>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--ucc-navy)' }}>Filtrar por Carrera:</span>
-                  <select 
-                    value={reportProgram} 
-                    onChange={(e) => setReportProgram(e.target.value)}
-                    style={{ border: 'none', background: 'none', outline: 'none', fontWeight: 600, color: '#3b82f6', cursor: 'pointer', fontSize: '0.9rem' }}
-                  >
-                    <option value="all">Todas las Carreras</option>
-                    {uniquePrograms.map(p => <option key={p} value={p}>{p}</option>)}
-                  </select>
-                </div>
-              </div>
-              
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '24px' }}>
-                {/* Distribución por Programa (Solo se muestra si estamos en "Todas") */}
-                {reportProgram === 'all' && (
-                  <div style={{ background: 'white', borderRadius: '24px', padding: '30px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
-                    <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--ucc-navy)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <AdminIcons.Graduation /> Programas con más Egresados
-                    </h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                      {Object.entries(
-                        distributions.reduce((acc: any, curr) => {
-                          const prog = curr.finalProgram;
-                          acc[prog] = (acc[prog] || 0) + 1;
-                          return acc;
-                        }, {})
-                      ).sort((a: any, b: any) => b[1] - a[1]).slice(0, 5).map(([prog, count]: any) => (
-                        <div key={prog}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '6px' }}>
-                            <span style={{ fontWeight: 600, color: '#475569' }}>{prog}</span>
-                            <span style={{ fontWeight: 700, color: 'var(--ucc-navy)' }}>{count}</span>
-                          </div>
-                          <div style={{ width: '100%', height: '8px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
-                            <div style={{ width: `${(count / distributions.length) * 100}%`, height: '100%', background: 'linear-gradient(90deg, #3b82f6, #60a5fa)', borderRadius: '4px' }} />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Distribución por Género (Dinámica) */}
-                <div style={{ background: 'white', borderRadius: '24px', padding: '30px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--ucc-navy)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <AdminIcons.Users /> Género {reportProgram !== 'all' ? `en ${reportProgram}` : ''}
-                  </h3>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    {Object.entries(
-                      filteredDistributions.reduce((acc: any, curr) => {
-                        const genRaw = curr.finalGender;
-                        const gen = genRaw === 'M' || genRaw === 'Masculino' ? 'Masculino' : genRaw === 'F' || genRaw === 'Femenino' ? 'Femenino' : 'Sin definir';
-                        acc[gen] = (acc[gen] || 0) + 1;
-                        return acc;
-                      }, {})
-                    ).map(([gen, count]: any) => (
-                      <div key={gen} style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                        <div style={{ width: '50px', height: '50px', borderRadius: '12px', background: gen === 'Femenino' ? '#fdf2f8' : gen === 'Masculino' ? '#eff6ff' : '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', color: gen === 'Femenino' ? '#db2777' : gen === 'Masculino' ? '#2563eb' : '#94a3b8' }}>
-                          {gen === 'Femenino' ? '👩' : gen === 'Masculino' ? '👨' : '👤'}
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                            <span style={{ fontWeight: 600, color: '#475569' }}>{gen}</span>
-                            <span style={{ fontWeight: 700, color: 'var(--ucc-navy)' }}>{filteredDistributions.length > 0 ? Math.round((count / filteredDistributions.length) * 100) : 0}%</span>
-                          </div>
-                          <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{count} egresados</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Distribución por Edad (Dinámica) */}
-                <div style={{ background: 'white', borderRadius: '24px', padding: '30px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', gridColumn: reportProgram === 'all' ? 'span 2' : 'auto' }}>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--ucc-navy)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <AdminIcons.Calendar /> Rangos de Edad {reportProgram !== 'all' ? `en ${reportProgram}` : ''}
-                  </h3>
-                  <div style={{ display: 'flex', justifyContent: 'space-around', gap: '20px', flexWrap: 'wrap', alignItems: 'flex-end', minHeight: '150px' }}>
-                    {Object.entries(
-                      filteredDistributions.reduce((acc: any, curr) => {
-                        if (!curr.fecha_nacimiento) { acc['N/D'] = (acc['N/D'] || 0) + 1; return acc; }
-                        const birth = new Date(curr.fecha_nacimiento);
-                        const age = new Date().getFullYear() - birth.getFullYear();
-                        let range = '';
-                        if (age < 25) range = '20-25';
-                        else if (age < 30) range = '26-30';
-                        else if (age < 40) range = '31-40';
-                        else range = '41+';
-                        acc[range] = (acc[range] || 0) + 1;
-                        return acc;
-                      }, {})
-                    ).sort().map(([range, count]: any) => (
-                      <div key={range} style={{ textAlign: 'center', flex: 1, maxWidth: '100px' }}>
-                        <div style={{ width: '100%', height: '120px', background: '#f8fafc', borderRadius: '12px', position: 'relative', display: 'flex', alignItems: 'flex-end', marginBottom: '12px' }}>
-                          <div style={{ width: '100%', height: `${filteredDistributions.length > 0 ? (count / filteredDistributions.length) * 100 : 0}%`, background: 'linear-gradient(180deg, #1d4ed8, var(--ucc-navy))', borderRadius: '0 0 12px 12px', transition: 'height 0.8s cubic-bezier(0.4, 0, 0.2, 1)' }} />
-                          <span style={{ position: 'absolute', top: '-25px', left: '50%', transform: 'translateX(-50%)', fontWeight: 800, color: 'var(--ucc-navy)', fontSize: '0.9rem' }}>{count}</span>
-                        </div>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>{range === 'N/D' ? 'Sin edad' : `${range} años`}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </main>
       <Footer />
