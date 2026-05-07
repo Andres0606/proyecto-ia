@@ -54,6 +54,7 @@ const getAllVacancies = async (req, res) => {
 
 const getUserDistributions = async (req, res) => {
   try {
+    // Consulta robusta con selección explícita
     const { data, error } = await supabase
       .from('users')
       .select(`
@@ -62,20 +63,24 @@ const getUserDistributions = async (req, res) => {
         genero,
         fecha_nacimiento,
         perfiles_usuarios (
-          programa_academico,
-          nivel_formacion
+          programa_academico
         ),
         resultados_modelo (
           programa_academico,
           genero,
           fecha
         )
-      `);
+      `)
+      .eq('rol_id', 1); // Solo egresados para los reportes
 
-    if (error) throw error;
+    if (error) {
+      console.error("❌ Error en Supabase:", error);
+      throw error;
+    }
 
-    return res.status(200).json({ success: true, data });
+    return res.status(200).json({ success: true, data: data || [] });
   } catch (error) {
+    console.error("❌ Error en getUserDistributions:", error.message);
     return res.status(500).json({ success: false, error: error.message });
   }
 };
