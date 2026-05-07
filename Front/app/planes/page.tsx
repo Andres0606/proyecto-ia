@@ -5,6 +5,30 @@ import Header from "../Components/header";
 import Footer from "../Components/footer";
 import "../css/Planes/planes.css";
 
+// ── Iconos SVG ──────────────────────────────────────────────────────────────
+const PlanIcons = {
+  Target: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+    </svg>
+  ),
+  Chart: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+    </svg>
+  ),
+  File: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+    </svg>
+  ),
+  Diamond: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 3h12l4 6-10 12L2 9l4-6z"/><path d="M11 3 8 9l4 12 4-12-3-6"/><path d="M2 9h20"/>
+    </svg>
+  )
+};
+
 // ── Datos de planes ──────────────────────────────────────────────────────────
 const PLANES = [
   {
@@ -14,7 +38,7 @@ const PLANES = [
     price: "0",
     period: "siempre gratis",
     note: "Perfil básico y acceso a vacantes en modo lectura.",
-    icon: "🌱",
+    icon: <PlanIcons.Target />,
     iconClass: "plan-card__icon--free",
     popular: false,
     features: [
@@ -34,7 +58,7 @@ const PLANES = [
     price: "29.900",
     period: "pago único",
     note: "Sin cargos recurrentes — paga una vez, usa siempre.",
-    icon: "🧠",
+    icon: <PlanIcons.Chart />,
     iconClass: "plan-card__icon--basic",
     popular: true,
     features: [
@@ -54,7 +78,7 @@ const PLANES = [
     price: "49.900",
     period: "/ mes",
     note: "Cancela cuando quieras. Sin permanencia.",
-    icon: "🚀",
+    icon: <PlanIcons.File />,
     iconClass: "plan-card__icon--pro",
     popular: false,
     features: [
@@ -109,7 +133,10 @@ function PlanesHero() {
       <div className="planes-hero__blob planes-hero__blob--1" />
       <div className="planes-hero__blob planes-hero__blob--2" />
       <div className="planes-hero__content">
-        <span className="planes-hero__badge">💎 Para usuarios externos</span>
+        <span className="planes-hero__badge">
+          <PlanIcons.Diamond />
+          Para usuarios externos
+        </span>
         <h1 className="planes-hero__title">
           Elige el plan que impulse
           <br />
