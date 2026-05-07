@@ -105,7 +105,7 @@ body {
 .planes-hero__badge {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   background: rgba(0, 169, 224, 0.15);
   border: 1px solid rgba(0, 169, 224, 0.3);
   border-radius: 50px;
@@ -256,15 +256,18 @@ body {
 }
 
 .plan-card__icon--free {
-  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+  background: #fef2f2;
+  color: #ef4444;
 }
 
 .plan-card__icon--basic {
-  background: linear-gradient(135deg, #e8f0fe, #d1e0fc);
+  background: #eff6ff;
+  color: #3b82f6;
 }
 
 .plan-card__icon--pro {
-  background: linear-gradient(135deg, #ffe0e6, #ffc7d0);
+  background: #f5f3ff;
+  color: #8b5cf6;
 }
 
 /* ── Card header ── */

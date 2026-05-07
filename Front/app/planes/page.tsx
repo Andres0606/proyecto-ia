@@ -26,8 +26,20 @@ const PlanIcons = {
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M6 3h12l4 6-10 12L2 9l4-6z"/><path d="M11 3 8 9l4 12 4-12-3-6"/><path d="M2 9h20"/>
     </svg>
+  ),
+  Check: ({ className }: { className?: string }) => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+  ),
+  Cross: ({ className }: { className?: string }) => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
   )
 };
+
+// ... (PLANES and COMPARATIVA same as before)
 
 // ── Datos de planes ──────────────────────────────────────────────────────────
 const PLANES = [
@@ -203,7 +215,7 @@ function PricingCards() {
                         : "plan-card__check--red"
                     }`}
                   >
-                    {f.included ? "✓" : "✕"}
+                    {f.included ? <PlanIcons.Check /> : <PlanIcons.Cross />}
                   </span>
                   {f.text}
                 </li>
@@ -248,9 +260,9 @@ function Comparativa() {
                 <td>
                   {typeof row.gratuito === "boolean" ? (
                     row.gratuito ? (
-                      <span className="compare-check">✓</span>
+                      <PlanIcons.Check className="compare-check" />
                     ) : (
-                      <span className="compare-cross">✕</span>
+                      <PlanIcons.Cross className="compare-cross" />
                     )
                   ) : (
                     <span>{row.gratuito}</span>
@@ -259,9 +271,9 @@ function Comparativa() {
                 <td>
                   {typeof row.modelo === "boolean" ? (
                     row.modelo ? (
-                      <span className="compare-check">✓</span>
+                      <PlanIcons.Check className="compare-check" />
                     ) : (
-                      <span className="compare-cross">✕</span>
+                      <PlanIcons.Cross className="compare-cross" />
                     )
                   ) : (
                     <span>{row.modelo}</span>
@@ -270,9 +282,9 @@ function Comparativa() {
                 <td>
                   {typeof row.completo === "boolean" ? (
                     row.completo ? (
-                      <span className="compare-check">✓</span>
+                      <PlanIcons.Check className="compare-check" />
                     ) : (
-                      <span className="compare-cross">✕</span>
+                      <PlanIcons.Cross className="compare-cross" />
                     )
                   ) : (
                     <span>{row.completo}</span>
@@ -313,13 +325,14 @@ function FAQ() {
               aria-expanded={openIndex === i}
             >
               {faq.q}
-              <span
+              <svg 
+                width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
                 className={`faq-item__arrow ${
                   openIndex === i ? "faq-item__arrow--open" : ""
                 }`}
               >
-                ▾
-              </span>
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
             </button>
             <div
               className={`faq-item__answer ${
@@ -351,7 +364,8 @@ function CTABottom() {
         </p>
         <div className="planes-cta__actions">
           <a href="/registro" className="planes-cta__btn planes-cta__btn--red">
-            Registrarme gratis →
+            Registrarme gratis
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '10px' }}><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </a>
           <a href="/" className="planes-cta__btn planes-cta__btn--ghost">
             Volver al inicio
