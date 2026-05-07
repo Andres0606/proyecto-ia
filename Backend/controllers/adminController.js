@@ -37,4 +37,19 @@ const getAllUsers = async (req, res) => {
   }
 };
 
-module.exports = { getStats, getAllUsers };
+const getAllVacancies = async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('vacantes')
+      .select('*, empresas(razon_social)')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    return res.status(200).json({ success: true, vacancies: data });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+module.exports = { getStats, getAllUsers, getAllVacancies };

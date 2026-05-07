@@ -29,6 +29,7 @@ export default function DashboardAdmin() {
   const [activeSection, setActiveSection] = useState<'overview' | 'users' | 'jobs' | 'reports' | 'settings'>('overview');
   const [stats, setStats] = useState({ total_users: 0, total_companies: 0, total_jobs: 0, active_plans: 0 });
   const [users, setUsers] = useState<any[]>([]);
+  const [vacancies, setVacancies] = useState<any[]>([]);
 
   const base = () => (process.env.NEXT_PUBLIC_BACKEND_URL || 'https://proyecto-ia-production-b7d6.up.railway.app').replace(/\/$/, '');
 
@@ -44,13 +45,20 @@ export default function DashboardAdmin() {
     }
     fetchStats();
     fetchUsers();
+    fetchVacancies();
   }, []);
 
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchJobs, setSearchJobs] = useState('');
 
   const filteredUsers = users.filter(u => 
     u.nombre_completo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     u.correo?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredVacancies = vacancies.filter(v => 
+    v.cargo?.toLowerCase().includes(searchJobs.toLowerCase()) ||
+    v.empresas?.razon_social?.toLowerCase().includes(searchJobs.toLowerCase())
   );
 
   const fetchStats = async () => {
@@ -67,6 +75,14 @@ export default function DashboardAdmin() {
       const d = await r.json();
       if (d.success) setUsers(d.users);
     } catch (e) { console.error("Error fetching users:", e); }
+  };
+
+  const fetchVacancies = async () => {
+    try {
+      const r = await fetch(`${base()}/api/admin/vacancies`);
+      const d = await r.json();
+      if (d.success) setVacancies(d.vacancies);
+    } catch (e) { console.error("Error fetching vacancies:", e); }
   };
 
   const STAT_CARDS = [
@@ -191,10 +207,51 @@ export default function DashboardAdmin() {
           )}
 
           {activeSection === 'jobs' && (
-            <div style={{ textAlign: 'center', padding: '80px 40px', background: 'white', borderRadius: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
-              <div style={{ width: '80px', height: '80px', borderRadius: '20px', background: '#f1f5f9', color: 'var(--ucc-navy)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}><AdminIcons.Jobs /></div>
-              <h2 style={{ color: 'var(--ucc-navy)', fontWeight: 800, fontSize: '1.8rem' }}>Gestión de Vacantes</h2>
-              <p style={{ color: '#64748b', maxWidth: '400px', margin: '0 auto' }}>Próximamente: Aprueba y supervisa todas las ofertas laborales publicadas por las empresas.</p>
+            <div>
+              <h1 style={{ color: 'var(--ucc-navy)', fontSize: '1.8rem', fontWeight: 800, marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}><AdminIcons.Jobs /> Gestión de Vacantes</h1>
+              <div style={{ background: 'white', borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
+                <div style={{ padding: '20px 28px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontWeight: 700, color: 'var(--ucc-navy)' }}>Todas las ofertas</span>
+                  <input 
+                    placeholder="Buscar vacante o empresa..." 
+                    value={searchJobs}
+                    onChange={(e) => setSearchJobs(e.target.value)}
+                    style={{ padding: '10px 16px', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '0.9rem', outline: 'none', width: '220px' }} 
+                  />
+                </div>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ background: '#f8fafc' }}>
+                      {['Empresa', 'Cargo', 'Salario', 'Estado', 'Acciones'].map(h => <th key={h} style={{ padding: '14px 20px', textAlign: 'left', fontSize: '0.8rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>)}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredVacancies.length === 0 ? (
+                      <tr><td colSpan={5} style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>{vacancies.length === 0 ? "Cargando vacantes..." : "No se encontraron vacantes"}</td></tr>
+                    ) : (
+                      filteredVacancies.map((v) => (
+                        <tr key={v.id} style={{ borderBottom: '1px solid #f8fafc' }}>
+                          <td style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--ucc-navy)' }}>{v.empresas?.razon_social || 'UCC'}</td>
+                          <td style={{ padding: '16px 20px', color: '#64748b', fontSize: '0.9rem' }}>{v.cargo}</td>
+                          <td style={{ padding: '16px 20px', color: '#64748b', fontSize: '0.9rem' }}>{v.salario ? `$${v.salario.toLocaleString()}` : 'No definido'}</td>
+                          <td style={{ padding: '16px 20px' }}>
+                            <span style={{ 
+                              background: v.estado === 'activa' ? '#dcfce7' : '#fee2e2', 
+                              color: v.estado === 'activa' ? '#166534' : '#b91c1c', 
+                              padding: '4px 12px', borderRadius: '20px', fontSize: '0.78rem', fontWeight: 700 
+                            }}>
+                              {v.estado || 'Inactiva'}
+                            </span>
+                          </td>
+                          <td style={{ padding: '16px 20px' }}>
+                            <button style={{ background: 'none', border: 'none', color: '#3b82f6', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem' }}>Ver Detalle</button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
