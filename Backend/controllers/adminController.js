@@ -64,6 +64,11 @@ const getUserDistributions = async (req, res) => {
         perfiles_usuarios (
           programa_academico,
           nivel_formacion
+        ),
+        resultados_modelo (
+          programa_academico,
+          genero,
+          fecha
         )
       `);
 

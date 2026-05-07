@@ -56,8 +56,18 @@ export default function DashboardAdmin() {
 
   const uniquePrograms = Array.from(new Set(distributions.map(d => d.perfiles_usuarios?.[0]?.programa_academico).filter(Boolean)));
 
-  const filteredDistributions = distributions.filter(d => 
-    reportProgram === 'all' || d.perfiles_usuarios?.[0]?.programa_academico === reportProgram
+  const filteredDistributions = distributions.map(d => {
+    // Buscar el test más reciente
+    const latestTest = d.resultados_modelo?.sort((a: any, b: any) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())[0];
+    
+    return {
+      ...d,
+      // Prioridad: Perfil > Último Test > No definido
+      finalProgram: d.perfiles_usuarios?.[0]?.programa_academico || latestTest?.programa_academico || 'No definido',
+      finalGender: d.genero || latestTest?.genero || 'Sin definir'
+    };
+  }).filter(d => 
+    reportProgram === 'all' || d.finalProgram === reportProgram
   );
 
   const filteredUsers = users.filter(u => 
@@ -303,7 +313,7 @@ export default function DashboardAdmin() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                       {Object.entries(
                         distributions.reduce((acc: any, curr) => {
-                          const prog = curr.perfiles_usuarios?.[0]?.programa_academico || 'No definido';
+                          const prog = curr.finalProgram;
                           acc[prog] = (acc[prog] || 0) + 1;
                           return acc;
                         }, {})
@@ -330,7 +340,8 @@ export default function DashboardAdmin() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                     {Object.entries(
                       filteredDistributions.reduce((acc: any, curr) => {
-                        const gen = curr.genero === 'M' || curr.genero === 'Masculino' ? 'Masculino' : curr.genero === 'F' || curr.genero === 'Femenino' ? 'Femenino' : 'Sin definir';
+                        const genRaw = curr.finalGender;
+                        const gen = genRaw === 'M' || genRaw === 'Masculino' ? 'Masculino' : genRaw === 'F' || genRaw === 'Femenino' ? 'Femenino' : 'Sin definir';
                         acc[gen] = (acc[gen] || 0) + 1;
                         return acc;
                       }, {})
