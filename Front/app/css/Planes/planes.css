@@ -182,10 +182,10 @@ body {
 
 /* ── Grid de cards ── */
 .planes-pricing__grid {
-  max-width: 920px;
+  max-width: 1100px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
   align-items: stretch;
 }
@@ -253,6 +253,10 @@ body {
   font-size: 1.6rem;
   margin-bottom: 1.4rem;
   flex-shrink: 0;
+}
+
+.plan-card__icon--free {
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
 }
 
 .plan-card__icon--basic {
@@ -392,6 +396,19 @@ body {
   box-shadow: 0 4px 16px rgba(0, 40, 85, 0.1);
 }
 
+.plan-card__cta--blue {
+  background: #3b82f6;
+  color: var(--white);
+  border-color: #3b82f6;
+}
+
+.plan-card__cta--blue:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(59, 130, 246, 0.3);
+}
+
 .plan-card__cta--red {
   background: var(--ucc-navy);
   color: var(--white);
@@ -438,7 +455,7 @@ body {
 
 /* ── Table ── */
 .planes-compare__table-wrap {
-  max-width: 800px;
+  max-width: 960px;
   margin: 0 auto;
   border-radius: 16px;
   overflow: hidden;

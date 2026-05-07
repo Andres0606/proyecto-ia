@@ -8,41 +8,61 @@ import "../css/Planes/planes.css";
 // ── Datos de planes ──────────────────────────────────────────────────────────
 const PLANES = [
   {
+    id: "gratuito",
+    name: "Gratuito",
+    desc: "Comienza tu camino profesional con las herramientas básicas esenciales.",
+    price: "0",
+    period: "siempre gratis",
+    note: "Perfil básico y acceso a vacantes en modo lectura.",
+    icon: "🌱",
+    iconClass: "plan-card__icon--free",
+    popular: false,
+    features: [
+      { text: "Perfil Profesional y Hoja de Vida", included: true },
+      { text: "Bolsa de Empleo UCC (Solo lectura)", included: true },
+      { text: "Diagnóstico de estabilidad laboral con IA", included: false },
+      { text: "Reporte PDF detallado de estabilidad", included: false },
+      { text: "Postulación directa a vacantes", included: false },
+    ],
+    cta: "Registrarme gratis",
+    ctaClass: "plan-card__cta--outline",
+  },
+  {
     id: "modelo",
     name: "Acceso al Modelo",
     desc: "Accede a nuestro modelo de diagnóstico de estabilidad laboral con IA y conoce tu nivel de empleabilidad.",
-    price: "25.000",
+    price: "29.900",
     period: "pago único",
     note: "Sin cargos recurrentes — paga una vez, usa siempre.",
     icon: "🧠",
     iconClass: "plan-card__icon--basic",
-    popular: false,
+    popular: true,
     features: [
+      { text: "Perfil Profesional y Hoja de Vida", included: true },
+      { text: "Bolsa de Empleo UCC (Solo lectura)", included: true },
       { text: "Diagnóstico de estabilidad laboral con IA", included: true },
-      { text: "Acceso completo a la bolsa de empleo UCC", included: false },
-      { text: "Alertas de vacantes por correo", included: false },
-      { text: "Postulación directa a empresas aliadas", included: false },
-      { text: "Recomendaciones de empleos según tu nivel de estabilidad", included: false },
+      { text: "Reporte PDF detallado de estabilidad", included: true },
+      { text: "Postulación directa a vacantes", included: false },
     ],
     cta: "Adquirir acceso",
-    ctaClass: "plan-card__cta--outline",
+    ctaClass: "plan-card__cta--blue",
   },
   {
     id: "completo",
     name: "Plan Completo",
     desc: "Todo el poder del modelo de IA más acceso completo a la bolsa de empleo, vacantes y red de empresas aliadas UCC.",
-    price: "45.000",
+    price: "49.900",
     period: "/ mes",
     note: "Cancela cuando quieras. Sin permanencia.",
     icon: "🚀",
     iconClass: "plan-card__icon--pro",
-    popular: true,
+    popular: false,
     features: [
+      { text: "Perfil Profesional y Hoja de Vida", included: true },
+      { text: "Bolsa de Empleo UCC (Acceso completo)", included: true },
       { text: "Diagnóstico de estabilidad laboral con IA", included: true },
-      { text: "Acceso completo a la bolsa de empleo UCC", included: true },
-      { text: "Alertas de vacantes por correo", included: true },
+      { text: "Reporte PDF detallado de estabilidad", included: true },
       { text: "Postulación directa a empresas aliadas", included: true },
-      { text: "Recomendaciones de empleos según tu nivel de estabilidad", included: true },
     ],
     cta: "Suscribirme ahora",
     ctaClass: "plan-card__cta--red",
@@ -50,12 +70,12 @@ const PLANES = [
 ];
 
 const COMPARATIVA = [
-  { feature: "Diagnóstico de estabilidad laboral con IA", modelo: true, completo: true },
-  { feature: "Acceso a la bolsa de empleo UCC", modelo: false, completo: true },
-  { feature: "Alertas de vacantes por correo", modelo: false, completo: true },
-  { feature: "Postulación directa a empresas aliadas", modelo: false, completo: true },
-  { feature: "Recomendaciones de empleos según estabilidad", modelo: false, completo: true },
-  { feature: "Tipo de cobro", modelo: "Único", completo: "Mensual" },
+  { feature: "Perfil Profesional y Hoja de Vida", gratuito: true, modelo: true, completo: true },
+  { feature: "Bolsa de Empleo UCC (Lectura)", gratuito: true, modelo: true, completo: true },
+  { feature: "Diagnóstico de estabilidad con IA", gratuito: false, modelo: true, completo: true },
+  { feature: "Reporte PDF detallado", gratuito: false, modelo: true, completo: true },
+  { feature: "Postulación directa a vacantes", gratuito: false, modelo: false, completo: true },
+  { feature: "Tipo de cobro", gratuito: "Gratis", modelo: "Único", completo: "Mensual" },
 ];
 
 const FAQS = [
@@ -189,14 +209,26 @@ function Comparativa() {
           <thead>
             <tr>
               <th>Característica</th>
+              <th>Gratuito</th>
               <th>Acceso al Modelo</th>
               <th>Plan Completo</th>
             </tr>
           </thead>
           <tbody>
-            {COMPARATIVA.map((row, i) => (
+            {COMPARATIVA.map((row: any, i) => (
               <tr key={i}>
                 <td>{row.feature}</td>
+                <td>
+                  {typeof row.gratuito === "boolean" ? (
+                    row.gratuito ? (
+                      <span className="compare-check">✓</span>
+                    ) : (
+                      <span className="compare-cross">✕</span>
+                    )
+                  ) : (
+                    <span>{row.gratuito}</span>
+                  )}
+                </td>
                 <td>
                   {typeof row.modelo === "boolean" ? (
                     row.modelo ? (
