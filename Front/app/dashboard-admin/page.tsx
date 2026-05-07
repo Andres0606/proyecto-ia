@@ -25,7 +25,7 @@ const ADMIN_SECTIONS = [
 
 export default function DashboardAdmin() {
   const [userName, setUserName] = useState('Administrador');
-  const [activeSection, setActiveSection] = useState<'overview' | 'users' | 'jobs' | 'reports' | 'settings'>('overview');
+  const [activeSection, setActiveSection] = useState<'overview' | 'users' | 'jobs'>('overview');
   const [stats, setStats] = useState({ total_users: 0, total_companies: 0, total_jobs: 0, active_plans: 0 });
   const [users, setUsers] = useState<any[]>([]);
   const [vacancies, setVacancies] = useState<any[]>([]);
@@ -150,11 +150,11 @@ export default function DashboardAdmin() {
               <div style={{ background: 'linear-gradient(135deg, var(--ucc-navy) 0%, #0f2340 100%)', borderRadius: '24px', padding: '40px 50px', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '30px', flexWrap: 'wrap' }}>
                 <div>
                   <h2 style={{ fontSize: '1.6rem', fontWeight: 800, margin: '0 0 10px' }}>Centro de Control UCC</h2>
-                  <p style={{ color: 'rgba(255,255,255,0.7)', margin: 0, maxWidth: '460px', lineHeight: 1.6 }}>Gestiona todos los usuarios, vacantes y reportes del Portal del Egresado desde aquí.</p>
+                  <p style={{ color: 'rgba(255,255,255,0.7)', margin: 0, maxWidth: '460px', lineHeight: 1.6 }}>Gestiona todos los usuarios y vacantes del Portal del Egresado desde este panel centralizado.</p>
                 </div>
                 <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
                   <button onClick={() => setActiveSection('users')} style={{ background: '#3b82f6', color: 'white', border: 'none', borderRadius: '12px', padding: '12px 24px', fontWeight: 700, cursor: 'pointer' }}>Ver Usuarios</button>
-                  <button onClick={() => setActiveSection('reports')} style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', padding: '12px 24px', fontWeight: 700, cursor: 'pointer' }}>Ver Reportes</button>
+                  <button onClick={() => setActiveSection('jobs')} style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', padding: '12px 24px', fontWeight: 700, cursor: 'pointer' }}>Ver Vacantes</button>
                 </div>
               </div>
             </div>
