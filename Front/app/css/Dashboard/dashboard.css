@@ -356,3 +356,20 @@
   transform: rotate(35deg);
   animation: shimmer 3s infinite cubic-bezier(0.19, 1, 0.22, 1);
 }
+.dashboard-action-card {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.dashboard-action-card:hover {
+  transform: translateY(-12px) scale(1.02) !important;
+  background: white !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08) !important;
+}
+
+.dashboard-action-card:active {
+  transform: translateY(-4px) scale(0.98) !important;
+}
+
+.dashboard-action-card.active-card {
+  border-width: 2px !important;
+}
