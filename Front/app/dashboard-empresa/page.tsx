@@ -249,12 +249,51 @@ export default function DashboardEmpresa() {
 
         <div className={`reveal ${isVisible ? 'reveal--visible' : ''}`} style={{ animation: 'fadeIn 0.3s ease-out' }}>
           {activeSection === 'none' && (
-            <div style={{ background: 'white', borderRadius: '32px', padding: '50px', textAlign: 'center', boxShadow: '0 10px 40px rgba(0,0,0,0.03)' }}>
-              <h2 style={{ color: '#1e3a5f', fontSize: '1.8rem', fontWeight: 900 }}>Panel Corporativo UCC</h2>
-              <p style={{ color: '#64748b', maxWidth: '600px', margin: '15px auto 30px' }}>Gestiona tus vacantes y encuentra el mejor talento de nuestra universidad.</p>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
-                <button onClick={() => setActiveSection('jobs')} style={{ background: '#1e3a5f', color: 'white', border: 'none', padding: '16px 32px', borderRadius: '16px', fontWeight: 800, cursor: 'pointer' }}>Publicar Vacante</button>
-                <button onClick={() => setActiveSection('my-jobs')} style={{ background: 'white', color: '#1e3a5f', border: '2px solid #1e3a5f', padding: '16px 32px', borderRadius: '16px', fontWeight: 800, cursor: 'pointer' }}>Ver Vacantes</button>
+            <div>
+              <div style={{ background: 'white', borderRadius: '32px', padding: '50px', textAlign: 'center', boxShadow: '0 10px 40px rgba(0,0,0,0.03)', marginBottom: '32px' }}>
+                <h2 style={{ color: '#1e3a5f', fontSize: '1.8rem', fontWeight: 900 }}>Panel Corporativo UCC</h2>
+                <p style={{ color: '#64748b', maxWidth: '600px', margin: '15px auto 30px' }}>Gestiona tus vacantes y encuentra el mejor talento de nuestra universidad.</p>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
+                  <button onClick={() => setActiveSection('jobs')} style={{ background: '#1e3a5f', color: 'white', border: 'none', padding: '16px 32px', borderRadius: '16px', fontWeight: 800, cursor: 'pointer' }}>Publicar Vacante</button>
+                  <button onClick={() => setActiveSection('my-jobs')} style={{ background: 'white', color: '#1e3a5f', border: '2px solid #1e3a5f', padding: '16px 32px', borderRadius: '16px', fontWeight: 800, cursor: 'pointer' }}>Ver Vacantes</button>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+                <div style={{ background: 'white', borderRadius: '24px', padding: '30px', boxShadow: '0 10px 40px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' }}>
+                  <div style={{ color: '#3b82f6', marginBottom: '15px' }}><Icons.Users /></div>
+                  <h4 style={{ margin: 0, color: '#64748b', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Total Postulaciones</h4>
+                  <div style={{ fontSize: '2.5rem', fontWeight: 900, color: '#1e3a5f', margin: '10px 0' }}>{candidates.length}</div>
+                  <div style={{ height: '6px', background: '#f1f5f9', borderRadius: '3px', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', background: '#3b82f6', width: `${Math.min(100, (candidates.length / 50) * 100)}%` }} />
+                  </div>
+                </div>
+
+                <div style={{ background: 'white', borderRadius: '24px', padding: '30px', boxShadow: '0 10px 40px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' }}>
+                  <div style={{ color: '#10b981', marginBottom: '15px' }}><Icons.Announce /></div>
+                  <h4 style={{ margin: 0, color: '#64748b', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Vacantes Activas</h4>
+                  <div style={{ fontSize: '2.5rem', fontWeight: 900, color: '#1e3a5f', margin: '10px 0' }}>{myVacancies.filter(v => (v.estado || 'activa') === 'activa').length}</div>
+                  <div style={{ height: '6px', background: '#f1f5f9', borderRadius: '3px', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', background: '#10b981', width: '65%' }} />
+                  </div>
+                </div>
+
+                <div style={{ background: 'white', borderRadius: '24px', padding: '30px', boxShadow: '0 10px 40px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' }}>
+                  <div style={{ color: '#f59e0b', marginBottom: '15px' }}><Icons.List /></div>
+                  <h4 style={{ margin: 0, color: '#64748b', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Más Popular</h4>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1e3a5f', margin: '10px 0', height: '60px', display: 'flex', alignItems: 'center' }}>
+                    {(() => {
+                      if (myVacancies.length === 0) return 'Sin vacantes';
+                      const top = [...myVacancies].sort((a, b) => {
+                        const countA = candidates.filter(c => c.vacante_id === a.id).length;
+                        const countB = candidates.filter(c => c.vacante_id === b.id).length;
+                        return countB - countA;
+                      })[0];
+                      return top ? top.cargo : 'Sin datos';
+                    })()}
+                  </div>
+                  <div style={{ color: '#f59e0b', fontSize: '0.8rem', fontWeight: 700 }}>Vacante con más postulaciones</div>
+                </div>
               </div>
             </div>
           )}
