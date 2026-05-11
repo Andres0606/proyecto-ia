@@ -7,19 +7,19 @@ import "../css/Planes/planes.css";
 
 // ── Iconos SVG ──────────────────────────────────────────────────────────────
 const PlanIcons = {
-  Target: () => (
+  Seed: () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+      <path d="M7 20h10"/><path d="M10 20c0-3.5 1-6 2-10"/><path d="M12 10c1.5 0 3 1 3 3 0 1.5-1.5 3-3 3"/><path d="M12 10c-1.5 0-3 1-3 3 0 1.5 1.5 3 3 3"/><path d="M12 10V4"/>
     </svg>
   ),
-  Chart: () => (
+  Zap: () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
     </svg>
   ),
-  File: () => (
+  Crown: () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+      <path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/>
     </svg>
   ),
   Diamond: () => (
@@ -50,7 +50,7 @@ const PLANES = [
     price: "0",
     period: "siempre gratis",
     note: "Perfil básico y acceso a vacantes en modo lectura.",
-    icon: <PlanIcons.Target />,
+    icon: <PlanIcons.Seed />,
     iconClass: "plan-card__icon--free",
     popular: false,
     features: [
@@ -70,9 +70,9 @@ const PLANES = [
     price: "29.900",
     period: "pago único",
     note: "Sin cargos recurrentes — paga una vez, usa siempre.",
-    icon: <PlanIcons.Chart />,
+    icon: <PlanIcons.Zap />,
     iconClass: "plan-card__icon--basic",
-    popular: true,
+    popular: false,
     features: [
       { text: "Perfil Profesional y Hoja de Vida", included: true },
       { text: "Bolsa de Empleo UCC (Solo lectura)", included: true },
@@ -90,9 +90,9 @@ const PLANES = [
     price: "49.900",
     period: "/ mes",
     note: "Cancela cuando quieras. Sin permanencia.",
-    icon: <PlanIcons.File />,
+    icon: <PlanIcons.Crown />,
     iconClass: "plan-card__icon--pro",
-    popular: false,
+    popular: true,
     features: [
       { text: "Perfil Profesional y Hoja de Vida", included: true },
       { text: "Bolsa de Empleo UCC (Acceso completo)", included: true },
