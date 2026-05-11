@@ -219,9 +219,67 @@ export default function Dashboard() {
 
         <div style={{ background: 'white', borderRadius: '32px', padding: '45px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)' }}>
           {activeSection === 'none' && (
-            <div style={{ textAlign: 'center', padding: '40px' }}>
-              <h2 style={{ fontSize: '2rem', color: '#1e3a5f', fontWeight: 900 }}>¡Bienvenido a tu panel de control!</h2>
-              <p style={{ color: '#64748b', fontSize: '1.1rem' }}>Desde aquí puedes gestionar tu perfil profesional y revisar tus postulaciones.</p>
+            <div style={{ textAlign: 'center' }}>
+              <div className={`reveal ${isVisible ? 'reveal--visible' : ''}`} style={{ marginBottom: '40px' }}>
+                <h2 style={{ fontSize: '2.2rem', color: '#1e3a5f', fontWeight: 900, marginBottom: '10px' }}>¡Bienvenido a tu panel de control!</h2>
+                <p style={{ color: '#64748b', fontSize: '1.1rem', margin: 0 }}>Desde aquí puedes gestionar tu perfil profesional y revisar tus postulaciones.</p>
+              </div>
+
+              {myApplications.length > 0 ? (
+                <div className={`reveal ${isVisible ? 'reveal--visible' : ''}`} style={{ textAlign: 'left' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                    <h3 style={{ margin: 0, color: '#1e3a5f', fontSize: '1.2rem', fontWeight: 800 }}>Últimas Postulaciones</h3>
+                    <button onClick={() => setActiveSection('apps')} style={{ background: 'none', border: 'none', color: '#3b82f6', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem' }}>Ver todas →</button>
+                  </div>
+                  <div style={{ display: 'grid', gap: '12px' }}>
+                    {myApplications.slice(0, 3).map((app, idx) => (
+                      <div 
+                        key={app.id} 
+                        className="reveal reveal--visible dashboard-action-card"
+                        style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'space-between', 
+                          padding: '18px 24px', 
+                          borderRadius: '20px', 
+                          background: '#f8fafc',
+                          border: '1px solid #e2e8f0',
+                          transition: 'all 0.4s'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                          <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, color: '#3b82f6', border: '1px solid #e2e8f0' }}>
+                            {app.empresa_nombre?.[0] || 'V'}
+                          </div>
+                          <div>
+                            <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: '#1e3a5f' }}>{app.vacante_nombre}</h4>
+                            <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>{app.empresa_nombre}</p>
+                          </div>
+                        </div>
+                        <span style={{ 
+                          padding: '6px 12px', 
+                          borderRadius: '8px', 
+                          fontSize: '0.7rem', 
+                          fontWeight: 800, 
+                          textTransform: 'uppercase',
+                          background: app.estado === 'postulado' ? '#eff6ff' : '#ecfdf5',
+                          color: app.estado === 'postulado' ? '#3b82f6' : '#059669',
+                          border: app.estado === 'postulado' ? '1px solid #dbeafe' : '1px solid #d1fae5'
+                        }}>
+                          {app.estado}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className={`reveal ${isVisible ? 'reveal--visible' : ''}`} style={{ marginTop: '40px', padding: '40px', background: '#f8fafc', borderRadius: '24px', border: '2px dashed #e2e8f0' }}>
+                  <div style={{ fontSize: '2rem', marginBottom: '15px' }}>🚀</div>
+                  <h4 style={{ margin: 0, color: '#1e3a5f', fontWeight: 800 }}>¿Listo para tu próximo reto?</h4>
+                  <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '20px' }}>Aún no tienes postulaciones activas. Explora la bolsa de empleo para comenzar.</p>
+                  <button onClick={() => window.location.href='/Bolsa_Empleo'} style={{ padding: '12px 24px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 700, cursor: 'pointer' }}>Explorar Vacantes</button>
+                </div>
+              )}
             </div>
           )}
 
