@@ -31,6 +31,7 @@ interface Job {
   posted: string;
   featured: boolean;
   isRecommended?: boolean;
+  matchScore?: number;
   tags: string[];
 }
 
@@ -174,9 +175,9 @@ function JobCard({ job, delay }: { job: Job; delay: number }) {
           <Icons.Star /> DESTACADA
         </span>
       )}
-      {job.isRecommended && (
+      {job.isRecommended && job.matchScore && (
         <span className="be-card__badge-feat" style={{ background: '#eff6ff', color: '#1e3a5f', border: '1px solid #dbeafe', right: job.featured ? '140px' : '24px' }}>
-          <Icons.Magic /> RECOMENDADO
+          <Icons.Magic /> {job.matchScore}% MATCH
         </span>
       )}
 
@@ -283,26 +284,34 @@ export default function BolsaPage() {
   };
 
   const filtered = useMemo(() => {
-    // Función auxiliar para verificar coincidencias flexibles
-    const checkMatch = (job: Job, profile: any) => {
-      if (!profile) return false;
+    // MODELO DE RECOMENDACIÓN LABORAL (Scoring)
+    const calculateMatch = (job: Job, profile: any) => {
+      if (!profile) return { isMatch: false, score: 0 };
       
+      let score = 0;
       const jobArea = (job.area || "").toLowerCase();
       const jobRole = (job.role || "").toLowerCase();
+      const jobDesc = (job.desc || "").toLowerCase();
       const profileArea = (profile.area_desempeno || "").toLowerCase();
       const profileProg = (profile.programa_academico || "").toLowerCase();
       const profileNivel = (profile.nivel_formacion || "").toLowerCase();
 
-      // 1. Match por Área de Desempeño
-      if (profileArea && (jobArea.includes(profileArea) || profileArea.includes(jobArea))) return true;
+      // 1. AFINIDAD POR ÁREA (Peso: 50%)
+      if (profileArea && (jobArea.includes(profileArea) || profileArea.includes(jobArea))) {
+        score += 50;
+      }
 
-      // 2. Match por Programa Académico en el Título del Cargo
-      if (profileProg && jobRole.includes(profileProg.replace('Ingeniería de ', '').toLowerCase())) return true;
+      // 2. AFINIDAD POR CARGO/PROGRAMA (Peso: 30%)
+      const progKeywords = profileProg.replace('Ingeniería de ', '').toLowerCase().split(' ');
+      const matchesKeyword = progKeywords.some((kw: string) => kw.length > 3 && (jobRole.includes(kw) || jobDesc.includes(kw)));
+      if (matchesKeyword) score += 30;
       
-      // 3. Match por Nivel de Formación (Especialista, Magister, etc)
-      if (profileNivel && job.nivel.toLowerCase() === profileNivel) return true;
+      // 3. AFINIDAD POR NIVEL ACADÉMICO (Peso: 20%)
+      if (profileNivel && job.nivel.toLowerCase().includes(profileNivel.toLowerCase())) {
+        score += 20;
+      }
 
-      return false;
+      return { isMatch: score >= 40, score };
     };
 
     let list = jobs.filter(j => {
@@ -310,7 +319,7 @@ export default function BolsaPage() {
       const c = city.toLowerCase();
       
       if (nivel === 'RECOMENDADO' && userProfile) {
-        return checkMatch(j, userProfile);
+        return calculateMatch(j, userProfile).isMatch;
       }
 
       return (
@@ -322,11 +331,19 @@ export default function BolsaPage() {
       );
     });
 
-    // Marcar los recomendados en la lista general
-    list = list.map(j => ({ ...j, isRecommended: checkMatch(j, userProfile) }));
+    // Enriquecer la lista con el % de Match
+    list = list.map(j => {
+      const { isMatch, score } = calculateMatch(j, userProfile);
+      return { ...j, isRecommended: isMatch, matchScore: score };
+    });
 
-    if (sort === "salary") list = [...list].sort((a, b) => b.salaryMin - a.salaryMin);
-    if (sort === "relevance") list = [...list].sort((a, b) => Number(b.featured) - Number(a.featured));
+    // Si el filtro de recomendado está activo, ordenar por mayor puntuación
+    if (nivel === 'RECOMENDADO') {
+      list = [...list].sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
+    } else {
+      if (sort === "salary") list = [...list].sort((a, b) => b.salaryMin - a.salaryMin);
+      if (sort === "relevance") list = [...list].sort((a, b) => Number(b.featured) - Number(a.featured));
+    }
     return list;
   }, [jobs, search, city, area, mode, nivel, sort, userProfile]);
 
