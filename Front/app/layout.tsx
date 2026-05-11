@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   title: "Portal del Egresado UCC",
   description: "Plataforma de estabilidad laboral y bolsa de empleo para egresados de la Universidad Cooperativa de Colombia.",
   icons: {
-    icon: "/UCC.png",
+    icon: "/favicon.ico",
   },
 };
 
