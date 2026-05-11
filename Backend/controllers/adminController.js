@@ -4,7 +4,7 @@ const getStats = async (req, res) => {
   try {
     const { count: totalUsers } = await supabase.from('users').select('*', { count: 'exact', head: true });
     const { count: totalCompanies } = await supabase.from('empresas').select('*', { count: 'exact', head: true });
-    const { count: totalJobs } = await supabase.from('vacantes').select('*', { count: 'exact', head: true });
+    const { count: totalJobs } = await supabase.from('vacantes').select('*', { count: 'exact', head: true }).eq('estado', 'activa');
     const { count: activePlans } = await supabase.from('suscripciones').select('*', { count: 'exact', head: true }).eq('estado', 'activo');
 
     return res.status(200).json({
