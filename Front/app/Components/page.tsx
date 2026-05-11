@@ -143,6 +143,37 @@ function Hero() {
           <span>✓ Gratuito para egresados</span>
           <span>✓ Datos protegidos</span>
         </div>
+        <div className="hero__scroll">
+          <div className="mouse">
+            <div className="wheel" />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Stats ────────────────────────────────────────────────────────────────────
+function Stats() {
+  return (
+    <section className="stats">
+      <div className="stats__inner reveal">
+        <div className="stats__item">
+          <div className="stats__value">12.000+</div>
+          <div className="stats__label">Egresados conectados</div>
+        </div>
+        <div className="stats__item">
+          <div className="stats__value">540+</div>
+          <div className="stats__label">Empresas aliadas</div>
+        </div>
+        <div className="stats__item">
+          <div className="stats__value">2.500+</div>
+          <div className="stats__label">Vacantes activas</div>
+        </div>
+        <div className="stats__item">
+          <div className="stats__value">85%</div>
+          <div className="stats__label">Tasa de empleabilidad</div>
+        </div>
       </div>
     </section>
   );
@@ -321,6 +352,7 @@ export default function InicioPage() {
     <div className="page-root">
       <Header />
       <Hero />
+      <Stats />
       <Features />
       <ComoFunciona />
       <EstabilidadSection />
