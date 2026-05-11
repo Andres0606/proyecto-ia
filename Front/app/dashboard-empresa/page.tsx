@@ -50,6 +50,7 @@ export default function DashboardEmpresa() {
   const [selectedCandidate, setSelectedCandidate] = useState<any | null>(null);
   const [vacanciesTab, setVacanciesTab] = useState<'activas' | 'inactivas'>('activas');
   const [candidatesTab, setCandidatesTab] = useState<'pendientes' | 'admitidos'>('pendientes');
+  const [editingVacancy, setEditingVacancy] = useState<any | null>(null);
   
   const [formData, setFormData] = useState({ razon_social: '', nit: '', sector_economico: '', ciudad: '', tamano_empresa: '', tipo_empresa: '', telefono: '', correo: '', eslogan: '' });
   const [jobData, setJobData] = useState({ cargo: '', area_desempeno: '', programa_requerido: [] as string[], nivel_formacion: '', salario: '', tipo_contrato: '', modalidad: '', ubicacion: '', descripcion: '', numero_vacantes: '1' });
@@ -227,6 +228,25 @@ export default function DashboardEmpresa() {
         setActiveSection('my-jobs');
       }
     } catch { setToast({ msg: 'Error', type: 'error' }); }
+    finally { setTimeout(() => setToast({ msg: '', type: 'none' }), 3000); }
+  };
+
+  const handleUpdateVacancy = async () => {
+    if (!editingVacancy) return;
+    setToast({ msg: 'Actualizando vacante...', type: 'info' });
+    try {
+      const res = await fetch(`${base()}/api/vacantes/${editingVacancy.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editingVacancy)
+      });
+      const data = await res.json();
+      if (data.success) {
+        setToast({ msg: 'Vacante actualizada', type: 'success' });
+        setMyVacancies(myVacancies.map(v => v.id === editingVacancy.id ? data.vacancy : v));
+        setEditingVacancy(null);
+      }
+    } catch (e) { setToast({ msg: 'Error al actualizar', type: 'error' }); }
     finally { setTimeout(() => setToast({ msg: '', type: 'none' }), 3000); }
   };
 
@@ -442,7 +462,10 @@ export default function DashboardEmpresa() {
                         <Icons.Users /> {Math.max(0, Number(v.numero_vacantes))} cupos
                       </p>
                     </div>
-                    <button onClick={() => handleToggleStatus(v.id, v.estado || 'activa')} style={{ padding: '8px 16px', borderRadius: '10px', border: '1px solid #0f172a', background: 'white', fontWeight: 700, cursor: 'pointer' }}>{vacanciesTab === 'activas' ? 'Pausar' : 'Activar'}</button>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <button onClick={() => setEditingVacancy(v)} style={{ padding: '8px 16px', borderRadius: '10px', border: '1px solid #3b82f6', color: '#3b82f6', background: 'white', fontWeight: 700, cursor: 'pointer' }}>Editar</button>
+                      <button onClick={() => handleToggleStatus(v.id, v.estado || 'activa')} style={{ padding: '8px 16px', borderRadius: '10px', border: '1px solid #0f172a', background: 'white', fontWeight: 700, cursor: 'pointer' }}>{vacanciesTab === 'activas' ? 'Pausar' : 'Activar'}</button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -552,6 +575,22 @@ export default function DashboardEmpresa() {
                 >
                   Actualizar Contraseña
                 </button>
+              </div>
+            </div>
+          )}
+          {editingVacancy && (
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(8px)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+              <div className="reveal reveal--visible" style={{ background: 'white', borderRadius: '28px', width: '100%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto', padding: '40px', position: 'relative', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
+                <button onClick={() => setEditingVacancy(null)} style={{ position: 'absolute', top: '24px', right: '24px', background: '#f1f5f9', border: 'none', width: '36px', height: '36px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748b', fontSize: '1.2rem' }}>×</button>
+                <h2 style={{ color: 'var(--ucc-navy)', fontWeight: 900, marginBottom: '30px' }}>Editar Vacante</h2>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                  <div><label style={lbl}>Cargo</label><input style={inp} value={editingVacancy.cargo} onChange={e => setEditingVacancy({...editingVacancy, cargo: e.target.value})} /></div>
+                  <div><label style={lbl}>Ubicación</label><input style={inp} value={editingVacancy.ubicacion} onChange={e => setEditingVacancy({...editingVacancy, ubicacion: e.target.value})} /></div>
+                  <div><label style={lbl}>Salario</label><input type="number" style={inp} value={editingVacancy.salario} onChange={e => setEditingVacancy({...editingVacancy, salario: e.target.value})} /></div>
+                  <div><label style={lbl}>Cupos</label><input type="number" style={inp} value={editingVacancy.numero_vacantes} onChange={e => setEditingVacancy({...editingVacancy, numero_vacantes: e.target.value})} /></div>
+                  <div style={{ gridColumn: '1/-1' }}><label style={lbl}>Descripción</label><textarea style={{ ...inp, height: '120px' }} value={editingVacancy.descripcion} onChange={e => setEditingVacancy({...editingVacancy, descripcion: e.target.value})} /></div>
+                </div>
+                <button onClick={handleUpdateVacancy} style={{ width: '100%', marginTop: '30px', padding: '16px', background: 'var(--ucc-navy)', color: 'white', borderRadius: '16px', border: 'none', fontWeight: 800, cursor: 'pointer', boxShadow: '0 10px 20px -5px rgba(15,35,64,0.3)' }}>Guardar Cambios</button>
               </div>
             </div>
           )}
