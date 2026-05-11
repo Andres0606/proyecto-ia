@@ -81,7 +81,7 @@ const PLANES = [
       { text: "Postulación directa a vacantes", included: false },
     ],
     cta: "Adquirir acceso",
-    ctaClass: "plan-card__cta--blue",
+    ctaClass: "plan-card__cta--outline",
   },
   {
     id: "completo",
