@@ -122,7 +122,23 @@ export default function Dashboard() {
     try {
       const r = await fetch(`${base()}/api/users/profile/${userId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userData: payload, profileData: payload }) });
       const d = await r.json();
-      if (d.success) { setToast({ msg: '¡Éxito!', type: 'success' }); setIsEditingProf(false); setIsEditingPersonal(false); fetchProfile(userId); }
+      if (d.success) { 
+        setToast({ msg: '¡Éxito!', type: 'success' }); 
+        setIsEditingProf(false); 
+        setIsEditingPersonal(false); 
+        
+        // Sincronizar con sessionStorage para que el Header se actualice
+        const saved = sessionStorage.getItem('ucc_user');
+        if (saved) {
+          const u = JSON.parse(saved);
+          u.nombre_completo = payload.nombre_completo;
+          if (u.profile) u.profile.nombre_completo = payload.nombre_completo;
+          sessionStorage.setItem('ucc_user', JSON.stringify(u));
+          // Forzar refresco del nombre en el Header (opcional si el Header escucha cambios, pero esto asegura la persistencia)
+        }
+        
+        fetchProfile(userId); 
+      }
     } catch { setToast({ msg: 'Error', type: 'error' }); } finally { setTimeout(() => setToast({ msg: '', type: 'none' }), 3000); }
   };
 
@@ -300,12 +316,18 @@ export default function Dashboard() {
                 ].map(f => (
                   <div key={f.k}>
                     <label style={lblS}>{f.l}</label>
-                    <input
-                      value={(formData as any)[f.k]}
-                      onChange={e => !f.gray && setFormData({ ...formData, [f.k]: e.target.value })}
-                      disabled={f.gray || !isEditingPersonal}
-                      style={f.gray ? disS : (!isEditingPersonal ? { ...inpS, background: '#f8fafc' } : inpS)}
-                    />
+                      <input
+                        value={(formData as any)[f.k]}
+                        onChange={e => !f.gray && setFormData({ ...formData, [f.k]: e.target.value })}
+                        disabled={f.gray || !isEditingPersonal}
+                        maxLength={
+                          f.k === 'nombre_completo' ? 50 : 
+                          f.k === 'cedula' ? 15 : 
+                          f.k === 'correo' ? 50 : 
+                          f.k === 'telefono' ? 10 : undefined
+                        }
+                        style={f.gray ? disS : (!isEditingPersonal ? { ...inpS, background: '#f8fafc' } : inpS)}
+                      />
                   </div>
                 ))}
               </div>

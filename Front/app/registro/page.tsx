@@ -206,6 +206,7 @@ function StepDatosPersonales({
               style={{ paddingLeft: '48px' }}
               type="text"
               placeholder="Juan Pérez"
+              maxLength={50}
               value={formData.nombre}
               onChange={(e) => {
                 const val = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, "");
@@ -226,6 +227,7 @@ function StepDatosPersonales({
                 style={{ paddingLeft: '48px' }}
                 type="email"
                 placeholder="juan@ejemplo.com"
+                maxLength={50}
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 onBlur={(e) => onBlurCheck('email', e.target.value)}
@@ -278,6 +280,7 @@ function StepDatosPersonales({
                 }}
                 type="text"
                 placeholder="Número de cédula"
+                maxLength={15}
                 value={formData.cedula}
                 onChange={(e) => setFormData({ ...formData, cedula: e.target.value })}
                 onBlur={(e) => onBlurCheck('cedula', e.target.value)}
