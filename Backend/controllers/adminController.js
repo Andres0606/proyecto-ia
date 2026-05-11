@@ -13,7 +13,12 @@ const getStats = async (req, res) => {
         total_users: totalUsers || 0,
         total_companies: totalCompanies || 0,
         total_jobs: totalJobs || 0,
-        active_plans: activePlans || 0
+        active_plans: activePlans || 0,
+        apps_status: {
+          aceptados: (await supabase.from('postulaciones').select('*', { count: 'exact', head: true }).eq('estado', 'aceptado')).count || 0,
+          rechazados: (await supabase.from('postulaciones').select('*', { count: 'exact', head: true }).eq('estado', 'rechazado')).count || 0,
+          pendientes: (await supabase.from('postulaciones').select('*', { count: 'exact', head: true }).eq('estado', 'postulado')).count || 0
+        }
       }
     });
   } catch (error) {
