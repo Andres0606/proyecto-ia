@@ -13,6 +13,7 @@ router.get('/my-vacancies/:userId', jobController.getMyVacancies);
 
 // Rutas de gestión de vacante (estado y eliminación)
 router.patch('/:id/status', jobController.toggleVacancyStatus);
+router.put('/:id', jobController.updateVacancy);
 router.delete('/:id', jobController.deleteVacancy);
 
 module.exports = router;

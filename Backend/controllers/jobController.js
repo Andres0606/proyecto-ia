@@ -198,4 +198,27 @@ const deleteVacancy = async (req, res) => {
   }
 };
 
-module.exports = { createVacancy, getVacancies, getMyVacancies, toggleVacancyStatus, deleteVacancy };
+const updateVacancy = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+
+    // Sanitización de datos numéricos
+    if (updateData.salario) updateData.salario = parseFloat(updateData.salario);
+    if (updateData.numero_vacantes) updateData.numero_vacantes = parseInt(updateData.numero_vacantes);
+
+    const { data, error } = await supabase
+      .from('vacantes')
+      .update(updateData)
+      .eq('id', id)
+      .select();
+
+    if (error) throw error;
+
+    return res.status(200).json({ success: true, vacancy: data[0] });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+module.exports = { createVacancy, getVacancies, getMyVacancies, toggleVacancyStatus, deleteVacancy, updateVacancy };
