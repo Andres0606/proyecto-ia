@@ -102,7 +102,7 @@ export default function Header() {
       <div className="header__inner">
         {/* Brand */}
         <a href="/" className="header__brand" style={{ textDecoration: 'none', color: 'inherit' }}>
-          <span className="header__logo">UCC</span>
+          <img src="/ucc (1).png" alt="UCC Logo" className="header__logo-img" />
           <span className="header__brand-text">Portal del Egresado</span>
         </a>
 
