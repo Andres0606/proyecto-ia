@@ -16,6 +16,7 @@ const Icons = {
   Location: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
   Mail: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>,
   Phone: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>,
+  Lock: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>,
 };
 
 const QUICK_ACTIONS = [
@@ -23,7 +24,8 @@ const QUICK_ACTIONS = [
   { title: 'Mi Empresa', Icon: Icons.Company, id: 'professional' as const, color: '#8b5cf6' },
   { title: 'Nueva Vacante', Icon: Icons.Announce, id: 'jobs' as const, color: '#10b981' },
   { title: 'Mis Vacantes', Icon: Icons.List, id: 'my-jobs' as const, color: '#f59e0b' },
-  { title: 'Candidatos', Icon: Icons.Users, id: 'candidates' as const, color: '#ef4444' },
+  { id: 'candidates' as const, title: 'Candidatos', Icon: Icons.Users, color: '#ef4444' },
+  { id: 'security' as const, title: 'Seguridad', Icon: Icons.Lock, color: '#6366f1' },
 ];
 
 const OPTIONS = {
@@ -41,7 +43,7 @@ export default function DashboardEmpresa() {
   const [companyLogo, setCompanyLogo] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [isVisible, setIsVisible] = useState(false);
-  const [activeSection, setActiveSection] = useState<'none' | 'professional' | 'jobs' | 'my-jobs' | 'candidates'>('none');
+  const [activeSection, setActiveSection] = useState<'none' | 'professional' | 'jobs' | 'my-jobs' | 'candidates' | 'security'>('none');
   const [toast, setToast] = useState<{ msg: string, type: 'info' | 'success' | 'error' | 'none' }>({ msg: '', type: 'none' });
   const [myVacancies, setMyVacancies] = useState<any[]>([]);
   const [candidates, setCandidates] = useState<any[]>([]);
@@ -50,6 +52,34 @@ export default function DashboardEmpresa() {
   
   const [formData, setFormData] = useState({ razon_social: '', nit: '', sector_economico: '', ciudad: '', tamano_empresa: '', tipo_empresa: '', telefono: '', correo: '', eslogan: '' });
   const [jobData, setJobData] = useState({ cargo: '', area_desempeno: '', programa_requerido: [] as string[], nivel_formacion: '', salario: '', tipo_contrato: '', modalidad: '', ubicacion: '', descripcion: '', numero_vacantes: '1' });
+  const [passData, setPassData] = useState({ current: '', new: '', confirm: '' });
+
+  const handleUpdatePassword = async () => {
+    if (!passData.current || !passData.new || !passData.confirm) {
+      setToast({ msg: 'Completa todos los campos', type: 'error' });
+      return;
+    }
+    if (passData.new !== passData.confirm) {
+      setToast({ msg: 'Las contraseñas no coinciden', type: 'error' });
+      return;
+    }
+    setToast({ msg: 'Actualizando...', type: 'info' });
+    try {
+      const res = await fetch(`${base()}/api/users/update-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, currentPassword: passData.current, newPassword: passData.new })
+      });
+      const d = await res.json();
+      if (d.success) {
+        setToast({ msg: 'Contraseña actualizada', type: 'success' });
+        setPassData({ current: '', new: '', confirm: '' });
+      } else {
+        setToast({ msg: d.message || 'Error al actualizar', type: 'error' });
+      }
+    } catch (err) { setToast({ msg: 'Error de conexión', type: 'error' }); }
+    finally { setTimeout(() => setToast({ msg: '', type: 'none' }), 3000); }
+  };
 
   const logoInputRef = React.useRef<HTMLInputElement>(null);
   const base = () => (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000').replace(/\/$/, '');
@@ -431,6 +461,32 @@ export default function DashboardEmpresa() {
                   </div>
                 </div>
               )}
+            </div>
+          )}
+          {activeSection === 'security' && (
+            <div style={{ background: 'white', borderRadius: '32px', padding: '40px', boxShadow: '0 10px 40px rgba(0,0,0,0.03)', maxWidth: '600px', margin: '0 auto' }}>
+              <h2 style={{ color: '#1e3a5f', fontWeight: 900, marginBottom: '30px', textAlign: 'center' }}>Seguridad de la Cuenta</h2>
+              <div style={{ display: 'grid', gap: '20px' }}>
+                <div>
+                  <label style={lbl}>Contraseña Actual</label>
+                  <input type="password" style={inp} value={passData.current} onChange={e => setPassData({...passData, current: e.target.value})} />
+                </div>
+                <div style={{ height: '1px', background: '#f1f5f9', margin: '10px 0' }} />
+                <div>
+                  <label style={lbl}>Nueva Contraseña</label>
+                  <input type="password" style={inp} value={passData.new} onChange={e => setPassData({...passData, new: e.target.value})} />
+                </div>
+                <div>
+                  <label style={lbl}>Confirmar Nueva Contraseña</label>
+                  <input type="password" style={inp} value={passData.confirm} onChange={e => setPassData({...passData, confirm: e.target.value})} />
+                </div>
+                <button 
+                  onClick={handleUpdatePassword}
+                  style={{ marginTop: '20px', padding: '16px', background: '#6366f1', color: 'white', border: 'none', borderRadius: '16px', fontWeight: 800, cursor: 'pointer' }}
+                >
+                  Actualizar Contraseña
+                </button>
+              </div>
             </div>
           )}
         </div>
