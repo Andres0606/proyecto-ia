@@ -443,11 +443,42 @@ export default function RegistroPage() {
     return true;
   };
 
+  const checkDuplicates = async () => {
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
+      const params = new URLSearchParams({
+        email: formData.email,
+        telefono: formData.telefono,
+        cedula: formData.cedula
+      });
+      const res = await fetch(`${backendUrl}/api/users/check-duplicates?${params}`);
+      const data = await res.json();
+      
+      if (data.success) {
+        if (data.emailExists) return "Este correo electrónico ya está registrado.";
+        if (data.telefonoExists) return "Este número de teléfono ya está registrado.";
+        if (data.cedulaExists) return "Este número de cédula ya está registrado.";
+      }
+      return null;
+    } catch (err) {
+      console.error("Error checking duplicates:", err);
+      return null;
+    }
+  };
+
   const handleRegister = async () => {
     if (!validateFields()) return;
     
     setLoading(true);
     setErrorMsg("");
+
+    const duplicateError = await checkDuplicates();
+    if (duplicateError) {
+      setErrorMsg(duplicateError);
+      setLoading(false);
+      return;
+    }
+
     try {
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
       const res = await fetch(`${backendUrl}/api/users/register`, {
@@ -475,12 +506,24 @@ export default function RegistroPage() {
     }
   };
 
-  const handleNextStep2 = () => {
-    if (validateFields()) {
-      setErrorMsg("");
-      setStep(isLastPersonalStep ? 0 : 3); // 0 is just a placeholder, handleRegister is called if last step
-      if (isLastPersonalStep) handleRegister();
-      else setStep(3);
+  const handleNextStep2 = async () => {
+    if (!validateFields()) return;
+    
+    setLoading(true);
+    setErrorMsg("");
+
+    const duplicateError = await checkDuplicates();
+    if (duplicateError) {
+      setErrorMsg(duplicateError);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(false);
+    if (isLastPersonalStep) {
+      handleRegister();
+    } else {
+      setStep(3);
     }
   };
 
