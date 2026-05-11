@@ -114,6 +114,19 @@ export default function Dashboard() {
         const filled = fields.filter(f => f && String(f).trim() !== '').length;
         pct += (filled / fields.length) * 70;
         setCompletionPct(Math.round(pct));
+
+        // Mantener la sesión sincronizada con los últimos datos de la DB
+        const saved = sessionStorage.getItem('ucc_user');
+        if (saved) {
+          const sessionUser = JSON.parse(saved);
+          sessionUser.cv_url = u.cv_url;
+          sessionUser.foto_url = u.foto_url;
+          if (sessionUser.profile) {
+            sessionUser.profile.cv_url = u.cv_url;
+            sessionUser.profile.foto_url = u.foto_url;
+          }
+          sessionStorage.setItem('ucc_user', JSON.stringify(sessionUser));
+        }
       }
     } catch (err) { console.error(err); }
   };
