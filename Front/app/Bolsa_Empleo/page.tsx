@@ -283,15 +283,34 @@ export default function BolsaPage() {
   };
 
   const filtered = useMemo(() => {
+    // Función auxiliar para verificar coincidencias flexibles
+    const checkMatch = (job: Job, profile: any) => {
+      if (!profile) return false;
+      
+      const jobArea = (job.area || "").toLowerCase();
+      const jobRole = (job.role || "").toLowerCase();
+      const profileArea = (profile.area_desempeno || "").toLowerCase();
+      const profileProg = (profile.programa_academico || "").toLowerCase();
+      const profileNivel = (profile.nivel_formacion || "").toLowerCase();
+
+      // 1. Match por Área de Desempeño
+      if (profileArea && (jobArea.includes(profileArea) || profileArea.includes(jobArea))) return true;
+
+      // 2. Match por Programa Académico en el Título del Cargo
+      if (profileProg && jobRole.includes(profileProg.replace('Ingeniería de ', '').toLowerCase())) return true;
+      
+      // 3. Match por Nivel de Formación (Especialista, Magister, etc)
+      if (profileNivel && job.nivel.toLowerCase() === profileNivel) return true;
+
+      return false;
+    };
+
     let list = jobs.filter(j => {
       const q = search.toLowerCase();
       const c = city.toLowerCase();
       
-      // Lógica de recomendación
       if (nivel === 'RECOMENDADO' && userProfile) {
-        const areaMatch = j.area.toLowerCase() === (userProfile.area_desempeno || '').toLowerCase();
-        const nivelMatch = j.nivel.toLowerCase() === (userProfile.nivel_formacion || '').toLowerCase();
-        return areaMatch || nivelMatch;
+        return checkMatch(j, userProfile);
       }
 
       return (
@@ -304,12 +323,7 @@ export default function BolsaPage() {
     });
 
     // Marcar los recomendados en la lista general
-    list = list.map(j => {
-      if (!userProfile) return j;
-      const areaMatch = j.area.toLowerCase() === (userProfile.area_desempeno || '').toLowerCase();
-      const nivelMatch = j.nivel.toLowerCase() === (userProfile.nivel_formacion || '').toLowerCase();
-      return { ...j, isRecommended: areaMatch || nivelMatch };
-    });
+    list = list.map(j => ({ ...j, isRecommended: checkMatch(j, userProfile) }));
 
     if (sort === "salary") list = [...list].sort((a, b) => b.salaryMin - a.salaryMin);
     if (sort === "relevance") list = [...list].sort((a, b) => Number(b.featured) - Number(a.featured));
