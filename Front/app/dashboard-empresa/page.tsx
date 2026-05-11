@@ -36,6 +36,7 @@ export default function DashboardEmpresa() {
   const [companySlogan, setCompanySlogan] = useState('Panel de gestión corporativa');
   const [companyLogo, setCompanyLogo] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
   const [activeSection, setActiveSection] = useState<'none' | 'professional' | 'jobs' | 'my-jobs' | 'candidates'>('none');
   const [toast, setToast] = useState<{ msg: string, type: 'info' | 'success' | 'error' | 'none' }>({ msg: '', type: 'none' });
   const [myVacancies, setMyVacancies] = useState<any[]>([]);
@@ -50,6 +51,7 @@ export default function DashboardEmpresa() {
   const base = () => (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000').replace(/\/$/, '');
 
   useEffect(() => {
+    setIsVisible(true);
     const h = new Date().getHours();
     if (h >= 12 && h < 18) setGreeting('Buenas tardes');
     else if (h >= 18 || h < 5) setGreeting('Buenas noches');
@@ -186,7 +188,7 @@ export default function DashboardEmpresa() {
       )}
 
       <main style={{ paddingTop: '110px', maxWidth: '1120px', margin: '0 auto', paddingBottom: '60px' }}>
-        <div style={{ background: 'white', borderRadius: '32px', padding: '40px', boxShadow: '0 10px 40px rgba(0,40,85,0.04)', display: 'flex', alignItems: 'center', gap: '40px', marginBottom: '32px', position: 'relative' }}>
+        <div className={`reveal ${isVisible ? 'reveal--visible' : ''}`} style={{ background: 'white', borderRadius: '32px', padding: '40px', boxShadow: '0 10px 40px rgba(0,40,85,0.04)', display: 'flex', alignItems: 'center', gap: '40px', marginBottom: '32px', position: 'relative' }}>
           <div style={{ position: 'relative', cursor: 'pointer' }} onClick={() => logoInputRef.current?.click()}>
             <div style={{ width: '120px', height: '120px', borderRadius: '28px', background: companyLogo ? `url(${companyLogo}) center/cover` : '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem', color: '#1e3a5f', border: '4px solid white', boxShadow: '0 8px 25px rgba(0,0,0,0.05)' }}>
               {!companyLogo && <Icons.Company />}
@@ -200,15 +202,43 @@ export default function DashboardEmpresa() {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px', marginBottom: '32px' }}>
-          {QUICK_ACTIONS.map(a => (
-            <div key={a.id} onClick={() => setActiveSection(a.id)} style={{ background: activeSection === a.id ? 'white' : 'rgba(255,255,255,0.6)', borderRadius: '24px', padding: '24px 16px', textAlign: 'center', cursor: 'pointer', border: activeSection === a.id ? `2px solid ${a.color}` : '1px solid transparent', transition: 'all 0.2s', boxShadow: activeSection === a.id ? '0 10px 25px rgba(0,0,0,0.05)' : 'none' }}>
-              <div style={{ color: a.color, marginBottom: '12px', display: 'flex', justifyContent: 'center' }}><a.Icon /></div>
-              <span style={{ fontWeight: 800, fontSize: '0.85rem', color: '#1e3a5f' }}>{a.title}</span>
+          {QUICK_ACTIONS.map((a, idx) => (
+            <div 
+              key={a.id} 
+              onClick={() => setActiveSection(a.id)} 
+              className={`reveal ${isVisible ? 'reveal--visible' : ''}`}
+              style={{ 
+                background: activeSection === a.id ? 'white' : 'rgba(255,255,255,0.7)', 
+                backdropFilter: 'blur(10px)',
+                borderRadius: '28px', 
+                padding: '32px 20px', 
+                textAlign: 'center', 
+                cursor: 'pointer', 
+                border: `1px solid ${activeSection === a.id ? a.color : 'rgba(255,255,255,0.4)'}`,
+                transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)', 
+                boxShadow: activeSection === a.id ? '0 15px 35px rgba(30, 58, 95, 0.12)' : '0 4px 15px rgba(0,0,0,0.03)',
+                transitionDelay: `${idx * 0.05}s`
+              }}
+            >
+              <div style={{ 
+                width: '60px', 
+                height: '60px', 
+                borderRadius: '18px', 
+                background: `${a.color}15`, 
+                color: a.color, 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                margin: '0 auto 16px' 
+              }}>
+                <a.Icon />
+              </div>
+              <span style={{ fontWeight: 800, fontSize: '0.9rem', color: '#1e3a5f' }}>{a.title}</span>
             </div>
           ))}
         </div>
 
-        <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
+        <div className={`reveal ${isVisible ? 'reveal--visible' : ''}`} style={{ animation: 'fadeIn 0.3s ease-out' }}>
           {activeSection === 'none' && (
             <div style={{ background: 'white', borderRadius: '32px', padding: '50px', textAlign: 'center', boxShadow: '0 10px 40px rgba(0,0,0,0.03)' }}>
               <h2 style={{ color: '#1e3a5f', fontSize: '1.8rem', fontWeight: 900 }}>Panel Corporativo UCC</h2>
