@@ -15,18 +15,22 @@ export default function Header() {
     const loadUser = () => {
       const savedUser = sessionStorage.getItem("ucc_user");
       if (savedUser) {
-        setUser(JSON.parse(savedUser));
+        const parsed = JSON.parse(savedUser);
+        // Si el nombre cambió en el objeto, actualizamos el estado
+        setUser(parsed);
       }
     };
 
     loadUser();
     
-    // Escuchar cambios locales (misma pestaña)
+    // Polling de seguridad: revisa cada segundo por si el evento falla
+    const interval = setInterval(loadUser, 1000);
     window.addEventListener("userUpdate", loadUser);
 
     return () => {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("userUpdate", loadUser);
+      clearInterval(interval);
     };
   }, []);
 

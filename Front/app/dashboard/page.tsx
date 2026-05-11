@@ -139,7 +139,10 @@ export default function Dashboard() {
           
           sessionStorage.setItem('ucc_user', JSON.stringify(u));
           
-          // Notificar al Header que los datos cambiaron
+          // Actualizar el saludo local inmediatamente
+          setUserName(payload.nombre_completo.split(' ')[0]);
+          
+          // Notificar al Header
           window.dispatchEvent(new Event('userUpdate'));
         }
         
