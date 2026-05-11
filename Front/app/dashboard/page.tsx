@@ -134,7 +134,9 @@ export default function Dashboard() {
           u.nombre_completo = payload.nombre_completo;
           if (u.profile) u.profile.nombre_completo = payload.nombre_completo;
           sessionStorage.setItem('ucc_user', JSON.stringify(u));
-          // Forzar refresco del nombre en el Header (opcional si el Header escucha cambios, pero esto asegura la persistencia)
+          
+          // Notificar al Header que los datos cambiaron
+          window.dispatchEvent(new Event('userUpdate'));
         }
         
         fetchProfile(userId); 
@@ -321,7 +323,7 @@ export default function Dashboard() {
                         onChange={e => !f.gray && setFormData({ ...formData, [f.k]: e.target.value })}
                         disabled={f.gray || !isEditingPersonal}
                         maxLength={
-                          f.k === 'nombre_completo' ? 50 : 
+                          f.k === 'nombre_completo' ? 40 : 
                           f.k === 'cedula' ? 15 : 
                           f.k === 'correo' ? 50 : 
                           f.k === 'telefono' ? 10 : undefined

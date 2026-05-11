@@ -12,12 +12,22 @@ export default function Header() {
     const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", onScroll);
 
-    const savedUser = sessionStorage.getItem("ucc_user");
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
+    const loadUser = () => {
+      const savedUser = sessionStorage.getItem("ucc_user");
+      if (savedUser) {
+        setUser(JSON.parse(savedUser));
+      }
+    };
 
-    return () => window.removeEventListener("scroll", onScroll);
+    loadUser();
+    
+    // Escuchar cambios locales (misma pestaña)
+    window.addEventListener("userUpdate", loadUser);
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("userUpdate", loadUser);
+    };
   }, []);
 
   const handleLogout = () => {
