@@ -139,11 +139,12 @@ export default function DashboardEmpresa() {
 
   const handleToggleStatus = async (id: number, current: string) => {
     const newStatus = (current || 'activa') === 'activa' ? 'inactiva' : 'activa';
+    setToast({ msg: 'Actualizando estado...', type: 'info' });
     try {
       const res = await fetch(`${base()}/api/vacantes/${id}/status`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ estado: newStatus }) });
       const data = await res.json();
       if (data.success) {
-        setToast({ msg: `Vacante ${newStatus}`, type: 'success' });
+        setToast({ msg: `Vacante ${newStatus === 'activa' ? 'activada' : 'pausada'}`, type: 'success' });
         if (userId) fetchMyVacancies(userId);
       }
     } catch (err) { setToast({ msg: 'Error', type: 'error' }); }
