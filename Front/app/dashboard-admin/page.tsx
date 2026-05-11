@@ -33,6 +33,7 @@ export default function DashboardAdmin() {
   const [viewingUserName, setViewingUserName] = useState('');
   const [loadingApps, setLoadingApps] = useState(false);
   const [editingUser, setEditingUser] = useState<any | null>(null);
+  const [editingVacancy, setEditingVacancy] = useState<any | null>(null);
 
   const base = () => (process.env.NEXT_PUBLIC_BACKEND_URL || 'https://proyecto-ia-production-b7d6.up.railway.app').replace(/\/$/, '');
 
@@ -137,6 +138,33 @@ export default function DashboardAdmin() {
         setEditingUser(null);
       }
     } catch (e) { console.error("Error updating user:", e); }
+  };
+
+  const handleUpdateVacancy = async () => {
+    if (!editingVacancy) return;
+    try {
+      const res = await fetch(`${base()}/api/admin/vacancies/${editingVacancy.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editingVacancy)
+      });
+      const data = await res.json();
+      if (data.success) {
+        setVacancies(vacancies.map(v => v.id === editingVacancy.id ? editingVacancy : v));
+        setEditingVacancy(null);
+      }
+    } catch (e) { console.error("Error updating vacancy:", e); }
+  };
+
+  const handleDeleteVacancy = async (id: number) => {
+    if (!confirm('¿Estás seguro de eliminar esta vacante permanentemente?')) return;
+    try {
+      const res = await fetch(`${base()}/api/admin/vacancies/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        setVacancies(vacancies.filter(v => v.id !== id));
+      }
+    } catch (e) { console.error("Error deleting vacancy:", e); }
   };
 
   const STAT_CARDS = [
@@ -356,8 +384,10 @@ export default function DashboardAdmin() {
                               {v.estado || 'Inactiva'}
                             </span>
                           </td>
-                          <td style={{ padding: '16px 20px' }}>
-                            <button style={{ background: 'none', border: 'none', color: '#3b82f6', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem' }}>Ver Detalle</button>
+                          <td style={{ padding: '16px 20px', display: 'flex', gap: '12px' }}>
+                            <button onClick={() => setEditingVacancy(v)} style={{ background: 'none', border: 'none', color: '#3b82f6', fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem' }}>Editar</button>
+                            <div style={{ width: '1px', height: '14px', background: '#e2e8f0', alignSelf: 'center' }} />
+                            <button onClick={() => handleDeleteVacancy(v.id)} style={{ background: 'none', border: 'none', color: '#ef4444', fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem' }}>Eliminar</button>
                           </td>
                         </tr>
                       ))
@@ -452,6 +482,71 @@ export default function DashboardAdmin() {
                     style={{ marginTop: '10px', padding: '16px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '14px', fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s' }}
                     onMouseOver={e => e.currentTarget.style.background = '#2563eb'}
                     onMouseOut={e => e.currentTarget.style.background = '#3b82f6'}
+                  >
+                    Guardar Cambios
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {editingVacancy && (
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(4px)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+              <div className="reveal reveal--visible" style={{ background: 'white', borderRadius: '24px', width: '100%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto', padding: '40px', position: 'relative', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
+                <button onClick={() => setEditingVacancy(null)} style={{ position: 'absolute', top: '24px', right: '24px', background: '#f1f5f9', border: 'none', width: '36px', height: '36px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748b', fontSize: '1.2rem' }}>×</button>
+                <h3 style={{ margin: '0 0 24px', color: 'var(--ucc-navy)', fontSize: '1.4rem', fontWeight: 800 }}>Editar Vacante</h3>
+                
+                <div style={{ display: 'grid', gap: '20px' }}>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 700, color: '#64748b' }}>Título del Cargo</label>
+                    <input 
+                      value={editingVacancy.cargo} 
+                      onChange={e => setEditingVacancy({...editingVacancy, cargo: e.target.value})}
+                      style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '1rem', outline: 'none' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 700, color: '#64748b' }}>Empresa (Razón Social)</label>
+                    <input 
+                      value={editingVacancy.empresas?.razon_social} 
+                      readOnly
+                      style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '1rem', outline: 'none', background: '#f8fafc' }}
+                    />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 700, color: '#64748b' }}>Salario</label>
+                      <input 
+                        type="number"
+                        value={editingVacancy.salario} 
+                        onChange={e => setEditingVacancy({...editingVacancy, salario: Number(e.target.value)})}
+                        style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '1rem', outline: 'none' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 700, color: '#64748b' }}>Estado</label>
+                      <select 
+                        value={editingVacancy.estado} 
+                        onChange={e => setEditingVacancy({...editingVacancy, estado: e.target.value})}
+                        style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '1rem', outline: 'none', background: 'white' }}
+                      >
+                        <option value="activa">Activa</option>
+                        <option value="inactiva">Inactiva</option>
+                        <option value="pausada">Pausada</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 700, color: '#64748b' }}>Ubicación</label>
+                    <input 
+                      value={editingVacancy.ubicacion} 
+                      onChange={e => setEditingVacancy({...editingVacancy, ubicacion: e.target.value})}
+                      style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '1rem', outline: 'none' }}
+                    />
+                  </div>
+                  <button 
+                    onClick={handleUpdateVacancy}
+                    style={{ marginTop: '10px', padding: '16px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '14px', fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s' }}
                   >
                     Guardar Cambios
                   </button>

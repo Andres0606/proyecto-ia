@@ -167,6 +167,30 @@ export default function DashboardEmpresa() {
     finally { setTimeout(() => setToast({ msg: '', type: 'none' }), 3000); }
   };
 
+  const handleViewCV = async (c: any) => {
+    const candidateId = c.candidato?.id;
+    if (!candidateId) {
+      setToast({ msg: 'No se pudo identificar al candidato', type: 'error' });
+      return;
+    }
+
+    setToast({ msg: 'Generando enlace de hoja de vida...', type: 'info' });
+    try {
+      const res = await fetch(`${base()}/api/users/get-cv-url/${candidateId}`);
+      const data = await res.json();
+      if (data.success && data.url) {
+        window.open(data.url, '_blank');
+        setToast({ msg: 'Hoja de vida abierta', type: 'success' });
+      } else {
+        setToast({ msg: 'Este candidato no tiene una hoja de vida válida', type: 'error' });
+      }
+    } catch (err) {
+      setToast({ msg: 'Error al conectar con el servidor', type: 'error' });
+    } finally {
+      setTimeout(() => setToast({ msg: '', type: 'none' }), 3000);
+    }
+  };
+
   const handleToggleStatus = async (id: number, current: string) => {
     const newStatus = (current || 'activa') === 'activa' ? 'inactiva' : 'activa';
     setToast({ msg: 'Actualizando estado...', type: 'info' });
@@ -452,7 +476,12 @@ export default function DashboardEmpresa() {
                     <div style={{ background: '#f8fafc', padding: '15px', borderRadius: '16px', margin: '20px 0', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                       <p style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}><Icons.Mail /> {selectedCandidate.candidato?.correo}</p>
                       <p style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}><Icons.Phone /> {selectedCandidate.candidato?.telefono}</p>
-                      {selectedCandidate.cv_url && <a href={selectedCandidate.cv_url} target="_blank" style={{ color: '#1e3a5f', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}><Icons.List /> Ver Hoja de Vida</a>}
+                      <button 
+                        onClick={() => handleViewCV(selectedCandidate)} 
+                        style={{ background: 'none', border: 'none', padding: 0, color: '#1e3a5f', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', textAlign: 'left', marginTop: '10px' }}
+                      >
+                        <Icons.List /> Ver Hoja de Vida (PDF)
+                      </button>
                     </div>
                     <div style={{ display: 'flex', gap: '12px' }}>
                       <button onClick={() => handleUpdateStatus(selectedCandidate.id, 'aceptado')} style={{ flex: 1, padding: '12px', background: '#10b981', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 800, cursor: 'pointer' }}>Aceptar</button>

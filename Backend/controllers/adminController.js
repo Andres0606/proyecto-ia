@@ -109,4 +109,32 @@ const updateUser = async (req, res) => {
   }
 };
 
-module.exports = { getStats, getAllUsers, getAllVacancies, getUserDistributions, updateUser };
+const updateVacancy = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { cargo, salario, estado, ubicacion } = req.body;
+    const { data, error } = await supabase
+      .from('vacantes')
+      .update({ cargo, salario, estado, ubicacion })
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+    return res.status(200).json({ success: true, vacancy: data });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+const deleteVacancy = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { error } = await supabase.from('vacantes').delete().eq('id', id);
+    if (error) throw error;
+    return res.status(200).json({ success: true, message: 'Vacante eliminada' });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+module.exports = { getStats, getAllUsers, getAllVacancies, getUserDistributions, updateUser, updateVacancy, deleteVacancy };
