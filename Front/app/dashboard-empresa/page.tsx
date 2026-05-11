@@ -452,7 +452,7 @@ export default function DashboardEmpresa() {
             <div style={{ background: 'white', borderRadius: '32px', padding: '40px', boxShadow: '0 10px 40px rgba(0,0,0,0.03)' }}>
               <h2 style={{ color: '#0f172a', fontWeight: 900, marginBottom: '30px' }}>Candidatos Postulados</h2>
               <div style={{ display: 'grid', gap: '20px' }}>
-                {Object.entries(candidates.reduce((acc: any, curr: any) => { const k = curr.vacante || 'Otros'; if (!acc[k]) acc[k] = []; acc[k].push(curr); return acc; }, {})).map(([title, apps]: [string, any]) => (
+                {Object.entries(candidates.filter(c => c.estado === 'postulado').reduce((acc: any, curr: any) => { const k = curr.vacante || 'Otros'; if (!acc[k]) acc[k] = []; acc[k].push(curr); return acc; }, {})).map(([title, apps]: [string, any]) => (
                   <div key={title} style={{ border: '1px solid #f1f5f9', borderRadius: '24px', overflow: 'hidden' }}>
                     <div style={{ background: '#f8fafc', padding: '15px 20px', fontWeight: 800, color: '#0f172a' }}>{title} ({apps.length})</div>
                     <div style={{ padding: '15px', display: 'grid', gap: '10px' }}>
