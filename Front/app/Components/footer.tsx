@@ -6,7 +6,6 @@ export default function Footer() {
       <div className="footer__inner">
         {/* Brand */}
         <div className="footer__brand">
-          <span className="footer__logo">UCC</span>
           <div>
             <p className="footer__brand-name">Universidad Cooperativa de Colombia</p>
             <p className="footer__brand-sub">Portal Institucional del Egresado · 2025</p>
