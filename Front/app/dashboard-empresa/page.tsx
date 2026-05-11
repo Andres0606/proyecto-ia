@@ -187,8 +187,8 @@ export default function DashboardEmpresa() {
         </div>
       )}
 
-      <main style={{ paddingTop: '110px', maxWidth: '1120px', margin: '0 auto', paddingBottom: '60px' }}>
-        <div className={`reveal ${isVisible ? 'reveal--visible' : ''}`} style={{ background: 'white', borderRadius: '32px', padding: '40px', boxShadow: '0 10px 40px rgba(0,40,85,0.04)', display: 'flex', alignItems: 'center', gap: '40px', marginBottom: '32px', position: 'relative' }}>
+      <main className="db-main" style={{ paddingTop: '40px' }}>
+        <div className={`reveal ${isVisible ? 'reveal--visible' : ''}`} style={{ background: 'white', borderRadius: '32px', padding: '40px', boxShadow: '0 10px 40px rgba(0,40,85,0.04)', display: 'flex', alignItems: 'center', gap: '40px', marginBottom: '32px', position: 'relative', border: '1px solid rgba(226, 232, 240, 0.5)' }}>
           <div style={{ position: 'relative', cursor: 'pointer' }} onClick={() => logoInputRef.current?.click()}>
             <div style={{ width: '120px', height: '120px', borderRadius: '28px', background: companyLogo ? `url(${companyLogo}) center/cover` : '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem', color: '#1e3a5f', border: '4px solid white', boxShadow: '0 8px 25px rgba(0,0,0,0.05)' }}>
               {!companyLogo && <Icons.Company />}
@@ -201,7 +201,7 @@ export default function DashboardEmpresa() {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px', marginBottom: '32px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '15px', marginBottom: '40px' }}>
           {QUICK_ACTIONS.map((a, idx) => (
             <div 
               key={a.id} 
