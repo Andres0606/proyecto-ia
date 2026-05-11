@@ -49,6 +49,7 @@ export default function DashboardEmpresa() {
   const [candidates, setCandidates] = useState<any[]>([]);
   const [selectedCandidate, setSelectedCandidate] = useState<any | null>(null);
   const [vacanciesTab, setVacanciesTab] = useState<'activas' | 'inactivas'>('activas');
+  const [candidatesTab, setCandidatesTab] = useState<'pendientes' | 'admitidos'>('pendientes');
   
   const [formData, setFormData] = useState({ razon_social: '', nit: '', sector_economico: '', ciudad: '', tamano_empresa: '', tipo_empresa: '', telefono: '', correo: '', eslogan: '' });
   const [jobData, setJobData] = useState({ cargo: '', area_desempeno: '', programa_requerido: [] as string[], nivel_formacion: '', salario: '', tipo_contrato: '', modalidad: '', ubicacion: '', descripcion: '', numero_vacantes: '1' });
@@ -450,9 +451,16 @@ export default function DashboardEmpresa() {
 
           {activeSection === 'candidates' && (
             <div style={{ background: 'white', borderRadius: '32px', padding: '40px', boxShadow: '0 10px 40px rgba(0,0,0,0.03)' }}>
-              <h2 style={{ color: '#0f172a', fontWeight: 900, marginBottom: '30px' }}>Candidatos Postulados</h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+                <h2 style={{ color: '#0f172a', fontWeight: 900, margin: 0 }}>Gestión de Candidatos</h2>
+                <div style={{ display: 'flex', gap: '8px', background: '#f8fafc', padding: '6px', borderRadius: '18px' }}>
+                  <button onClick={() => setCandidatesTab('pendientes')} style={{ padding: '10px 20px', borderRadius: '14px', border: 'none', background: candidatesTab === 'pendientes' ? 'white' : 'transparent', fontWeight: 700, cursor: 'pointer', boxShadow: candidatesTab === 'pendientes' ? '0 4px 12px rgba(0,0,0,0.05)' : 'none' }}>Pendientes</button>
+                  <button onClick={() => setCandidatesTab('admitidos')} style={{ padding: '10px 20px', borderRadius: '14px', border: 'none', background: candidatesTab === 'admitidos' ? 'white' : 'transparent', fontWeight: 700, cursor: 'pointer', boxShadow: candidatesTab === 'admitidos' ? '0 4px 12px rgba(0,0,0,0.05)' : 'none' }}>Admitidos</button>
+                </div>
+              </div>
+              
               <div style={{ display: 'grid', gap: '20px' }}>
-                {Object.entries(candidates.filter(c => c.estado === 'postulado').reduce((acc: any, curr: any) => { const k = curr.vacante || 'Otros'; if (!acc[k]) acc[k] = []; acc[k].push(curr); return acc; }, {})).map(([title, apps]: [string, any]) => (
+                {Object.entries(candidates.filter(c => candidatesTab === 'pendientes' ? c.estado === 'postulado' : c.estado === 'aceptado').reduce((acc: any, curr: any) => { const k = curr.vacante || 'Otros'; if (!acc[k]) acc[k] = []; acc[k].push(curr); return acc; }, {})).map(([title, apps]: [string, any]) => (
                   <div key={title} style={{ border: '1px solid #f1f5f9', borderRadius: '24px', overflow: 'hidden' }}>
                     <div style={{ background: '#f8fafc', padding: '15px 20px', fontWeight: 800, color: '#0f172a' }}>{title} ({apps.length})</div>
                     <div style={{ padding: '15px', display: 'grid', gap: '10px' }}>
@@ -493,18 +501,29 @@ export default function DashboardEmpresa() {
                     </div>
                     
                     <div style={{ display: 'flex', gap: '16px' }}>
-                      <button 
-                        onClick={() => handleUpdateStatus(selectedCandidate.id, 'aceptado')} 
-                        style={{ flex: 1, padding: '16px', background: 'var(--ucc-navy)', color: 'white', border: 'none', borderRadius: '16px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 10px 20px -5px rgba(15,35,64,0.3)' }}
-                      >
-                        Aceptar Candidato
-                      </button>
-                      <button 
-                        onClick={() => handleUpdateStatus(selectedCandidate.id, 'rechazado')} 
-                        style={{ flex: 1, padding: '16px', background: '#f8fafc', color: '#ef4444', border: '1px solid #fee2e2', borderRadius: '16px', fontWeight: 800, cursor: 'pointer' }}
-                      >
-                        Rechazar
-                      </button>
+                      {selectedCandidate.estado === 'postulado' ? (
+                        <>
+                          <button 
+                            onClick={() => handleUpdateStatus(selectedCandidate.id, 'aceptado')} 
+                            style={{ flex: 1, padding: '16px', background: 'var(--ucc-navy)', color: 'white', border: 'none', borderRadius: '16px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 10px 20px -5px rgba(15,35,64,0.3)' }}
+                          >
+                            Aceptar Candidato
+                          </button>
+                          <button 
+                            onClick={() => handleUpdateStatus(selectedCandidate.id, 'rechazado')} 
+                            style={{ flex: 1, padding: '16px', background: '#f8fafc', color: '#ef4444', border: '1px solid #fee2e2', borderRadius: '16px', fontWeight: 800, cursor: 'pointer' }}
+                          >
+                            Rechazar
+                          </button>
+                        </>
+                      ) : (
+                        <button 
+                          disabled
+                          style={{ flex: 1, padding: '16px', background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', borderRadius: '16px', fontWeight: 800, cursor: 'default' }}
+                        >
+                          Candidato Admitido
+                        </button>
+                      )}
                     </div>
                   </div>
               )}

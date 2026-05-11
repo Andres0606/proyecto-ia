@@ -5,17 +5,17 @@ import "../css/Auth/auth.css";
 
 // ── Icons ──────────────────────────────────────────────────────────────────
 const Icons = {
-  User: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
-  Mail: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>,
-  Phone: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>,
-  Id: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 21v-4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v4"/><circle cx="12" cy="11" r="3"/><path d="M7 3h10"/></svg>,
-  Lock: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
-  Check: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>,
-  ArrowRight: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>,
-  ArrowLeft: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>,
-  GraduationCap: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>,
-  Briefcase: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>,
-  Building: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M8 10h.01M16 10h.01M12 10h.01M8 14h.01M16 14h.01M12 14h.01"/></svg>,
+  User: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>,
+  Mail: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>,
+  Phone: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" /></svg>,
+  Id: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" /><path d="M7 21v-4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v4" /><circle cx="12" cy="11" r="3" /><path d="M7 3h10" /></svg>,
+  Lock: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>,
+  Check: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>,
+  ArrowRight: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>,
+  ArrowLeft: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5" /><path d="m12 19-7-7 7-7" /></svg>,
+  GraduationCap: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c3 3 9 3 12 0v-5" /></svg>,
+  Briefcase: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /></svg>,
+  Building: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M8 10h.01M16 10h.01M12 10h.01M8 14h.01M16 14h.01M12 14h.01" /></svg>,
 };
 
 // ── Tipos ────────────────────────────────────────────────────────────────────
@@ -28,7 +28,7 @@ const ROLES = [
     iconClass: "auth-role-card__icon--egresado",
     title: "Egresado UCC",
     desc: "Accede a beneficios exclusivos para graduados de nuestra red UCC.",
-    badge: "Gratuito",
+    badge: null,
   },
   {
     id: "externo" as RolType,
@@ -75,14 +75,14 @@ function Stepper({ step, rol }: { step: number; rol: RolType }) {
   const steps =
     rol === "empresa"
       ? [
-          { num: 1, label: "Cuenta" },
-          { num: 2, label: "Perfil" },
-          { num: 3, label: "Empresa" },
-        ]
+        { num: 1, label: "Cuenta" },
+        { num: 2, label: "Perfil" },
+        { num: 3, label: "Empresa" },
+      ]
       : [
-          { num: 1, label: "Cuenta" },
-          { num: 2, label: "Perfil" },
-        ];
+        { num: 1, label: "Cuenta" },
+        { num: 2, label: "Perfil" },
+      ];
 
   return (
     <div className="auth-stepper">
@@ -90,29 +90,26 @@ function Stepper({ step, rol }: { step: number; rol: RolType }) {
         <div key={s.num} style={{ display: "flex", alignItems: "center" }}>
           <div className="auth-stepper__step">
             <span
-              className={`auth-stepper__circle ${
-                step === s.num
+              className={`auth-stepper__circle ${step === s.num
                   ? "auth-stepper__circle--active"
                   : step > s.num
-                  ? "auth-stepper__circle--done"
-                  : ""
-              }`}
+                    ? "auth-stepper__circle--done"
+                    : ""
+                }`}
             >
               {step > s.num ? <Icons.Check /> : s.num}
             </span>
             <span
-              className={`auth-stepper__label ${
-                step >= s.num ? "auth-stepper__label--active" : ""
-              }`}
+              className={`auth-stepper__label ${step >= s.num ? "auth-stepper__label--active" : ""
+                }`}
             >
               {s.label}
             </span>
           </div>
           {i < steps.length - 1 && (
             <div
-              className={`auth-stepper__connector ${
-                step > s.num ? "auth-stepper__connector--done" : ""
-              }`}
+              className={`auth-stepper__connector ${step > s.num ? "auth-stepper__connector--done" : ""
+                }`}
             />
           )}
         </div>
@@ -139,9 +136,8 @@ function StepRol({
         {ROLES.map((r) => (
           <div
             key={r.id}
-            className={`auth-role-card ${
-              rol === r.id ? "auth-role-card--selected" : ""
-            }`}
+            className={`auth-role-card ${rol === r.id ? "auth-role-card--selected" : ""
+              }`}
             onClick={() => onSelect(r.id)}
           >
             {r.badge && (
@@ -244,9 +240,9 @@ function StepDatosPersonales({
               <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: formData.telefono && !/^\d+$/.test(formData.telefono) ? '#ef4444' : '#94a3b8' }}><Icons.Phone /></span>
               <input
                 className="auth-field__input"
-                style={{ 
-                  paddingLeft: '48px', 
-                  borderColor: formData.telefono && !/^\d+$/.test(formData.telefono) ? '#ef4444' : '' 
+                style={{
+                  paddingLeft: '48px',
+                  borderColor: formData.telefono && !/^\d+$/.test(formData.telefono) ? '#ef4444' : ''
                 }}
                 type="text"
                 placeholder="10 dígitos"
@@ -274,7 +270,7 @@ function StepDatosPersonales({
               <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: formData.cedula && !/^\d+$/.test(formData.cedula) ? '#ef4444' : '#94a3b8' }}><Icons.Id /></span>
               <input
                 className="auth-field__input"
-                style={{ 
+                style={{
                   paddingLeft: '48px',
                   borderColor: formData.cedula && !/^\d+$/.test(formData.cedula) ? '#ef4444' : ''
                 }}
@@ -314,7 +310,7 @@ function StepDatosPersonales({
               <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}><Icons.Lock /></span>
               <input
                 className="auth-field__input"
-                style={{ 
+                style={{
                   paddingLeft: '48px',
                   borderColor: formData.password && !/^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/.test(formData.password) ? '#ef4444' : (formData.password ? '#10b981' : '')
                 }}
@@ -335,9 +331,9 @@ function StepDatosPersonales({
               <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}><Icons.Lock /></span>
               <input
                 className="auth-field__input"
-                style={{ 
-                  paddingLeft: '48px', 
-                  borderColor: pw2 ? (isMatch ? '#10b981' : '#ef4444') : '' 
+                style={{
+                  paddingLeft: '48px',
+                  borderColor: pw2 ? (isMatch ? '#10b981' : '#ef4444') : ''
                 }}
                 type="password"
                 placeholder="Repite contraseña"
@@ -472,7 +468,7 @@ export default function RegistroPage() {
       setErrorMsg("La identificación (C.C.) debe tener al menos 5 dígitos numéricos.");
       return false;
     }
-    
+
     // Contraseña robusta: Mayúscula, Número, Carácter especial
     const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/;
     if (!passwordRegex.test(formData.password)) {
@@ -492,7 +488,7 @@ export default function RegistroPage() {
       });
       const res = await fetch(`${backendUrl}/api/users/check-duplicates?${params}`);
       const data = await res.json();
-      
+
       if (data.success) {
         if (data.emailExists) return "Este correo electrónico ya está registrado.";
         if (data.telefonoExists) return "Este número de teléfono ya está registrado.";
@@ -507,12 +503,12 @@ export default function RegistroPage() {
 
   const checkFieldDuplicate = async (field: string, value: string) => {
     if (!value || (field === 'telefono' && value.length < 7) || (field === 'cedula' && value.length < 5)) return;
-    
+
     try {
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
       const res = await fetch(`${backendUrl}/api/users/check-duplicates?${field}=${value}`);
       const data = await res.json();
-      
+
       if (data.success) {
         if (field === 'email' && data.emailExists) setFieldErrors(p => ({ ...p, email: "Este correo ya está registrado" }));
         else if (field === 'telefono' && data.telefonoExists) setFieldErrors(p => ({ ...p, telefono: "Este teléfono ya está registrado" }));
@@ -526,7 +522,7 @@ export default function RegistroPage() {
 
   const handleRegister = async () => {
     if (!validateFields()) return;
-    
+
     setLoading(true);
     setErrorMsg("");
 
@@ -566,7 +562,7 @@ export default function RegistroPage() {
 
   const handleNextStep2 = async () => {
     if (!validateFields()) return;
-    
+
     setLoading(true);
     setErrorMsg("");
 
@@ -599,7 +595,6 @@ export default function RegistroPage() {
 
       <div className="auth-card auth-card--wide">
         <div className="auth-card__brand">
-          <span className="auth-card__logo">UCC</span>
           <span className="auth-card__brand-text">Portal del Egresado</span>
         </div>
 
