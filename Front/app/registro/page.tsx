@@ -179,6 +179,8 @@ function StepDatosPersonales({
   formData,
   setFormData,
   loading,
+  fieldErrors,
+  onBlurCheck
 }: {
   onBack: () => void;
   onNext: () => void;
@@ -186,6 +188,8 @@ function StepDatosPersonales({
   formData: any;
   setFormData: (d: any) => void;
   loading: boolean;
+  fieldErrors: { email: string; telefono: string; cedula: string };
+  onBlurCheck: (field: string, value: string) => void;
 }) {
   const { password: pw1, confirmPassword: pw2 } = formData;
   const isMatch = pw1.length >= 8 && pw1 === pw2;
@@ -224,9 +228,13 @@ function StepDatosPersonales({
                 placeholder="juan@ejemplo.com"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onBlur={(e) => onBlurCheck('email', e.target.value)}
                 required
               />
             </div>
+            {fieldErrors.email && (
+              <span style={{ color: '#ef4444', fontSize: '10px', fontWeight: '700', marginTop: '2px' }}>{fieldErrors.email}</span>
+            )}
           </div>
           <div className="auth-field">
             <label className="auth-field__label">Teléfono</label>
@@ -242,11 +250,16 @@ function StepDatosPersonales({
                 placeholder="Solo números"
                 value={formData.telefono}
                 onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
+                onBlur={(e) => onBlurCheck('telefono', e.target.value)}
                 required
               />
             </div>
-            {formData.telefono && !/^\d+$/.test(formData.telefono) && (
-              <span style={{ color: '#ef4444', fontSize: '10px', fontWeight: '700', marginTop: '2px' }}>Formato inválido (solo números)</span>
+            {fieldErrors.telefono ? (
+              <span style={{ color: '#ef4444', fontSize: '10px', fontWeight: '700', marginTop: '2px' }}>{fieldErrors.telefono}</span>
+            ) : (
+              formData.telefono && !/^\d+$/.test(formData.telefono) && (
+                <span style={{ color: '#ef4444', fontSize: '10px', fontWeight: '700', marginTop: '2px' }}>Formato inválido (solo números)</span>
+              )
             )}
           </div>
         </div>
@@ -266,11 +279,16 @@ function StepDatosPersonales({
                 placeholder="Número de cédula"
                 value={formData.cedula}
                 onChange={(e) => setFormData({ ...formData, cedula: e.target.value })}
+                onBlur={(e) => onBlurCheck('cedula', e.target.value)}
                 required
               />
             </div>
-            {formData.cedula && !/^\d+$/.test(formData.cedula) && (
-              <span style={{ color: '#ef4444', fontSize: '10px', fontWeight: '700', marginTop: '2px' }}>Formato inválido (solo números)</span>
+            {fieldErrors.cedula ? (
+              <span style={{ color: '#ef4444', fontSize: '10px', fontWeight: '700', marginTop: '2px' }}>{fieldErrors.cedula}</span>
+            ) : (
+              formData.cedula && !/^\d+$/.test(formData.cedula) && (
+                <span style={{ color: '#ef4444', fontSize: '10px', fontWeight: '700', marginTop: '2px' }}>Formato inválido (solo números)</span>
+              )
             )}
           </div>
           <div className="auth-field">
@@ -418,6 +436,7 @@ export default function RegistroPage() {
   const [rol, setRol] = useState<RolType>(null);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({ email: "", telefono: "", cedula: "" });
 
   const [formData, setFormData] = useState({
     email: "", password: "", confirmPassword: "", nombre: "", telefono: "", cedula: "", fecha_nacimiento: "", genero: "masculino",
@@ -463,6 +482,25 @@ export default function RegistroPage() {
     } catch (err) {
       console.error("Error checking duplicates:", err);
       return null;
+    }
+  };
+
+  const checkFieldDuplicate = async (field: string, value: string) => {
+    if (!value || (field === 'telefono' && value.length < 7) || (field === 'cedula' && value.length < 5)) return;
+    
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
+      const res = await fetch(`${backendUrl}/api/users/check-duplicates?${field}=${value}`);
+      const data = await res.json();
+      
+      if (data.success) {
+        if (field === 'email' && data.emailExists) setFieldErrors(p => ({ ...p, email: "Este correo ya está registrado" }));
+        else if (field === 'telefono' && data.telefonoExists) setFieldErrors(p => ({ ...p, telefono: "Este teléfono ya está registrado" }));
+        else if (field === 'cedula' && data.cedulaExists) setFieldErrors(p => ({ ...p, cedula: "Esta cédula ya está registrada" }));
+        else setFieldErrors(p => ({ ...p, [field]: "" }));
+      }
+    } catch (err) {
+      console.error("Error checking field duplicate:", err);
     }
   };
 
@@ -561,6 +599,8 @@ export default function RegistroPage() {
             formData={formData}
             setFormData={setFormData}
             loading={loading}
+            fieldErrors={fieldErrors}
+            onBlurCheck={checkFieldDuplicate}
           />
         )}
         {step === 3 && rol === "empresa" && (
