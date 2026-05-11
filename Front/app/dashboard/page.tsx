@@ -29,6 +29,7 @@ export default function Dashboard() {
   const [greeting, setGreeting] = useState('Buenos días');
   const [userName, setUserName] = useState('Egresado');
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
+  const [userCv, setUserCv] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [myApplications, setMyApplications] = useState<any[]>([]);
   const [activeSection, setActiveSection] = useState<'none' | 'personal' | 'professional' | 'apps' | 'cv'>('none');
@@ -95,6 +96,7 @@ export default function Dashboard() {
         const p = u.perfiles_usuarios?.[0] || {};
         setUserName(u.nombre_completo?.split(' ')[0] || 'Egresado');
         if (u.foto_url) setUserPhoto(u.foto_url);
+        if (u.cv_url) setUserCv(u.cv_url);
         const val = (v: any) => (v !== null && v !== undefined && v !== '') ? String(v) : '';
         setFormData({
           nombre_completo: u.nombre_completo || '', correo: u.correo || '', telefono: u.telefono || '',
@@ -425,7 +427,9 @@ export default function Dashboard() {
               <div style={{ width: '80px', height: '80px', borderRadius: '20px', background: '#fee2e2', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}><Icons.File /></div>
               <h2 style={{ color: '#1e3a5f', fontWeight: 900, fontSize: '1.8rem' }}>Gestión de Hoja de Vida</h2>
               <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', marginTop: '30px' }}>
-                <button onClick={() => { if (!userId) return; fetch(`${base()}/api/users/get-cv-url/${userId}`).then(r => r.json()).then(d => d.success ? window.open(d.url, '_blank') : setToast({ msg: 'No tienes CV subido', type: 'info' })) }} style={{ padding: '15px 30px', background: '#1e3a5f', color: 'white', border: 'none', borderRadius: '14px', fontWeight: 700, cursor: 'pointer' }}>Ver CV Actual</button>
+                {userCv && (
+                  <button onClick={() => window.open(userCv, '_blank')} style={{ padding: '15px 30px', background: '#1e3a5f', color: 'white', border: 'none', borderRadius: '14px', fontWeight: 700, cursor: 'pointer' }}>Ver CV Actual</button>
+                )}
                 <button onClick={() => cvInputRef.current?.click()} style={{ padding: '15px 30px', background: '#f8fafc', color: '#1e3a5f', border: '2px solid #1e3a5f', borderRadius: '14px', fontWeight: 700, cursor: 'pointer' }}>Subir Nuevo CV (.pdf)</button>
               </div>
             </div>
