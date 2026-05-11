@@ -16,10 +16,10 @@ const Icons = {
 
 const QUICK_ACTIONS = [
   { title: 'Inicio', Icon: Icons.Home, id: 'none' as const, color: '#3b82f6' },
-  { title: 'Mi Empresa', Icon: Icons.Company, id: 'professional' as const, color: '#1e3a5f' },
-  { title: 'Nueva Vacante', Icon: Icons.Announce, id: 'jobs' as const, color: '#8b5cf6' },
+  { title: 'Mi Empresa', Icon: Icons.Company, id: 'professional' as const, color: '#8b5cf6' },
+  { title: 'Nueva Vacante', Icon: Icons.Announce, id: 'jobs' as const, color: '#10b981' },
   { title: 'Mis Vacantes', Icon: Icons.List, id: 'my-jobs' as const, color: '#f59e0b' },
-  { title: 'Candidatos', Icon: Icons.Users, id: 'candidates' as const, color: '#10b981' },
+  { title: 'Candidatos', Icon: Icons.Users, id: 'candidates' as const, color: '#ef4444' },
 ];
 
 const OPTIONS = {
@@ -215,7 +215,7 @@ export default function DashboardEmpresa() {
                 textAlign: 'center', 
                 cursor: 'pointer', 
                 border: `1px solid ${activeSection === a.id ? a.color : 'rgba(255,255,255,0.4)'}`,
-                boxShadow: activeSection === a.id ? '0 15px 35px rgba(30, 58, 95, 0.12)' : '0 4px 15px rgba(0,0,0,0.03)',
+                boxShadow: activeSection === a.id ? `0 15px 35px ${a.color}25` : '0 4px 15px rgba(0,0,0,0.03)',
                 transitionDelay: `${idx * 0.05}s`
               }}
             >
