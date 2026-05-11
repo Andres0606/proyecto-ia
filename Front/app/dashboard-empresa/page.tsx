@@ -274,6 +274,7 @@ export default function DashboardEmpresa() {
               <h2 style={{ color: '#1e3a5f', fontWeight: 900, marginBottom: '30px' }}>Nueva Vacante</h2>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                 <div><label style={lbl}>Cargo</label><input style={inp} value={jobData.cargo} onChange={e => setJobData({...jobData, cargo: e.target.value})} /></div>
+                <div><label style={lbl}>Ubicación (Ciudad)</label><input style={inp} placeholder="Ej: Neiva, Huila" value={jobData.ubicacion} onChange={e => setJobData({...jobData, ubicacion: e.target.value})} /></div>
                 <div><label style={lbl}>Área</label><select style={inp} value={jobData.area_desempeno} onChange={e => setJobData({...jobData, area_desempeno: e.target.value})}><option value="">Seleccionar...</option>{OPTIONS.Area.map(o => <option key={o} value={o}>{o}</option>)}</select></div>
                 <div style={{ gridColumn: '1/-1' }}>
                   <label style={lbl}>Programas</label>
@@ -337,7 +338,13 @@ export default function DashboardEmpresa() {
                     <div>
                       <h4 style={{ margin: 0, color: '#0f172a', fontWeight: 800 }}>{v.cargo}</h4>
                       <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                        <Icons.Location /> {v.ubicacion} | <Icons.Users /> {v.numero_vacantes} cupos
+                        {v.ubicacion && (
+                          <>
+                            <Icons.Location /> {v.ubicacion} 
+                            <span style={{ margin: '0 5px', color: '#e2e8f0' }}>|</span>
+                          </>
+                        )}
+                        <Icons.Users /> {v.numero_vacantes} cupos
                       </p>
                     </div>
                     <button onClick={() => handleToggleStatus(v.id, v.estado || 'activa')} style={{ padding: '8px 16px', borderRadius: '10px', border: '1px solid #0f172a', background: 'white', fontWeight: 700, cursor: 'pointer' }}>{vacanciesTab === 'activas' ? 'Pausar' : 'Activar'}</button>
