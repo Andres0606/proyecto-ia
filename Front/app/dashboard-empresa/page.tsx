@@ -283,8 +283,42 @@ export default function DashboardEmpresa() {
                     ))}
                   </div>
                 </div>
-                <div><label style={lbl}>Salario</label><input style={inp} type="number" min="0" value={jobData.salario} onChange={e => setJobData({...jobData, salario: e.target.value})} /></div>
-                <div><label style={lbl}>Cupos</label><input style={inp} type="number" min="1" value={jobData.numero_vacantes} onChange={e => setJobData({...jobData, numero_vacantes: e.target.value})} /></div>
+                <div>
+                  <label style={lbl}>Salario</label>
+                  <input 
+                    style={inp} 
+                    type="number" 
+                    min="0" 
+                    value={jobData.salario} 
+                    onChange={e => {
+                      const val = e.target.value;
+                      if (Number(val) < 0) {
+                        setToast({ msg: 'El salario no puede ser negativo', type: 'error' });
+                        setTimeout(() => setToast({ msg: '', type: 'none' }), 2000);
+                        return;
+                      }
+                      setJobData({...jobData, salario: val});
+                    }} 
+                  />
+                </div>
+                <div>
+                  <label style={lbl}>Cupos</label>
+                  <input 
+                    style={inp} 
+                    type="number" 
+                    min="1" 
+                    value={jobData.numero_vacantes} 
+                    onChange={e => {
+                      const val = e.target.value;
+                      if (Number(val) < 0) {
+                        setToast({ msg: 'Los cupos no pueden ser negativos', type: 'error' });
+                        setTimeout(() => setToast({ msg: '', type: 'none' }), 2000);
+                        return;
+                      }
+                      setJobData({...jobData, numero_vacantes: val});
+                    }} 
+                  />
+                </div>
                 <div style={{ gridColumn: '1/-1' }}><label style={lbl}>Descripción</label><textarea style={{ ...inp, height: '100px' }} value={jobData.descripcion} onChange={e => setJobData({...jobData, descripcion: e.target.value})} /></div>
               </div>
               <button onClick={handlePostJob} style={{ width: '100%', marginTop: '30px', padding: '16px', background: '#0f172a', color: 'white', borderRadius: '16px', border: 'none', fontWeight: 800, cursor: 'pointer' }}>Publicar Vacante</button>
