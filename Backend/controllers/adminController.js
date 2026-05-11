@@ -46,7 +46,7 @@ const getAllVacancies = async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('vacantes')
-      .select('*, empresas(razon_social)')
+      .select('*, empresas(razon_social), postulaciones(count)')
       .order('created_at', { ascending: false });
 
     if (error) throw error;

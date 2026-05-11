@@ -209,8 +209,7 @@ export default function DashboardAdmin() {
                   <div style={{ display: 'grid', gap: '16px' }}>
                     {vacancies.length > 0 ? (
                       [...vacancies]
-                        .map(v => ({ ...v, count: users.filter(u => u.rol_id === 1).length / 3 })) // Simulado para visualizacion si no hay datos de join
-                        .sort((a, b) => (b.count || 0) - (a.count || 0))
+                        .sort((a, b) => (b.postulaciones?.[0]?.count || 0) - (a.postulaciones?.[0]?.count || 0))
                         .slice(0, 5)
                         .map((v, i) => (
                           <div key={v.id} style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -220,7 +219,7 @@ export default function DashboardAdmin() {
                               <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.8rem' }}>{v.empresas?.razon_social}</p>
                             </div>
                             <div style={{ textAlign: 'right' }}>
-                              <span style={{ color: '#3b82f6', fontWeight: 800 }}>{Math.floor(Math.random() * 15) + 5}</span>
+                              <span style={{ color: '#3b82f6', fontWeight: 800 }}>{v.postulaciones?.[0]?.count || 0}</span>
                               <span style={{ color: '#94a3b8', fontSize: '0.75rem', marginLeft: '4px' }}>apps</span>
                             </div>
                           </div>
