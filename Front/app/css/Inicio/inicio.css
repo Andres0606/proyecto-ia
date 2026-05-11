@@ -62,13 +62,40 @@ body {
 .btn--red {
   background: var(--red);
   color: var(--white);
-  padding: 9px 20px;
-  font-size: 14px;
+  padding: 10px 24px;
+  font-size: 15px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(229, 62, 62, 0.3);
 }
+
+.btn--red::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -100%;
+  width: 50%;
+  height: 200%;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transform: rotate(35deg);
+  animation: shimmer 3s infinite cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  20% { left: 150%; }
+  100% { left: 150%; }
+}
+
 .btn--red:hover {
   background: var(--red-dark);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(141, 198, 63, 0.35);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(229, 62, 62, 0.45);
 }
 
 .btn--ghost {
