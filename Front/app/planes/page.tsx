@@ -186,7 +186,7 @@ function PricingCards() {
             key={plan.id}
           >
             {plan.popular && (
-              <span className="plan-card__badge">Más popular</span>
+              <span className="plan-card__badge" />
             )}
 
             <div className={`plan-card__icon ${plan.iconClass}`}>
