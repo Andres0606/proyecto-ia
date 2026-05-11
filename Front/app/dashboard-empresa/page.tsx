@@ -12,6 +12,10 @@ const Icons = {
   Announce: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8a3 3 0 0 0-3-3H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a3 3 0 0 0 3-3V8Z" /><path d="M10 8v4" /><path d="M21 15v-2a5 5 0 0 0-5-5" /><path d="M21 9v2" /></svg>,
   List: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>,
   Users: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M17 7a4 4 0 0 1 0 7.75" /></svg>,
+  Edit: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>,
+  Location: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+  Mail: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>,
+  Phone: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>,
 };
 
 const QUICK_ACTIONS = [
@@ -151,6 +155,11 @@ export default function DashboardEmpresa() {
       setToast({ msg: 'Completa los campos', type: 'error' });
       return;
     }
+
+    if (Number(jobData.salario) < 0 || Number(jobData.numero_vacantes) <= 0) {
+      setToast({ msg: 'Valores numéricos inválidos', type: 'error' });
+      return;
+    }
     setToast({ msg: 'Publicando...', type: 'info' });
     try {
       const res = await fetch(`${base()}/api/vacantes`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...jobData, programa_requerido: jobData.programa_requerido.join(', '), userId }) });
@@ -193,7 +202,7 @@ export default function DashboardEmpresa() {
             <div style={{ width: '120px', height: '120px', borderRadius: '28px', background: companyLogo ? `url(${companyLogo}) center/cover` : '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem', color: '#1e3a5f', border: '4px solid white', boxShadow: '0 8px 25px rgba(0,0,0,0.05)' }}>
               {!companyLogo && <Icons.Company />}
             </div>
-            <div style={{ position: 'absolute', bottom: '-5px', right: '-5px', background: '#1e3a5f', color: 'white', width: '32px', height: '32px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid white' }}>✎</div>
+            <div style={{ position: 'absolute', bottom: '-5px', right: '-5px', background: '#1e3a5f', color: 'white', width: '32px', height: '32px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid white' }}><Icons.Edit /></div>
           </div>
           <div>
             <h1 style={{ margin: 0, color: '#0f172a', fontSize: '2.2rem', fontWeight: 900 }}>{greeting}, {companyName}</h1>
@@ -274,8 +283,8 @@ export default function DashboardEmpresa() {
                     ))}
                   </div>
                 </div>
-                <div><label style={lbl}>Salario</label><input style={inp} type="number" value={jobData.salario} onChange={e => setJobData({...jobData, salario: e.target.value})} /></div>
-                <div><label style={lbl}>Cupos</label><input style={inp} type="number" value={jobData.numero_vacantes} onChange={e => setJobData({...jobData, numero_vacantes: e.target.value})} /></div>
+                <div><label style={lbl}>Salario</label><input style={inp} type="number" min="0" value={jobData.salario} onChange={e => setJobData({...jobData, salario: e.target.value})} /></div>
+                <div><label style={lbl}>Cupos</label><input style={inp} type="number" min="1" value={jobData.numero_vacantes} onChange={e => setJobData({...jobData, numero_vacantes: e.target.value})} /></div>
                 <div style={{ gridColumn: '1/-1' }}><label style={lbl}>Descripción</label><textarea style={{ ...inp, height: '100px' }} value={jobData.descripcion} onChange={e => setJobData({...jobData, descripcion: e.target.value})} /></div>
               </div>
               <button onClick={handlePostJob} style={{ width: '100%', marginTop: '30px', padding: '16px', background: '#0f172a', color: 'white', borderRadius: '16px', border: 'none', fontWeight: 800, cursor: 'pointer' }}>Publicar Vacante</button>
@@ -293,7 +302,9 @@ export default function DashboardEmpresa() {
                   <div key={v.id} style={{ padding: '20px', border: '1px solid #f1f5f9', borderRadius: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                       <h4 style={{ margin: 0, color: '#0f172a', fontWeight: 800 }}>{v.cargo}</h4>
-                      <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b' }}>📍 {v.ubicacion} | 👥 {v.numero_vacantes} cupos</p>
+                      <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <Icons.Location /> {v.ubicacion} | <Icons.Users /> {v.numero_vacantes} cupos
+                      </p>
                     </div>
                     <button onClick={() => handleToggleStatus(v.id, v.estado || 'activa')} style={{ padding: '8px 16px', borderRadius: '10px', border: '1px solid #0f172a', background: 'white', fontWeight: 700, cursor: 'pointer' }}>{vacanciesTab === 'activas' ? 'Pausar' : 'Activar'}</button>
                   </div>
@@ -327,10 +338,10 @@ export default function DashboardEmpresa() {
                     <button onClick={() => setSelectedCandidate(null)} style={{ position: 'absolute', top: '15px', right: '15px', border: 'none', background: 'none', fontSize: '1.5rem', cursor: 'pointer' }}>×</button>
                     <h3>{selectedCandidate.candidato?.nombre}</h3>
                     <p>{selectedCandidate.candidato?.perfil?.programa_academico}</p>
-                    <div style={{ background: '#f8fafc', padding: '15px', borderRadius: '16px', margin: '20px 0' }}>
-                      <p>📧 {selectedCandidate.candidato?.correo}</p>
-                      <p>📞 {selectedCandidate.candidato?.telefono}</p>
-                      {selectedCandidate.cv_url && <a href={selectedCandidate.cv_url} target="_blank" style={{ color: '#1e3a5f', fontWeight: 700 }}>Ver Hoja de Vida</a>}
+                    <div style={{ background: '#f8fafc', padding: '15px', borderRadius: '16px', margin: '20px 0', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <p style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}><Icons.Mail /> {selectedCandidate.candidato?.correo}</p>
+                      <p style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}><Icons.Phone /> {selectedCandidate.candidato?.telefono}</p>
+                      {selectedCandidate.cv_url && <a href={selectedCandidate.cv_url} target="_blank" style={{ color: '#1e3a5f', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}><Icons.List /> Ver Hoja de Vida</a>}
                     </div>
                     <div style={{ display: 'flex', gap: '12px' }}>
                       <button onClick={() => handleUpdateStatus(selectedCandidate.id, 'aceptado')} style={{ flex: 1, padding: '12px', background: '#10b981', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 800, cursor: 'pointer' }}>Aceptar</button>
