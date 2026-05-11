@@ -282,9 +282,19 @@ export default function BolsaPage() {
       if (data.success) {
         const mapped: Job[] = data.vacancies.map((v: any) => {
           const fecha = new Date(v.created_at);
-          const diff = Math.floor((Date.now() - fecha.getTime()) / 86400000);
-          const postedText = diff === 0 ? "Publicado hoy" : diff === 1 ? "Hace 1 día" : `Hace ${diff} días`;
-          const salario = parseFloat(v.salario);
+          const now = Date.now();
+          const diffMs = now - fecha.getTime();
+          const diffDays = Math.floor(diffMs / 86400000);
+          const diffHours = Math.floor(diffMs / 3600000);
+          
+          let postedText = "";
+          if (diffMs < 3600000) postedText = "Recién publicado";
+          else if (diffHours < 24) postedText = `Hace ${diffHours} horas`;
+          else if (diffDays === 1) postedText = "Hace 1 día";
+          else if (diffDays < 0) postedText = "Publicado hoy";
+          else postedText = `Hace ${diffDays} días`;
+
+          const salario = Math.abs(parseFloat(v.salario) || 0);
           return {
             id: v.id,
             role: v.cargo || "Cargo sin especificar",
@@ -294,8 +304,8 @@ export default function BolsaPage() {
             mode: v.modalidad || "Presencial",
             nivel: v.nivel_formacion || "Profesional",
             city: v.ubicacion || v.empresas?.ciudad || "Colombia",
-            salaryMin: salario || 0,
-            salaryLabel: salario ? `$${new Intl.NumberFormat('es-CO').format(salario)}` : "A convenir",
+            salaryMin: salario,
+            salaryLabel: salario > 0 ? `$${new Intl.NumberFormat('es-CO').format(salario)}` : "A convenir",
             desc: v.descripcion || "",
             posted: postedText,
             featured: salario > 4000000,
