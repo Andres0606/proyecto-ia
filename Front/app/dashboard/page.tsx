@@ -428,7 +428,28 @@ export default function Dashboard() {
               <h2 style={{ color: '#1e3a5f', fontWeight: 900, fontSize: '1.8rem' }}>Gestión de Hoja de Vida</h2>
               <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', marginTop: '30px' }}>
                 {userCv && (
-                  <button onClick={() => window.open(userCv, '_blank')} style={{ padding: '15px 30px', background: '#1e3a5f', color: 'white', border: 'none', borderRadius: '14px', fontWeight: 700, cursor: 'pointer' }}>Ver CV Actual</button>
+                  <button 
+                    onClick={async () => { 
+                      if (!userId) return;
+                      setToast({ msg: 'Generando enlace...', type: 'info' });
+                      try {
+                        const r = await fetch(`${base()}/api/users/get-cv-url/${userId}`);
+                        const d = await r.json();
+                        if (d.success) {
+                          window.open(d.url, '_blank');
+                        } else {
+                          setToast({ msg: 'No se pudo encontrar el archivo', type: 'error' });
+                        }
+                      } catch (e) {
+                        setToast({ msg: 'Error de conexión', type: 'error' });
+                      } finally {
+                        setTimeout(() => setToast({ msg: '', type: 'none' }), 2000);
+                      }
+                    }} 
+                    style={{ padding: '15px 30px', background: '#1e3a5f', color: 'white', border: 'none', borderRadius: '14px', fontWeight: 700, cursor: 'pointer' }}
+                  >
+                    Ver CV Actual
+                  </button>
                 )}
                 <button onClick={() => cvInputRef.current?.click()} style={{ padding: '15px 30px', background: '#f8fafc', color: '#1e3a5f', border: '2px solid #1e3a5f', borderRadius: '14px', fontWeight: 700, cursor: 'pointer' }}>Subir Nuevo CV (.pdf)</button>
               </div>
