@@ -131,8 +131,12 @@ export default function Dashboard() {
         const saved = sessionStorage.getItem('ucc_user');
         if (saved) {
           const u = JSON.parse(saved);
+          
+          // Actualizar en todas las ubicaciones posibles para asegurar que el Header lo vea
           u.nombre_completo = payload.nombre_completo;
           if (u.profile) u.profile.nombre_completo = payload.nombre_completo;
+          if (u.user_metadata) u.user_metadata.full_name = payload.nombre_completo;
+          
           sessionStorage.setItem('ucc_user', JSON.stringify(u));
           
           // Notificar al Header que los datos cambiaron
