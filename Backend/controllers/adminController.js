@@ -89,7 +89,7 @@ const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
     const { nombre_completo, correo, rol_id } = req.body;
-    
+
     const { data, error } = await supabase
       .from('users')
       .update({ nombre_completo, correo, rol_id })
