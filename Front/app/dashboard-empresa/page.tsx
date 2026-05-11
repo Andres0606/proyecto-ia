@@ -206,7 +206,7 @@ export default function DashboardEmpresa() {
             <div 
               key={a.id} 
               onClick={() => setActiveSection(a.id)} 
-              className={`reveal ${isVisible ? 'reveal--visible' : ''}`}
+              className={`reveal dashboard-action-card ${isVisible ? 'reveal--visible' : ''} ${activeSection === a.id ? 'active-card' : ''}`}
               style={{ 
                 background: activeSection === a.id ? 'white' : 'rgba(255,255,255,0.7)', 
                 backdropFilter: 'blur(10px)',
@@ -215,7 +215,6 @@ export default function DashboardEmpresa() {
                 textAlign: 'center', 
                 cursor: 'pointer', 
                 border: `1px solid ${activeSection === a.id ? a.color : 'rgba(255,255,255,0.4)'}`,
-                transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)', 
                 boxShadow: activeSection === a.id ? '0 15px 35px rgba(30, 58, 95, 0.12)' : '0 4px 15px rgba(0,0,0,0.03)',
                 transitionDelay: `${idx * 0.05}s`
               }}
