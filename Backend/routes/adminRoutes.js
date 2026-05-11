@@ -6,5 +6,6 @@ router.get('/stats', adminController.getStats);
 router.get('/users', adminController.getAllUsers);
 router.get('/vacancies', adminController.getAllVacancies);
 router.get('/distributions', adminController.getUserDistributions);
+router.put('/users/:id', adminController.updateUser);
 
 module.exports = router;

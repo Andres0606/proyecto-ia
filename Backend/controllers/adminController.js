@@ -85,4 +85,23 @@ const getUserDistributions = async (req, res) => {
   }
 };
 
-module.exports = { getStats, getAllUsers, getAllVacancies, getUserDistributions };
+const updateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nombre_completo, correo, rol_id } = req.body;
+    
+    const { data, error } = await supabase
+      .from('users')
+      .update({ nombre_completo, correo, rol_id })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return res.status(200).json({ success: true, user: data });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+module.exports = { getStats, getAllUsers, getAllVacancies, getUserDistributions, updateUser };

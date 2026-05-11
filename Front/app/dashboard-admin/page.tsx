@@ -32,6 +32,7 @@ export default function DashboardAdmin() {
   const [selectedUserApps, setSelectedUserApps] = useState<any[] | null>(null);
   const [viewingUserName, setViewingUserName] = useState('');
   const [loadingApps, setLoadingApps] = useState(false);
+  const [editingUser, setEditingUser] = useState<any | null>(null);
 
   const base = () => (process.env.NEXT_PUBLIC_BACKEND_URL || 'https://proyecto-ia-production-b7d6.up.railway.app').replace(/\/$/, '');
 
@@ -116,6 +117,26 @@ export default function DashboardAdmin() {
     } finally {
       setLoadingApps(false);
     }
+  };
+
+  const handleUpdateUser = async () => {
+    if (!editingUser) return;
+    try {
+      const res = await fetch(`${base()}/api/admin/users/${editingUser.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre_completo: editingUser.nombre_completo,
+          correo: editingUser.correo,
+          rol_id: editingUser.rol_id
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setUsers(users.map(u => u.id === editingUser.id ? editingUser : u));
+        setEditingUser(null);
+      }
+    } catch (e) { console.error("Error updating user:", e); }
   };
 
   const STAT_CARDS = [
@@ -238,8 +259,10 @@ export default function DashboardAdmin() {
                             </td>
                             <td style={{ padding: '16px 20px', color: '#64748b', fontSize: '0.9rem' }}>{u.correo}</td>
                             <td style={{ padding: '16px 20px' }}><span style={{ background: colors.bg, color: colors.tc, padding: '4px 12px', borderRadius: '20px', fontSize: '0.78rem', fontWeight: 700 }}>{rol}</span></td>
-                            <td style={{ padding: '16px 20px' }}>
-                              <button onClick={() => fetchUserApplications(u.id, u.nombre_completo)} style={{ background: 'none', border: 'none', color: '#3b82f6', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem' }}>Ver Postulaciones</button>
+                            <td style={{ padding: '16px 20px', display: 'flex', gap: '12px' }}>
+                              <button onClick={() => setEditingUser(u)} style={{ background: 'none', border: 'none', color: '#3b82f6', fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem' }}>Editar</button>
+                              <div style={{ width: '1px', height: '14px', background: '#e2e8f0', alignSelf: 'center' }} />
+                              <button onClick={() => fetchUserApplications(u.id, u.nombre_completo)} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem' }}>Ver Postulaciones</button>
                             </td>
                           </tr>
                         );
@@ -339,6 +362,55 @@ export default function DashboardAdmin() {
                       );
                     })
                   )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {editingUser && (
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(4px)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+              <div className="reveal reveal--visible" style={{ background: 'white', borderRadius: '24px', width: '100%', maxWidth: '500px', padding: '40px', position: 'relative', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
+                <button onClick={() => setEditingUser(null)} style={{ position: 'absolute', top: '24px', right: '24px', background: '#f1f5f9', border: 'none', width: '36px', height: '36px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748b', fontSize: '1.2rem' }}>×</button>
+                <h3 style={{ margin: '0 0 24px', color: 'var(--ucc-navy)', fontSize: '1.4rem', fontWeight: 800 }}>Editar Usuario</h3>
+                
+                <div style={{ display: 'grid', gap: '20px' }}>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 700, color: '#64748b' }}>Nombre Completo</label>
+                    <input 
+                      value={editingUser.nombre_completo} 
+                      onChange={e => setEditingUser({...editingUser, nombre_completo: e.target.value})}
+                      style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '1rem', outline: 'none' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 700, color: '#64748b' }}>Correo Electrónico</label>
+                    <input 
+                      value={editingUser.correo} 
+                      onChange={e => setEditingUser({...editingUser, correo: e.target.value})}
+                      style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '1rem', outline: 'none' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 700, color: '#64748b' }}>Rol del Usuario</label>
+                    <select 
+                      value={editingUser.rol_id} 
+                      onChange={e => setEditingUser({...editingUser, rol_id: Number(e.target.value)})}
+                      style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '1rem', outline: 'none', background: 'white' }}
+                    >
+                      <option value={1}>Egresado</option>
+                      <option value={2}>Externo</option>
+                      <option value={3}>Empresa</option>
+                      <option value={4}>Administrador</option>
+                    </select>
+                  </div>
+                  <button 
+                    onClick={handleUpdateUser}
+                    style={{ marginTop: '10px', padding: '16px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '14px', fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s' }}
+                    onMouseOver={e => e.currentTarget.style.background = '#2563eb'}
+                    onMouseOut={e => e.currentTarget.style.background = '#3b82f6'}
+                  >
+                    Guardar Cambios
+                  </button>
                 </div>
               </div>
             </div>
