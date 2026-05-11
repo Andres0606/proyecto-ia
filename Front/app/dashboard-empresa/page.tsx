@@ -217,6 +217,10 @@ export default function DashboardEmpresa() {
       setToast({ msg: 'Valores numéricos inválidos', type: 'error' });
       return;
     }
+    if (jobData.descripcion.length > 1000) {
+      setToast({ msg: 'Descripción demasiado larga', type: 'error' });
+      return;
+    }
     setToast({ msg: 'Publicando...', type: 'info' });
     try {
       const res = await fetch(`${base()}/api/vacantes`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...jobData, programa_requerido: jobData.programa_requerido.join(', '), userId }) });
@@ -233,6 +237,14 @@ export default function DashboardEmpresa() {
 
   const handleUpdateVacancy = async () => {
     if (!editingVacancy) return;
+    if (Number(editingVacancy.salario) < 0 || Number(editingVacancy.numero_vacantes) <= 0) {
+      setToast({ msg: 'No se permiten valores negativos', type: 'error' });
+      return;
+    }
+    if (editingVacancy.descripcion.length > 1000) {
+      setToast({ msg: 'La descripción supera el límite', type: 'error' });
+      return;
+    }
     setToast({ msg: 'Actualizando vacante...', type: 'info' });
     try {
       const res = await fetch(`${base()}/api/vacantes/${editingVacancy.id}`, {
@@ -435,7 +447,20 @@ export default function DashboardEmpresa() {
                     }} 
                   />
                 </div>
-                <div style={{ gridColumn: '1/-1' }}><label style={lbl}>Descripción</label><textarea style={{ ...inp, height: '100px' }} value={jobData.descripcion} onChange={e => setJobData({...jobData, descripcion: e.target.value})} /></div>
+                <div style={{ gridColumn: '1/-1' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <label style={{ ...lbl, marginBottom: 0 }}>Descripción</label>
+                    <span style={{ fontSize: '0.75rem', color: jobData.descripcion.length > 950 ? '#ef4444' : '#94a3b8', fontWeight: 700 }}>
+                      {jobData.descripcion.length}/1000
+                    </span>
+                  </div>
+                  <textarea 
+                    style={{ ...inp, height: '100px', borderColor: jobData.descripcion.length > 1000 ? '#ef4444' : '#e2e8f0' }} 
+                    value={jobData.descripcion} 
+                    maxLength={1000}
+                    onChange={e => setJobData({...jobData, descripcion: e.target.value})} 
+                  />
+                </div>
               </div>
               <button onClick={handlePostJob} style={{ width: '100%', marginTop: '30px', padding: '16px', background: '#0f172a', color: 'white', borderRadius: '16px', border: 'none', fontWeight: 800, cursor: 'pointer' }}>Publicar Vacante</button>
             </div>
@@ -586,9 +611,22 @@ export default function DashboardEmpresa() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                   <div><label style={lbl}>Cargo</label><input style={inp} value={editingVacancy.cargo} onChange={e => setEditingVacancy({...editingVacancy, cargo: e.target.value})} /></div>
                   <div><label style={lbl}>Ubicación</label><input style={inp} value={editingVacancy.ubicacion} onChange={e => setEditingVacancy({...editingVacancy, ubicacion: e.target.value})} /></div>
-                  <div><label style={lbl}>Salario</label><input type="number" style={inp} value={editingVacancy.salario} onChange={e => setEditingVacancy({...editingVacancy, salario: e.target.value})} /></div>
-                  <div><label style={lbl}>Cupos</label><input type="number" style={inp} value={editingVacancy.numero_vacantes} onChange={e => setEditingVacancy({...editingVacancy, numero_vacantes: e.target.value})} /></div>
-                  <div style={{ gridColumn: '1/-1' }}><label style={lbl}>Descripción</label><textarea style={{ ...inp, height: '120px' }} value={editingVacancy.descripcion} onChange={e => setEditingVacancy({...editingVacancy, descripcion: e.target.value})} /></div>
+                  <div><label style={lbl}>Salario</label><input type="number" min="0" style={inp} value={editingVacancy.salario} onChange={e => setEditingVacancy({...editingVacancy, salario: e.target.value})} /></div>
+                  <div><label style={lbl}>Cupos</label><input type="number" min="1" style={inp} value={editingVacancy.numero_vacantes} onChange={e => setEditingVacancy({...editingVacancy, numero_vacantes: e.target.value})} /></div>
+                  <div style={{ gridColumn: '1/-1' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <label style={{ ...lbl, marginBottom: 0 }}>Descripción</label>
+                      <span style={{ fontSize: '0.75rem', color: editingVacancy.descripcion.length > 950 ? '#ef4444' : '#94a3b8', fontWeight: 700 }}>
+                        {editingVacancy.descripcion.length}/1000
+                      </span>
+                    </div>
+                    <textarea 
+                      style={{ ...inp, height: '120px', borderColor: editingVacancy.descripcion.length > 1000 ? '#ef4444' : '#e2e8f0' }} 
+                      value={editingVacancy.descripcion} 
+                      maxLength={1000}
+                      onChange={e => setEditingVacancy({...editingVacancy, descripcion: e.target.value})} 
+                    />
+                  </div>
                 </div>
                 <button onClick={handleUpdateVacancy} style={{ width: '100%', marginTop: '30px', padding: '16px', background: 'var(--ucc-navy)', color: 'white', borderRadius: '16px', border: 'none', fontWeight: 800, cursor: 'pointer', boxShadow: '0 10px 20px -5px rgba(15,35,64,0.3)' }}>Guardar Cambios</button>
               </div>
