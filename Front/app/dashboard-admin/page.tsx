@@ -31,6 +31,7 @@ export default function DashboardAdmin() {
   const [vacancies, setVacancies] = useState<any[]>([]);
   const [selectedUserApps, setSelectedUserApps] = useState<any[] | null>(null);
   const [viewingUserName, setViewingUserName] = useState('');
+  const [loadingApps, setLoadingApps] = useState(false);
 
   const base = () => (process.env.NEXT_PUBLIC_BACKEND_URL || 'https://proyecto-ia-production-b7d6.up.railway.app').replace(/\/$/, '');
 
@@ -103,12 +104,18 @@ export default function DashboardAdmin() {
   const fetchUserApplications = async (userId: string, name: string) => {
     try {
       setViewingUserName(name);
-      setSelectedUserApps([]); // Clear previous
+      setSelectedUserApps([]); // Abrir el modal vacío primero
+      setLoadingApps(true);
       const r = await fetch(`${base()}/api/postulaciones/user/${userId}`);
       const d = await r.json();
       if (d.success) setSelectedUserApps(d.applications);
       else setSelectedUserApps([]);
-    } catch (e) { console.error("Error fetching apps:", e); setSelectedUserApps([]); }
+    } catch (e) { 
+      console.error("Error fetching apps:", e); 
+      setSelectedUserApps([]); 
+    } finally {
+      setLoadingApps(false);
+    }
   };
 
   const STAT_CARDS = [
@@ -304,22 +311,33 @@ export default function DashboardAdmin() {
                 </div>
 
                 <div style={{ display: 'grid', gap: '12px' }}>
-                  {selectedUserApps.length === 0 ? (
+                  {loadingApps ? (
+                    <div style={{ padding: '40px', textAlign: 'center' }}>
+                      <div style={{ width: '40px', height: '40px', border: '4px solid #f3f3f3', borderTop: '4px solid #3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 15px' }}></div>
+                      <p style={{ color: '#64748b', fontWeight: 600 }}>Buscando postulaciones...</p>
+                      <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+                    </div>
+                  ) : selectedUserApps.length === 0 ? (
                     <div style={{ padding: '40px', textAlign: 'center', background: '#f8fafc', borderRadius: '20px', color: '#94a3b8' }}>Este usuario no tiene postulaciones registradas.</div>
                   ) : (
-                    selectedUserApps.map((app) => (
-                      <div key={app.id} style={{ padding: '20px', border: '1px solid #f1f5f9', borderRadius: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div>
-                          <h4 style={{ margin: 0, color: 'var(--ucc-navy)', fontWeight: 800 }}>{app.vacantes?.cargo}</h4>
-                          <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '0.85rem' }}>{app.vacantes?.empresas?.razon_social}</p>
+                    selectedUserApps.map((app) => {
+                      const cargo = app.vacantes?.cargo || app.vacante?.cargo || "Cargo sin especificar";
+                      const empresa = app.vacantes?.empresas?.razon_social || app.vacante?.empresa?.razon_social || "Empresa UCC";
+                      
+                      return (
+                        <div key={app.id} style={{ padding: '20px', border: '1px solid #f1f5f9', borderRadius: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div>
+                            <h4 style={{ margin: 0, color: 'var(--ucc-navy)', fontWeight: 800 }}>{cargo}</h4>
+                            <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '0.85rem' }}>{empresa}</p>
+                          </div>
+                          <span style={{ 
+                            background: app.estado === 'aceptado' ? '#dcfce7' : app.estado === 'rechazado' ? '#fee2e2' : '#eff6ff', 
+                            color: app.estado === 'aceptado' ? '#166534' : app.estado === 'rechazado' ? '#b91c1c' : '#1e40af', 
+                            padding: '6px 12px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 700, textTransform: 'capitalize' 
+                          }}>{app.estado || 'Pendiente'}</span>
                         </div>
-                        <span style={{ 
-                          background: app.estado === 'aceptado' ? '#dcfce7' : app.estado === 'rechazado' ? '#fee2e2' : '#eff6ff', 
-                          color: app.estado === 'aceptado' ? '#166534' : app.estado === 'rechazado' ? '#b91c1c' : '#1e40af', 
-                          padding: '6px 12px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 700, textTransform: 'capitalize' 
-                        }}>{app.estado || 'Pendiente'}</span>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
                 </div>
               </div>
