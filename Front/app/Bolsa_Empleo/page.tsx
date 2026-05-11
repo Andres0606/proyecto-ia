@@ -13,7 +13,8 @@ const Icons = {
   Briefcase: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>,
   Star: () => <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1.7L15 9.2L22.6 10L16.8 15.2L18.5 22.7L12 18.8L5.5 22.7L7.2 15.2L1.4 10L9 9.2L12 1.7Z"/></svg>,
   Empty: () => <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#e2e8f0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h8"/><path d="M8 17h8"/><path d="M8 9h2"/></svg>,
-  Magic: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="m5 3 2 2"/><path d="m19 3-2 2"/><path d="m5 19 2-2"/><path d="m19 19-2-2"/></svg>
+  Magic: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="m5 3 2 2"/><path d="m19 3-2 2"/><path d="m5 19 2-2"/><path d="m19 19-2-2"/></svg>,
+  Info: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="16" y2="12"/><line x1="12" x2="12.01" y1="8" y2="8"/></svg>
 };
 
 interface Job {
@@ -102,7 +103,27 @@ function Filters({ area, setArea, mode, setMode, nivel, setNivel, onClear }: {
   );
 }
 
-function JobCard({ job, delay }: { job: Job; delay: number }) {
+function Toast({ msg, type, onClose }: { msg: string; type: 'success' | 'error' | 'info'; onClose: () => void }) {
+  useEffect(() => {
+    const t = setTimeout(onClose, 4000);
+    return () => clearTimeout(t);
+  }, [onClose]);
+
+  const colors = {
+    success: { bg: '#ecfdf5', border: '#10b981', text: '#065f46', icon: '✅' },
+    error: { bg: '#fef2f2', border: '#ef4444', text: '#991b1b', icon: '❌' },
+    info: { bg: '#eff6ff', border: '#3b82f6', text: '#1e3a5f', icon: 'ℹ️' }
+  }[type];
+
+  return (
+    <div className="reveal reveal--visible" style={{ position: 'fixed', top: '100px', right: '40px', zIndex: 9999, background: colors.bg, border: `1px solid ${colors.border}`, color: colors.text, padding: '16px 24px', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '12px', minWidth: '300px' }}>
+      <span style={{ fontSize: '1.2rem' }}>{colors.icon}</span>
+      <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{msg}</span>
+    </div>
+  );
+}
+
+function JobCard({ job, delay, showToast }: { job: Job; delay: number; showToast: (m: string, t: any) => void }) {
   const initials = job.company.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
   const base = () => (process.env.NEXT_PUBLIC_BACKEND_URL || 'https://proyecto-ia-production-b7d6.up.railway.app').replace(/\/$/, '');
 
@@ -111,7 +132,7 @@ function JobCard({ job, delay }: { job: Job; delay: number }) {
   const handleApply = async (e: React.MouseEvent, jobTitle: string, vacancyId: number) => {
     const saved = sessionStorage.getItem('ucc_user');
     if (!saved) {
-      alert("Debes iniciar sesión para postularte.");
+      showToast("Debes iniciar sesión para postularte.", "info");
       return;
     }
 
@@ -123,22 +144,20 @@ function JobCard({ job, delay }: { job: Job; delay: number }) {
     const userId = user.id || user.user_id || user.profile?.id;
     const hasCv = !!user.profile?.cv_url || !!user.cv_url;
 
-    console.log(`🔍 Intento de postulación - Rol: ${rol}, Plan: "${plan}", CV: ${hasCv}`);
-
     // 1. REGLA DE CV:
     if (!hasCv) {
-      alert("⚠️ No tienes una Hoja de Vida registrada. Por favor, sube tu CV en la sección 'Actualizar CV' de tu perfil antes de postularte.");
+      showToast("No tienes una Hoja de Vida registrada. Súbela en tu perfil antes de aplicar.", "error");
       return;
     }
 
     // 2. REGLA DE ACCESO: 
     if (rol === 2 && plan !== 'Plan Completo') {
-      alert("Tu plan actual solo permite visualizar ofertas. Actualiza al 'Plan Completo' en tu Dashboard para poder postularte.");
+      showToast("Tu plan actual no permite postularse. Actualiza al 'Plan Completo'.", "info");
       return;
     }
 
     if (rol === 3 || rol === 4) {
-      alert("Tu cuenta de Empresa/Admin no permite postularse a vacantes.");
+      showToast("Tu cuenta de Empresa/Admin no permite postularse.", "error");
       return;
     }
 
@@ -156,13 +175,12 @@ function JobCard({ job, delay }: { job: Job; delay: number }) {
       const data = await res.json();
 
       if (data.success) {
-        alert(`¡Felicidades! Te has postulado exitosamente a: ${jobTitle}`);
+        showToast(`¡Felicidades! Te has postulado a: ${jobTitle}`, "success");
       } else {
-        alert(data.message || "Error al procesar la postulación");
+        showToast(data.message || "Error al procesar la postulación", "error");
       }
     } catch (err: any) {
-      console.error("❌ Error FATAL al postularse:", err);
-      alert("Hubo un problema de conexión al intentar postularte.");
+      showToast("Hubo un problema de conexión.", "error");
     } finally {
       setIsApplying(false);
     }
@@ -229,6 +247,9 @@ function JobCard({ job, delay }: { job: Job; delay: number }) {
 
 export default function BolsaPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' | 'info' | 'none' }>({ msg: '', type: 'none' });
+  const showToast = (msg: string, type: 'success' | 'error' | 'info') => setToast({ msg, type });
+
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [city, setCity] = useState("");
@@ -354,6 +375,10 @@ export default function BolsaPage() {
   return (
     <div className="be-page">
       <Header />
+      
+      {toast.type !== 'none' && (
+        <Toast msg={toast.msg} type={toast.type} onClose={() => setToast({ ...toast, type: 'none' })} />
+      )}
 
       <section className="be-hero">
         <div className="be-hero__inner">
@@ -439,7 +464,7 @@ export default function BolsaPage() {
               </div>
             ) : (
               <div className="be-jobs">
-                {filtered.map((j, i) => <JobCard key={j.id} job={j} delay={i} />)}
+                {filtered.map((j, i) => <JobCard key={j.id} job={j} delay={i} showToast={showToast} />)}
               </div>
             )}
           </main>

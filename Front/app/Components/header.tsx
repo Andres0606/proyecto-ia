@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from "react";
 import "../css/Header.css";
+import Toast, { ToastType } from "./Toast";
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [toast, setToast] = useState<{ msg: string; type: ToastType } | null>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -44,7 +46,7 @@ export default function Header() {
   const checkAccess = (e: React.MouseEvent, type: 'diagnostico' | 'bolsa') => {
     if (!user) {
       e.preventDefault();
-      alert("Por favor inicia sesión para acceder.");
+      setToast({ msg: "Por favor inicia sesión para acceder.", type: 'info' });
       return;
     }
 
@@ -58,7 +60,7 @@ export default function Header() {
     if (rol === 3) {
       if (type === 'diagnostico') {
         e.preventDefault();
-        alert("Este módulo es exclusivo para Egresados y Usuarios Externos. Como empresa, tu función es publicar vacantes.");
+        setToast({ msg: "Este módulo es exclusivo para Egresados. Como empresa, tu función es publicar vacantes.", type: 'warning' });
         return;
       }
     }
@@ -68,7 +70,7 @@ export default function Header() {
       if (type === 'diagnostico') {
         if (plan === 'Gratuito') {
           e.preventDefault();
-          alert("El Diagnóstico de Estabilidad IA es un beneficio exclusivo del plan 'Acceso al Modelo' o superior. ¡Actualiza tu plan para descubrir tu futuro laboral!");
+          setToast({ msg: "El Diagnóstico IA requiere Plan 'Acceso al Modelo' o superior. ¡Actualiza tu plan!", type: 'info' });
           return;
         }
       } else if (type === 'bolsa') {
@@ -113,6 +115,7 @@ export default function Header() {
 
   return (
     <nav className={`header ${scrolled ? "header--scrolled" : ""}`}>
+      {toast && <Toast msg={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
       <div className="header__inner">
         {/* Brand */}
         <a href="/" className="header__brand" style={{ textDecoration: 'none', color: 'inherit' }}>

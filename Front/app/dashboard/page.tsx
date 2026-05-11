@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Header from '../Components/header';
 import Footer from '../Components/footer';
 import '../css/Dashboard/dashboard.css';
+import Toast, { ToastType } from '../Components/Toast';
 
 const Icons = {
   Home: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>,
@@ -36,7 +37,7 @@ export default function Dashboard() {
   const [isEditingProf, setIsEditingProf] = useState(false);
   const [isEditingPersonal, setIsEditingPersonal] = useState(false);
   const [completionPct, setCompletionPct] = useState(0);
-  const [toast, setToast] = useState<{ msg: string, type: 'info' | 'success' | 'error' | 'none' }>({ msg: '', type: 'none' });
+  const [toast, setToast] = useState<{ msg: string, type: ToastType | 'none' }>({ msg: '', type: 'none' });
   const [isVisible, setIsVisible] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -186,14 +187,13 @@ export default function Dashboard() {
   return (
     <div className="db-page" style={{ background: '#f4f7fa', minHeight: '100vh' }}>
       <Header />
+      
+      {toast.type !== 'none' && (
+        <Toast msg={toast.msg} type={toast.type as ToastType} onClose={() => setToast({ ...toast, type: 'none' })} />
+      )}
+
       <input type="file" ref={avatarInputRef} hidden accept="image/*" onChange={e => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'avatar')} />
       <input type="file" ref={cvInputRef} hidden accept=".pdf" onChange={e => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'cv')} />
-
-      {toast.type !== 'none' && (
-        <div style={{ position: 'fixed', bottom: '32px', right: '32px', zIndex: 9999, padding: '16px 24px', borderRadius: '16px', color: 'white', fontWeight: 600, background: toast.type === 'success' ? '#059669' : toast.type === 'error' ? '#dc2626' : '#1e3a5f', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
-          {toast.msg}
-        </div>
-      )}
 
       <main style={{ paddingTop: '110px', maxWidth: '1120px', margin: '0 auto', paddingBottom: '60px' }}>
 
