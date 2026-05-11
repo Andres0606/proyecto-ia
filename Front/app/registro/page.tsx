@@ -247,7 +247,8 @@ function StepDatosPersonales({
                   borderColor: formData.telefono && !/^\d+$/.test(formData.telefono) ? '#ef4444' : '' 
                 }}
                 type="text"
-                placeholder="Solo números"
+                placeholder="10 dígitos"
+                maxLength={10}
                 value={formData.telefono}
                 onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
                 onBlur={(e) => onBlurCheck('telefono', e.target.value)}
@@ -257,8 +258,8 @@ function StepDatosPersonales({
             {fieldErrors.telefono ? (
               <span style={{ color: '#ef4444', fontSize: '10px', fontWeight: '700', marginTop: '2px' }}>{fieldErrors.telefono}</span>
             ) : (
-              formData.telefono && !/^\d+$/.test(formData.telefono) && (
-                <span style={{ color: '#ef4444', fontSize: '10px', fontWeight: '700', marginTop: '2px' }}>Formato inválido (solo números)</span>
+              formData.telefono && (!/^\d+$/.test(formData.telefono) || formData.telefono.length !== 10) && (
+                <span style={{ color: '#ef4444', fontSize: '10px', fontWeight: '700', marginTop: '2px' }}>Debe tener exactamente 10 dígitos</span>
               )
             )}
           </div>
@@ -444,8 +445,8 @@ export default function RegistroPage() {
   });
 
   const validateFields = () => {
-    if (formData.telefono.length < 7) {
-      setErrorMsg("El teléfono debe tener al menos 7 dígitos.");
+    if (formData.telefono.length !== 10 || !/^\d+$/.test(formData.telefono)) {
+      setErrorMsg("El teléfono debe tener exactamente 10 dígitos numéricos.");
       return false;
     }
     if (formData.cedula.length < 5) {
