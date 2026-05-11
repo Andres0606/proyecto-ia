@@ -12,7 +12,8 @@ const Icons = {
   Search: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>,
   Briefcase: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>,
   Star: () => <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1.7L15 9.2L22.6 10L16.8 15.2L18.5 22.7L12 18.8L5.5 22.7L7.2 15.2L1.4 10L9 9.2L12 1.7Z"/></svg>,
-  Empty: () => <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#e2e8f0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h8"/><path d="M8 17h8"/><path d="M8 9h2"/></svg>
+  Empty: () => <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#e2e8f0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h8"/><path d="M8 17h8"/><path d="M8 9h2"/></svg>,
+  Magic: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="m5 3 2 2"/><path d="m19 3-2 2"/><path d="m5 19 2-2"/><path d="m19 19-2-2"/></svg>
 };
 
 interface Job {
@@ -29,6 +30,7 @@ interface Job {
   desc: string;
   posted: string;
   featured: boolean;
+  isRecommended?: boolean;
   tags: string[];
 }
 
@@ -83,6 +85,18 @@ function Filters({ area, setArea, mode, setMode, nivel, setNivel, onClear }: {
           {NIVELES.map(n => <Chip key={n} label={n} active={nivel === n} onClick={() => setNivel(n)} />)}
         </div>
       </div>
+      <div className="be-filter-group">
+        <span className="be-filter-group__label">Recomendaciones</span>
+        <button 
+          className={`be-chip ${nivel === 'RECOMENDADO' ? 'be-chip--on' : ''}`} 
+          onClick={() => nivel === 'RECOMENDADO' ? onClear() : setNivel('RECOMENDADO')}
+          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: nivel === 'RECOMENDADO' ? '#1e3a5f' : '#eff6ff', color: nivel === 'RECOMENDADO' ? 'white' : '#1e3a5f', border: '1px dashed #3b82f6' }}
+        >
+          <Icons.Magic /> Lo ideal para mi perfil
+        </button>
+      </div>
+
+      <div className="be-filter-divider" />
     </aside>
   );
 }
@@ -91,6 +105,8 @@ function JobCard({ job, delay }: { job: Job; delay: number }) {
   const initials = job.company.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
   const base = () => (process.env.NEXT_PUBLIC_BACKEND_URL || 'https://proyecto-ia-production-b7d6.up.railway.app').replace(/\/$/, '');
 
+  const [isApplying, setIsApplying] = useState(false);
+
   const handleApply = async (e: React.MouseEvent, jobTitle: string, vacancyId: number) => {
     const saved = sessionStorage.getItem('ucc_user');
     if (!saved) {
@@ -98,17 +114,24 @@ function JobCard({ job, delay }: { job: Job; delay: number }) {
       return;
     }
 
+    if (isApplying) return;
+
     const user = JSON.parse(saved);
     const rol = Number(user.profile?.rol_id);
     const plan = (user.profile?.suscripcion?.tipo_plan || 'Gratuito').trim();
     const userId = user.id || user.user_id || user.profile?.id;
+    const hasCv = !!user.profile?.cv_url || !!user.cv_url;
 
-    console.log(`🔍 Intento de postulación - Rol: ${rol}, Plan: "${plan}"`);
+    console.log(`🔍 Intento de postulación - Rol: ${rol}, Plan: "${plan}", CV: ${hasCv}`);
 
-    // 1. REGLA DE ACCESO: 
-    // Egresados (Rol 1) pasan siempre. Externos (Rol 2) requieren Plan Completo.
+    // 1. REGLA DE CV:
+    if (!hasCv) {
+      alert("⚠️ No tienes una Hoja de Vida registrada. Por favor, sube tu CV en la sección 'Actualizar CV' de tu perfil antes de postularte.");
+      return;
+    }
+
+    // 2. REGLA DE ACCESO: 
     if (rol === 2 && plan !== 'Plan Completo') {
-      console.warn("🚫 Acceso denegado: Usuario externo sin Plan Completo. Plan actual:", plan);
       alert("Tu plan actual solo permite visualizar ofertas. Actualiza al 'Plan Completo' en tu Dashboard para poder postularte.");
       return;
     }
@@ -118,11 +141,11 @@ function JobCard({ job, delay }: { job: Job; delay: number }) {
       return;
     }
 
-    // 2. Ejecutar postulación en el Backend
+    // 3. Ejecutar postulación
     try {
+      setIsApplying(true);
       const cleanUserId = String(userId).trim().split(':')[0];
       const url = `${base()}/api/postulaciones`;
-      console.log(`🚀 Enviando postulación a: ${url} | User: ${cleanUserId} | Vacante: ${vacancyId}`);
 
       const res = await fetch(url, {
         method: 'POST',
@@ -130,7 +153,6 @@ function JobCard({ job, delay }: { job: Job; delay: number }) {
         body: JSON.stringify({ userId: cleanUserId, vacancyId })
       });
       const data = await res.json();
-      console.log("📥 Respuesta del servidor:", data);
 
       if (data.success) {
         alert(`¡Felicidades! Te has postulado exitosamente a: ${jobTitle}`);
@@ -140,6 +162,8 @@ function JobCard({ job, delay }: { job: Job; delay: number }) {
     } catch (err: any) {
       console.error("❌ Error FATAL al postularse:", err);
       alert("Hubo un problema de conexión al intentar postularte.");
+    } finally {
+      setIsApplying(false);
     }
   };
 
@@ -148,6 +172,11 @@ function JobCard({ job, delay }: { job: Job; delay: number }) {
       {job.featured && (
         <span className="be-card__badge-feat">
           <Icons.Star /> DESTACADA
+        </span>
+      )}
+      {job.isRecommended && (
+        <span className="be-card__badge-feat" style={{ background: '#eff6ff', color: '#1e3a5f', border: '1px solid #dbeafe', right: job.featured ? '140px' : '24px' }}>
+          <Icons.Magic /> RECOMENDADO
         </span>
       )}
 
@@ -183,8 +212,13 @@ function JobCard({ job, delay }: { job: Job; delay: number }) {
         <span className="be-card__posted">
           <Icons.Clock /> {job.posted}
         </span>
-        <button className="be-card__apply" onClick={(e) => handleApply(e, job.role, job.id)}>
-          Postularme
+        <button 
+          className="be-card__apply" 
+          onClick={(e) => handleApply(e, job.role, job.id)}
+          disabled={isApplying}
+          style={{ opacity: isApplying ? 0.7 : 1, cursor: isApplying ? 'not-allowed' : 'pointer' }}
+        >
+          {isApplying ? 'Postulando...' : 'Postularme'}
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </button>
       </div>
@@ -200,11 +234,16 @@ export default function BolsaPage() {
   const [area, setArea] = useState("Todas");
   const [mode, setMode] = useState("Todas");
   const [nivel, setNivel] = useState("Todas");
+  const [userProfile, setUserProfile] = useState<any>(null);
   const [sort, setSort] = useState("recent");
 
   const base = () => (process.env.NEXT_PUBLIC_BACKEND_URL || 'https://proyecto-ia-production-b7d6.up.railway.app').replace(/\/$/, '');
 
-  useEffect(() => { fetchJobs(); }, []);
+  useEffect(() => { 
+    fetchJobs(); 
+    const saved = sessionStorage.getItem('ucc_user');
+    if (saved) setUserProfile(JSON.parse(saved).profile);
+  }, []);
 
   const fetchJobs = async () => {
     try {
@@ -247,6 +286,14 @@ export default function BolsaPage() {
     let list = jobs.filter(j => {
       const q = search.toLowerCase();
       const c = city.toLowerCase();
+      
+      // Lógica de recomendación
+      if (nivel === 'RECOMENDADO' && userProfile) {
+        const areaMatch = j.area.toLowerCase() === (userProfile.area_desempeno || '').toLowerCase();
+        const nivelMatch = j.nivel.toLowerCase() === (userProfile.nivel_formacion || '').toLowerCase();
+        return areaMatch || nivelMatch;
+      }
+
       return (
         (!q || j.role.toLowerCase().includes(q) || j.company.toLowerCase().includes(q)) &&
         (!c || j.city.toLowerCase().includes(c)) &&
@@ -255,10 +302,19 @@ export default function BolsaPage() {
         (nivel === "Todas" || j.nivel === nivel)
       );
     });
+
+    // Marcar los recomendados en la lista general
+    list = list.map(j => {
+      if (!userProfile) return j;
+      const areaMatch = j.area.toLowerCase() === (userProfile.area_desempeno || '').toLowerCase();
+      const nivelMatch = j.nivel.toLowerCase() === (userProfile.nivel_formacion || '').toLowerCase();
+      return { ...j, isRecommended: areaMatch || nivelMatch };
+    });
+
     if (sort === "salary") list = [...list].sort((a, b) => b.salaryMin - a.salaryMin);
     if (sort === "relevance") list = [...list].sort((a, b) => Number(b.featured) - Number(a.featured));
     return list;
-  }, [jobs, search, city, area, mode, nivel, sort]);
+  }, [jobs, search, city, area, mode, nivel, sort, userProfile]);
 
   function clearAll() {
     setSearch(""); setCity(""); setArea("Todas"); setMode("Todas"); setNivel("Todas");
