@@ -34,17 +34,31 @@ export default function DashboardAdmin() {
 
   useEffect(() => {
     const savedUser = sessionStorage.getItem('ucc_user');
-    if (savedUser) {
+    if (!savedUser) {
+      window.location.href = '/login';
+      return;
+    }
+
+    try {
       const userData = JSON.parse(savedUser);
       const rolId = Number(userData.profile?.rol_id);
-      if (rolId === 2) window.location.href = '/dashboard-externo';
-      else if (rolId === 3) window.location.href = '/dashboard-empresa';
-      else if (rolId === 1) window.location.href = '/dashboard';
-      else setUserName(userData.profile?.nombre_completo?.split(' ')[0] || 'Admin');
+      
+      if (rolId !== 4) {
+        // Redirigir según el rol si no es admin
+        if (rolId === 2) window.location.href = '/dashboard-externo';
+        else if (rolId === 3) window.location.href = '/dashboard-empresa';
+        else window.location.href = '/dashboard';
+        return;
+      }
+      
+      setUserName(userData.profile?.nombre_completo?.split(' ')[0] || 'Admin');
+      fetchStats();
+      fetchUsers();
+      fetchVacancies();
+    } catch (e) {
+      sessionStorage.clear();
+      window.location.href = '/login';
     }
-    fetchStats();
-    fetchUsers();
-    fetchVacancies();
   }, []);
 
   const [searchTerm, setSearchTerm] = useState('');

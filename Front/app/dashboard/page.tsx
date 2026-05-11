@@ -60,20 +60,21 @@ export default function Dashboard() {
     if (saved) {
       try {
         const u = JSON.parse(saved);
-        // El login guarda: { id: uuid, ...authFields, profile: { id: uuid, rol_id, ... } }
         const id = u.id || u.profile?.id;
         if (!id) {
-          console.error('❌ No se encontró id en la sesión. Estructura recibida:', Object.keys(u));
+          window.location.href = "/login";
           return;
         }
         const cleanId = String(id).trim();
-        console.log('✅ Dashboard Egresado - userId:', cleanId);
         setUserId(cleanId);
         fetchProfile(cleanId);
         fetchMyApplications(cleanId);
-      } catch (e) { console.error('❌ Error leyendo sesión:', e); }
+      } catch (e) { 
+        sessionStorage.clear();
+        window.location.href = "/login";
+      }
     } else {
-      console.warn('⚠️ No hay sesión guardada en sessionStorage');
+      window.location.href = "/login";
     }
   }, []);
 

@@ -55,18 +55,34 @@ export default function DashboardEmpresa() {
     else if (h >= 18 || h < 5) setGreeting('Buenas noches');
 
     const savedUser = sessionStorage.getItem('ucc_user');
-    if (savedUser) {
-      try {
-        const u = JSON.parse(savedUser);
-        const rawId = u.id || u.profile?.id || u.user_id;
-        if (rawId) {
-          const cleanId = String(rawId).trim().split(':')[0];
-          setUserId(cleanId); 
-          fetchProfile(cleanId);
-          fetchMyVacancies(cleanId);
-          fetchCandidates(cleanId);
-        }
-      } catch (e) { console.error(e); }
+    if (!savedUser) {
+      window.location.href = '/login';
+      return;
+    }
+
+    try {
+      const u = JSON.parse(savedUser);
+      const rolId = Number(u.profile?.rol_id);
+
+      if (rolId !== 3) {
+        // Redirigir según el rol si no es empresa
+        if (rolId === 4) window.location.href = '/dashboard-admin';
+        else if (rolId === 2) window.location.href = '/dashboard-externo';
+        else window.location.href = '/dashboard';
+        return;
+      }
+
+      const rawId = u.id || u.profile?.id || u.user_id;
+      if (rawId) {
+        const cleanId = String(rawId).trim().split(':')[0];
+        setUserId(cleanId); 
+        fetchProfile(cleanId);
+        fetchMyVacancies(cleanId);
+        fetchCandidates(cleanId);
+      }
+    } catch (e) { 
+      sessionStorage.clear();
+      window.location.href = '/login';
     }
   }, []);
 

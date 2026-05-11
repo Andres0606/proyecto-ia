@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "../css/Auth/auth.css";
 
 // ── Icons ──────────────────────────────────────────────────────────────────
@@ -441,6 +441,22 @@ export default function RegistroPage() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [fieldErrors, setFieldErrors] = useState({ email: "", telefono: "", cedula: "" });
+
+  useEffect(() => {
+    const saved = sessionStorage.getItem('ucc_user');
+    if (saved) {
+      try {
+        const user = JSON.parse(saved);
+        const rolId = Number(user.profile?.rol_id);
+        if (rolId === 4) window.location.href = "/dashboard-admin";
+        else if (rolId === 2) window.location.href = "/dashboard-externo";
+        else if (rolId === 3) window.location.href = "/dashboard-empresa";
+        else window.location.href = "/dashboard";
+      } catch (e) {
+        sessionStorage.clear();
+      }
+    }
+  }, []);
 
   const [formData, setFormData] = useState({
     email: "", password: "", confirmPassword: "", nombre: "", telefono: "", cedula: "", fecha_nacimiento: "", genero: "masculino",

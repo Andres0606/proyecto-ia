@@ -21,6 +21,22 @@ export default function LoginPage() {
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
 
+  useEffect(() => {
+    const saved = sessionStorage.getItem('ucc_user');
+    if (saved) {
+      try {
+        const user = JSON.parse(saved);
+        const rolId = Number(user.profile?.rol_id);
+        if (rolId === 4) window.location.href = "/dashboard-admin";
+        else if (rolId === 2) window.location.href = "/dashboard-externo";
+        else if (rolId === 3) window.location.href = "/dashboard-empresa";
+        else window.location.href = "/dashboard";
+      } catch (e) {
+        sessionStorage.clear();
+      }
+    }
+  }, []);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
