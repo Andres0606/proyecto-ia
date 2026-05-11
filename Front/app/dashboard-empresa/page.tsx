@@ -468,27 +468,45 @@ export default function DashboardEmpresa() {
               </div>
 
               {selectedCandidate && (
-                <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000 }}>
-                  <div style={{ background: 'white', borderRadius: '24px', width: '90%', maxWidth: '600px', padding: '30px', position: 'relative' }}>
-                    <button onClick={() => setSelectedCandidate(null)} style={{ position: 'absolute', top: '15px', right: '15px', border: 'none', background: 'none', fontSize: '1.5rem', cursor: 'pointer' }}>×</button>
-                    <h3>{selectedCandidate.candidato?.nombre}</h3>
-                    <p>{selectedCandidate.candidato?.perfil?.programa_academico}</p>
-                    <div style={{ background: '#f8fafc', padding: '15px', borderRadius: '16px', margin: '20px 0', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      <p style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}><Icons.Mail /> {selectedCandidate.candidato?.correo}</p>
-                      <p style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}><Icons.Phone /> {selectedCandidate.candidato?.telefono}</p>
+                  <div style={{ background: 'white', borderRadius: '24px', width: '90%', maxWidth: '600px', padding: '40px', position: 'relative', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
+                    <button onClick={() => setSelectedCandidate(null)} style={{ position: 'absolute', top: '24px', right: '24px', background: '#f1f5f9', border: 'none', width: '36px', height: '36px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748b', fontSize: '1.2rem' }}>×</button>
+                    <h3 style={{ margin: '0 0 8px', color: 'var(--ucc-navy)', fontSize: '1.4rem', fontWeight: 800 }}>{selectedCandidate.candidato?.nombre}</h3>
+                    <p style={{ color: '#3b82f6', fontWeight: 700, margin: '0 0 24px' }}>{selectedCandidate.candidato?.perfil?.programa_academico || 'Egresado UCC'}</p>
+                    
+                    <div style={{ background: '#f8fafc', padding: '24px', borderRadius: '20px', margin: '0 0 32px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#475569', fontSize: '0.95rem' }}>
+                        <div style={{ color: '#3b82f6' }}><Icons.Mail /></div>
+                        {selectedCandidate.candidato?.correo}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#475569', fontSize: '0.95rem' }}>
+                        <div style={{ color: '#3b82f6' }}><Icons.Phone /></div>
+                        {selectedCandidate.candidato?.telefono}
+                      </div>
                       <button 
                         onClick={() => handleViewCV(selectedCandidate)} 
-                        style={{ background: 'none', border: 'none', padding: 0, color: '#1e3a5f', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', textAlign: 'left', marginTop: '10px' }}
+                        style={{ marginTop: '8px', background: 'white', border: '1px solid #e2e8f0', padding: '12px 20px', borderRadius: '14px', color: 'var(--ucc-navy)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}
+                        onMouseOver={e => e.currentTarget.style.borderColor = '#3b82f6'}
+                        onMouseOut={e => e.currentTarget.style.borderColor = '#e2e8f0'}
                       >
                         <Icons.List /> Ver Hoja de Vida (PDF)
                       </button>
                     </div>
-                    <div style={{ display: 'flex', gap: '12px' }}>
-                      <button onClick={() => handleUpdateStatus(selectedCandidate.id, 'aceptado')} style={{ flex: 1, padding: '12px', background: '#10b981', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 800, cursor: 'pointer' }}>Aceptar</button>
-                      <button onClick={() => handleUpdateStatus(selectedCandidate.id, 'rechazado')} style={{ flex: 1, padding: '12px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 800, cursor: 'pointer' }}>Eliminar / Rechazar</button>
+                    
+                    <div style={{ display: 'flex', gap: '16px' }}>
+                      <button 
+                        onClick={() => handleUpdateStatus(selectedCandidate.id, 'aceptado')} 
+                        style={{ flex: 1, padding: '16px', background: 'var(--ucc-navy)', color: 'white', border: 'none', borderRadius: '16px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 10px 20px -5px rgba(15,35,64,0.3)' }}
+                      >
+                        Aceptar Candidato
+                      </button>
+                      <button 
+                        onClick={() => handleUpdateStatus(selectedCandidate.id, 'rechazado')} 
+                        style={{ flex: 1, padding: '16px', background: '#f8fafc', color: '#ef4444', border: '1px solid #fee2e2', borderRadius: '16px', fontWeight: 800, cursor: 'pointer' }}
+                      >
+                        Rechazar
+                      </button>
                     </div>
                   </div>
-                </div>
               )}
             </div>
           )}
