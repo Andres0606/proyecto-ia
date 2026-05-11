@@ -162,7 +162,7 @@ function Features() {
       </div>
       <div className="features__grid">
         {FEATURES.map((f, i) => (
-          <div className={`feature-card reveal feature-card--${f.variant}`} key={f.title} style={{ transitionDelay: `${i * 0.08}s` }}>
+          <div className={`feature-card reveal feature-card--${f.variant}`} key={f.title}>
             <span className="feature-card__icon">{f.icon}</span>
             <h3 className="feature-card__title">{f.title}</h3>
             <p className="feature-card__desc">{f.desc}</p>
@@ -187,7 +187,7 @@ function ComoFunciona() {
       </div>
       <div className="pasos__grid">
         {PASOS.map((p, i) => (
-          <div className="paso-card reveal" key={p.num} style={{ transitionDelay: `${i * 0.12}s` }}>
+          <div className="paso-card reveal" key={p.num}>
             <div className="paso-card__num">{p.num}</div>
             {i < PASOS.length - 1 && <div className="paso-card__line" />}
             <h3 className="paso-card__title">{p.titulo}</h3>
