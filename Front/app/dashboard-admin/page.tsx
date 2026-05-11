@@ -220,7 +220,7 @@ export default function DashboardAdmin() {
                             </div>
                             <div style={{ textAlign: 'right' }}>
                               <span style={{ color: '#3b82f6', fontWeight: 800 }}>{v.postulaciones?.[0]?.count || 0}</span>
-                              <span style={{ color: '#94a3b8', fontSize: '0.75rem', marginLeft: '4px' }}>apps</span>
+                              <span style={{ color: '#94a3b8', fontSize: '0.75rem', marginLeft: '4px' }}>postulaciones</span>
                             </div>
                           </div>
                         ))
