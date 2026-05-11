@@ -126,10 +126,12 @@ function StepRol({
   rol,
   onSelect,
   onNext,
+  loading,
 }: {
   rol: RolType;
   onSelect: (r: RolType) => void;
   onNext: () => void;
+  loading: boolean;
 }) {
   return (
     <div className="auth-step">
@@ -160,10 +162,10 @@ function StepRol({
       <button
         className="auth-form__submit"
         style={{ marginTop: "2rem" }}
-        disabled={!rol}
+        disabled={!rol || loading}
         onClick={onNext}
       >
-        Continuar <Icons.ArrowRight />
+        {loading ? "Cargando..." : "Continuar"} <Icons.ArrowRight />
       </button>
     </div>
   );
@@ -201,7 +203,10 @@ function StepDatosPersonales({
               type="text"
               placeholder="Juan Pérez"
               value={formData.nombre}
-              onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+              onChange={(e) => {
+                const val = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, "");
+                setFormData({ ...formData, nombre: val });
+              }}
               required
             />
           </div>
@@ -226,35 +231,47 @@ function StepDatosPersonales({
           <div className="auth-field">
             <label className="auth-field__label">Teléfono</label>
             <div style={{ position: 'relative' }}>
-              <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}><Icons.Phone /></span>
+              <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: formData.telefono && !/^\d+$/.test(formData.telefono) ? '#ef4444' : '#94a3b8' }}><Icons.Phone /></span>
               <input
                 className="auth-field__input"
-                style={{ paddingLeft: '48px' }}
-                type="tel"
-                placeholder="300 123 4567"
+                style={{ 
+                  paddingLeft: '48px', 
+                  borderColor: formData.telefono && !/^\d+$/.test(formData.telefono) ? '#ef4444' : '' 
+                }}
+                type="text"
+                placeholder="Solo números"
                 value={formData.telefono}
                 onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
                 required
               />
             </div>
+            {formData.telefono && !/^\d+$/.test(formData.telefono) && (
+              <span style={{ color: '#ef4444', fontSize: '10px', fontWeight: '700', marginTop: '2px' }}>Formato inválido (solo números)</span>
+            )}
           </div>
         </div>
 
         <div className="auth-form__row">
           <div className="auth-field">
-            <label className="auth-field__label">Identificación</label>
+            <label className="auth-field__label">Identificación (C.C.)</label>
             <div style={{ position: 'relative' }}>
-              <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}><Icons.Id /></span>
+              <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: formData.cedula && !/^\d+$/.test(formData.cedula) ? '#ef4444' : '#94a3b8' }}><Icons.Id /></span>
               <input
                 className="auth-field__input"
-                style={{ paddingLeft: '48px' }}
+                style={{ 
+                  paddingLeft: '48px',
+                  borderColor: formData.cedula && !/^\d+$/.test(formData.cedula) ? '#ef4444' : ''
+                }}
                 type="text"
-                placeholder="C.C. o NIT"
+                placeholder="Número de cédula"
                 value={formData.cedula}
                 onChange={(e) => setFormData({ ...formData, cedula: e.target.value })}
                 required
               />
             </div>
+            {formData.cedula && !/^\d+$/.test(formData.cedula) && (
+              <span style={{ color: '#ef4444', fontSize: '10px', fontWeight: '700', marginTop: '2px' }}>Formato inválido (solo números)</span>
+            )}
           </div>
           <div className="auth-field">
             <label className="auth-field__label">Nacimiento</label>
@@ -275,14 +292,20 @@ function StepDatosPersonales({
               <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}><Icons.Lock /></span>
               <input
                 className="auth-field__input"
-                style={{ paddingLeft: '48px' }}
+                style={{ 
+                  paddingLeft: '48px',
+                  borderColor: formData.password && !/^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/.test(formData.password) ? '#ef4444' : (formData.password ? '#10b981' : '')
+                }}
                 type="password"
-                placeholder="Min. 8 caracteres"
+                placeholder="Mayús, núm, especial"
                 value={pw1}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
               />
             </div>
+            {formData.password && !/^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/.test(formData.password) && (
+              <span style={{ color: '#ef4444', fontSize: '9px', fontWeight: '700', marginTop: '2px' }}>Requiere: Mayús, Núm y Especial (@$!...)</span>
+            )}
           </div>
           <div className="auth-field">
             <label className="auth-field__label">Confirmar</label>
@@ -290,7 +313,10 @@ function StepDatosPersonales({
               <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}><Icons.Lock /></span>
               <input
                 className="auth-field__input"
-                style={{ paddingLeft: '48px', borderColor: isMatch ? '#10b981' : '' }}
+                style={{ 
+                  paddingLeft: '48px', 
+                  borderColor: pw2 ? (isMatch ? '#10b981' : '#ef4444') : '' 
+                }}
                 type="password"
                 placeholder="Repite contraseña"
                 value={pw2}
@@ -298,6 +324,9 @@ function StepDatosPersonales({
                 required
               />
             </div>
+            {pw2 && !isMatch && (
+              <span style={{ color: '#ef4444', fontSize: '10px', fontWeight: '700', marginTop: '2px' }}>Las contraseñas no coinciden</span>
+            )}
           </div>
         </div>
 
@@ -395,7 +424,28 @@ export default function RegistroPage() {
     razon_social: "", nit: "", sector_economico: "", tamano_empresa: "", tipo_empresa: "privada", ciudad: "",
   });
 
+  const validateFields = () => {
+    if (formData.telefono.length < 7) {
+      setErrorMsg("El teléfono debe tener al menos 7 dígitos.");
+      return false;
+    }
+    if (formData.cedula.length < 5) {
+      setErrorMsg("La identificación (C.C.) debe tener al menos 5 dígitos numéricos.");
+      return false;
+    }
+    
+    // Contraseña robusta: Mayúscula, Número, Carácter especial
+    const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/;
+    if (!passwordRegex.test(formData.password)) {
+      setErrorMsg("La contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un carácter especial.");
+      return false;
+    }
+    return true;
+  };
+
   const handleRegister = async () => {
+    if (!validateFields()) return;
+    
     setLoading(true);
     setErrorMsg("");
     try {
@@ -425,6 +475,15 @@ export default function RegistroPage() {
     }
   };
 
+  const handleNextStep2 = () => {
+    if (validateFields()) {
+      setErrorMsg("");
+      setStep(isLastPersonalStep ? 0 : 3); // 0 is just a placeholder, handleRegister is called if last step
+      if (isLastPersonalStep) handleRegister();
+      else setStep(3);
+    }
+  };
+
   const totalSteps = rol === "empresa" ? 3 : 2;
   const isLastPersonalStep = rol !== "empresa";
 
@@ -450,11 +509,11 @@ export default function RegistroPage() {
 
         <Stepper step={step} rol={rol} />
 
-        {step === 1 && <StepRol rol={rol} onSelect={setRol} onNext={() => setStep(2)} />}
+        {step === 1 && <StepRol rol={rol} onSelect={setRol} onNext={() => setStep(2)} loading={loading} />}
         {step === 2 && (
           <StepDatosPersonales
             onBack={() => setStep(1)}
-            onNext={isLastPersonalStep ? handleRegister : () => setStep(3)}
+            onNext={handleNextStep2}
             isLastStep={isLastPersonalStep}
             formData={formData}
             setFormData={setFormData}
