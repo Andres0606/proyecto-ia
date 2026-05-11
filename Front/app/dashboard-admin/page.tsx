@@ -321,8 +321,8 @@ export default function DashboardAdmin() {
                     <div style={{ padding: '40px', textAlign: 'center', background: '#f8fafc', borderRadius: '20px', color: '#94a3b8' }}>Este usuario no tiene postulaciones registradas.</div>
                   ) : (
                     selectedUserApps.map((app) => {
-                      const cargo = app.vacantes?.cargo || app.vacante?.cargo || "Cargo sin especificar";
-                      const empresa = app.vacantes?.empresas?.razon_social || app.vacante?.empresa?.razon_social || "Empresa UCC";
+                      const cargo = app.vacante_nombre || "Cargo sin especificar";
+                      const empresa = app.empresa_nombre || "Empresa UCC";
                       
                       return (
                         <div key={app.id} style={{ padding: '20px', border: '1px solid #f1f5f9', borderRadius: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
