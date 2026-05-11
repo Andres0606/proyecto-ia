@@ -357,7 +357,7 @@
   animation: shimmer 3s infinite cubic-bezier(0.19, 1, 0.22, 1);
 }
 .dashboard-action-card {
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .dashboard-action-card:hover {
