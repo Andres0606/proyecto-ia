@@ -225,9 +225,11 @@ function JobCard({ job, delay, showToast }: { job: Job; delay: number; showToast
         <span className={`be-badge ${MODE_BADGE[job.mode] || "be-badge--hibrido"}`}>{job.mode}</span>
         <span className="be-badge be-badge--area">{job.area}</span>
         <span className="be-badge be-badge--exp">{job.nivel}</span>
-        <span className="be-badge be-badge--city">
-          <Icons.Location /> {job.city}
-        </span>
+        {job.city && job.city.trim() !== '' && (
+          <span className="be-badge be-badge--city">
+            <Icons.Location /> {job.city}
+          </span>
+        )}
       </div>
 
       {job.desc && <p className="be-card__desc">{job.desc}</p>}

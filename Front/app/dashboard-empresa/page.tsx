@@ -338,13 +338,13 @@ export default function DashboardEmpresa() {
                     <div>
                       <h4 style={{ margin: 0, color: '#0f172a', fontWeight: 800 }}>{v.cargo}</h4>
                       <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                        {v.ubicacion && (
+                        {v.ubicacion && v.ubicacion.trim() !== '' && (
                           <>
                             <Icons.Location /> {v.ubicacion} 
                             <span style={{ margin: '0 5px', color: '#e2e8f0' }}>|</span>
                           </>
                         )}
-                        <Icons.Users /> {v.numero_vacantes} cupos
+                        <Icons.Users /> {Math.max(0, Number(v.numero_vacantes))} cupos
                       </p>
                     </div>
                     <button onClick={() => handleToggleStatus(v.id, v.estado || 'activa')} style={{ padding: '8px 16px', borderRadius: '10px', border: '1px solid #0f172a', background: 'white', fontWeight: 700, cursor: 'pointer' }}>{vacanciesTab === 'activas' ? 'Pausar' : 'Activar'}</button>
