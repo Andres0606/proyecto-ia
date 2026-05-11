@@ -142,7 +142,12 @@ function JobCard({ job, delay, showToast }: { job: Job; delay: number; showToast
     const rol = Number(user.profile?.rol_id);
     const plan = (user.profile?.suscripcion?.tipo_plan || 'Gratuito').trim();
     const userId = user.id || user.user_id || user.profile?.id;
-    const hasCv = !!user.profile?.cv_url || !!user.cv_url;
+
+    // Validación ultra-robusta de CV (Busca en múltiples campos y limpia basura)
+    const rawCv1 = user.profile?.cv_url;
+    const rawCv2 = user.cv_url;
+    const hasCv = (rawCv1 && String(rawCv1) !== 'null' && String(rawCv1) !== 'undefined') || 
+                  (rawCv2 && String(rawCv2) !== 'null' && String(rawCv2) !== 'undefined');
 
     // 1. REGLA DE CV:
     if (!hasCv) {
