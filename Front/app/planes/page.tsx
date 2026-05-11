@@ -166,6 +166,14 @@ function PlanesHero() {
 
 // ── Pricing Cards ─────────────────────────────────────────────────────────────
 function PricingCards() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useState(() => {
+    if (typeof window !== "undefined") {
+      setIsLoggedIn(!!sessionStorage.getItem("ucc_user"));
+    }
+  });
+
   return (
     <section className="planes-pricing" id="planes">
       <div className="planes-pricing__header">
@@ -222,8 +230,11 @@ function PricingCards() {
               ))}
             </ul>
 
-            <a href="/registro" className={`plan-card__cta ${plan.ctaClass}`}>
-              {plan.cta}
+            <a 
+              href={isLoggedIn ? "/dashboard" : "/registro"} 
+              className={`plan-card__cta ${plan.ctaClass}`}
+            >
+              {isLoggedIn ? "Ir a mi Dashboard" : plan.cta}
             </a>
           </div>
         ))}
@@ -350,6 +361,14 @@ function FAQ() {
 
 // ── CTA Final ─────────────────────────────────────────────────────────────────
 function CTABottom() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useState(() => {
+    if (typeof window !== "undefined") {
+      setIsLoggedIn(!!sessionStorage.getItem("ucc_user"));
+    }
+  });
+
   return (
     <section className="planes-cta">
       <div className="planes-cta__blob" />
@@ -363,8 +382,11 @@ function CTABottom() {
           institucional y comienza ahora.
         </p>
         <div className="planes-cta__actions">
-          <a href="/registro" className="planes-cta__btn planes-cta__btn--red">
-            Registrarme gratis
+          <a 
+            href={isLoggedIn ? "/dashboard" : "/registro"} 
+            className="planes-cta__btn planes-cta__btn--red"
+          >
+            {isLoggedIn ? "Ir a mi Dashboard" : "Registrarme gratis"}
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '10px' }}><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </a>
           <a href="/" className="planes-cta__btn planes-cta__btn--ghost">
