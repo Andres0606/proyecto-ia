@@ -29,6 +29,8 @@ export default function DashboardAdmin() {
   const [stats, setStats] = useState({ total_users: 0, total_companies: 0, total_jobs: 0, active_plans: 0 });
   const [users, setUsers] = useState<any[]>([]);
   const [vacancies, setVacancies] = useState<any[]>([]);
+  const [selectedUserApps, setSelectedUserApps] = useState<any[] | null>(null);
+  const [viewingUserName, setViewingUserName] = useState('');
 
   const base = () => (process.env.NEXT_PUBLIC_BACKEND_URL || 'https://proyecto-ia-production-b7d6.up.railway.app').replace(/\/$/, '');
 
@@ -96,6 +98,17 @@ export default function DashboardAdmin() {
       const d = await r.json();
       if (d.success) setVacancies(d.vacancies);
     } catch (e) { console.error("Error fetching vacancies:", e); }
+  };
+
+  const fetchUserApplications = async (userId: string, name: string) => {
+    try {
+      setViewingUserName(name);
+      setSelectedUserApps([]); // Clear previous
+      const r = await fetch(`${base()}/api/postulaciones/user/${userId}`);
+      const d = await r.json();
+      if (d.success) setSelectedUserApps(d.applications);
+      else setSelectedUserApps([]);
+    } catch (e) { console.error("Error fetching apps:", e); setSelectedUserApps([]); }
   };
 
   const STAT_CARDS = [
@@ -187,7 +200,8 @@ export default function DashboardAdmin() {
                     style={{ padding: '10px 16px', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '0.9rem', outline: 'none', width: '220px' }} 
                   />
                 </div>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '800px' }}>
                   <thead>
                     <tr style={{ background: '#f8fafc' }}>
                       {['Nombre', 'Correo', 'Rol', 'Acciones'].map(h => <th key={h} style={{ padding: '14px 20px', textAlign: 'left', fontSize: '0.8rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>)}
@@ -205,16 +219,28 @@ export default function DashboardAdmin() {
                         
                         return (
                           <tr key={u.id} style={{ borderBottom: '1px solid #f8fafc' }}>
-                            <td style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--ucc-navy)' }}>{u.nombre_completo}</td>
+                            <td style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--ucc-navy)', maxWidth: '250px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              <span 
+                                onClick={() => fetchUserApplications(u.id, u.nombre_completo)}
+                                style={{ cursor: 'pointer', transition: 'color 0.2s' }}
+                                onMouseOver={(e) => e.currentTarget.style.color = '#3b82f6'}
+                                onMouseOut={(e) => e.currentTarget.style.color = 'inherit'}
+                              >
+                                {u.nombre_completo}
+                              </span>
+                            </td>
                             <td style={{ padding: '16px 20px', color: '#64748b', fontSize: '0.9rem' }}>{u.correo}</td>
                             <td style={{ padding: '16px 20px' }}><span style={{ background: colors.bg, color: colors.tc, padding: '4px 12px', borderRadius: '20px', fontSize: '0.78rem', fontWeight: 700 }}>{rol}</span></td>
-                            <td style={{ padding: '16px 20px' }}><button style={{ background: 'none', border: 'none', color: '#3b82f6', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem' }}>Editar</button></td>
+                            <td style={{ padding: '16px 20px' }}>
+                              <button onClick={() => fetchUserApplications(u.id, u.nombre_completo)} style={{ background: 'none', border: 'none', color: '#3b82f6', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem' }}>Ver Postulaciones</button>
+                            </td>
                           </tr>
                         );
                       })
                     )}
                   </tbody>
                 </table>
+                </div>
               </div>
             </div>
           )}
@@ -268,6 +294,37 @@ export default function DashboardAdmin() {
             </div>
           )}
 
+          {selectedUserApps && (
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(4px)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+              <div className="reveal reveal--visible" style={{ background: 'white', borderRadius: '24px', width: '100%', maxWidth: '600px', maxHeight: '80vh', overflowY: 'auto', padding: '40px', position: 'relative', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
+                <button onClick={() => setSelectedUserApps(null)} style={{ position: 'absolute', top: '24px', right: '24px', background: '#f1f5f9', border: 'none', width: '36px', height: '36px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748b', fontSize: '1.2rem' }}>×</button>
+                <div style={{ marginBottom: '24px' }}>
+                  <h3 style={{ margin: 0, color: 'var(--ucc-navy)', fontSize: '1.4rem', fontWeight: 800 }}>Postulaciones de:</h3>
+                  <p style={{ color: '#3b82f6', fontWeight: 700, fontSize: '1.1rem', margin: '4px 0 0' }}>{viewingUserName}</p>
+                </div>
+
+                <div style={{ display: 'grid', gap: '12px' }}>
+                  {selectedUserApps.length === 0 ? (
+                    <div style={{ padding: '40px', textAlign: 'center', background: '#f8fafc', borderRadius: '20px', color: '#94a3b8' }}>Este usuario no tiene postulaciones registradas.</div>
+                  ) : (
+                    selectedUserApps.map((app) => (
+                      <div key={app.id} style={{ padding: '20px', border: '1px solid #f1f5f9', borderRadius: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                          <h4 style={{ margin: 0, color: 'var(--ucc-navy)', fontWeight: 800 }}>{app.vacantes?.cargo}</h4>
+                          <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '0.85rem' }}>{app.vacantes?.empresas?.razon_social}</p>
+                        </div>
+                        <span style={{ 
+                          background: app.estado === 'aceptado' ? '#dcfce7' : app.estado === 'rechazado' ? '#fee2e2' : '#eff6ff', 
+                          color: app.estado === 'aceptado' ? '#166534' : app.estado === 'rechazado' ? '#b91c1c' : '#1e40af', 
+                          padding: '6px 12px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 700, textTransform: 'capitalize' 
+                        }}>{app.estado || 'Pendiente'}</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </main>
       <Footer />
