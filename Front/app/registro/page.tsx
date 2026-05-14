@@ -480,7 +480,7 @@ export default function RegistroPage() {
 
   const checkDuplicates = async () => {
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://proyecto-ia-production-b7d6.up.railway.app';
       const params = new URLSearchParams({
         email: formData.email,
         telefono: formData.telefono,
@@ -505,7 +505,7 @@ export default function RegistroPage() {
     if (!value || (field === 'telefono' && value.length < 7) || (field === 'cedula' && value.length < 5)) return;
 
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://proyecto-ia-production-b7d6.up.railway.app';
       const res = await fetch(`${backendUrl}/api/users/check-duplicates?${field}=${value}`);
       const data = await res.json();
 
@@ -534,7 +534,7 @@ export default function RegistroPage() {
     }
 
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://proyecto-ia-production-b7d6.up.railway.app';
       const res = await fetch(`${backendUrl}/api/users/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
