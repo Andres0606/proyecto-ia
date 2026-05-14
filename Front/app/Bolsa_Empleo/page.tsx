@@ -67,12 +67,19 @@ function Filters({ area, setArea, mode, setMode, nivel, setNivel, onClear, userP
   }, [userProfile]);
 
   const handleIdeal = () => {
-    if (!userProfile) {
-      showToast("Inicia sesión para ver tus recomendaciones.", "info");
+    const isLogged = !!sessionStorage.getItem('ucc_user');
+    if (!isLogged) {
+      showToast("Inicia sesión para ver tus recomendaciones personalizadas.", "info");
       return;
     }
+    
+    if (!userProfile) {
+      showToast("¡Casi listo! Completa tu perfil en el Dashboard para activar las recomendaciones.", "info");
+      return;
+    }
+
     setNivel("RECOMENDADO");
-    showToast("Aplicando motor de búsqueda por perfil...", "success");
+    showToast("Analizando las mejores vacantes para tu perfil...", "success");
   };
 
   return (
@@ -320,10 +327,17 @@ export default function BolsaPage() {
     if (saved) {
       try {
         const user = JSON.parse(saved);
-        if (user.profile?.perfiles_usuarios?.[0]) {
-          setUserProfile(user.profile.perfiles_usuarios[0]);
-        } else if (user.perfil?.perfiles_usuarios?.[0]) {
-          setUserProfile(user.perfil.perfiles_usuarios[0]);
+        const id = user.id || user.profile?.id || user.user_id;
+        if (id) {
+          const cleanId = String(id).trim().split(':')[0];
+          // Consultar perfil completo a la API para asegurar que tenemos los datos socioprofesionales
+          fetch(`${base()}/api/users/profile/${cleanId}`)
+            .then(r => r.json())
+            .then(d => {
+              if (d.success && d.profile?.perfiles_usuarios?.[0]) {
+                setUserProfile(d.profile.perfiles_usuarios[0]);
+              }
+            }).catch(err => console.error("Error al sincronizar perfil:", err));
         }
       } catch (e) {
         console.error("Error al parsear usuario:", e);
