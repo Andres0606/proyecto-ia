@@ -186,10 +186,12 @@ const loginUser = async (req, res) => {
         message: 'Código de verificación enviado a tu correo.'
       });
     } catch (mailError) {
-      console.error('❌ Error enviando correo OTP:', mailError);
+      console.error('❌ Error detallado enviando correo OTP:', mailError);
       return res.status(500).json({
         success: false,
-        message: 'Error al enviar el código de verificación.'
+        message: 'Error al enviar el código de verificación.',
+        error: mailError.message,
+        code: mailError.code
       });
     }
 
