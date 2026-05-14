@@ -1,8 +1,4 @@
 const supabase = require('../config/supabase');
-const { sendOTP } = require('../config/mailer');
-
-// Almacén temporal para OTPs (En producción se recomienda Redis o una tabla en DB)
-const otpStore = new Map();
 
 const healthCheck = (req, res) => {
   res.json({ status: 'ok', version: '1.0.2', message: 'Backend UCC Egresados funcionando 🚀' });
@@ -156,44 +152,19 @@ const loginUser = async (req, res) => {
       .eq('user_id', data.user.id)
       .maybeSingle();
 
-    // 2. Generar OTP de 6 dígitos
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = Date.now() + 2 * 60 * 1000; // 2 minutos
-
-    // 3. Almacenar temporalmente
-    otpStore.set(email, { 
-      otp, 
-      expiresAt, 
-      userData: {
-        session: data.session,
-        user: {
-          ...data.user,
-          profile: {
-            ...profile,
-            suscripcion: subscription || null
-          }
+    // Login DIRECTO sin OTP
+    return res.status(200).json({
+      success: true,
+      message: 'Login exitoso.',
+      session: data.session,
+      user: {
+        ...data.user,
+        profile: {
+          ...profile,
+          suscripcion: subscription || null
         }
       }
     });
-
-    // 4. Enviar correo
-    try {
-      await sendOTP(email, otp);
-      console.log(`📧 OTP enviado a ${email}: ${otp}`);
-      return res.status(200).json({
-        success: true,
-        otpRequired: true,
-        message: 'Código de verificación enviado a tu correo.'
-      });
-    } catch (mailError) {
-      console.error('❌ Error detallado enviando correo OTP:', mailError);
-      return res.status(500).json({
-        success: false,
-        message: 'Error al enviar el código de verificación.',
-        error: mailError.message,
-        code: mailError.code
-      });
-    }
 
   } catch (error) {
     console.error('❌ Error en loginUser:', error.message);
@@ -203,35 +174,6 @@ const loginUser = async (req, res) => {
       error: error.message
     });
   }
-};
-
-const verifyOTP = async (req, res) => {
-  const { email, otp } = req.body;
-
-  if (!otpStore.has(email)) {
-    return res.status(400).json({ success: false, message: 'No hay un código pendiente para este correo.' });
-  }
-
-  const stored = otpStore.get(email);
-
-  if (Date.now() > stored.expiresAt) {
-    otpStore.delete(email);
-    return res.status(400).json({ success: false, message: 'El código ha expirado. Por favor solicita uno nuevo.' });
-  }
-
-  if (stored.otp !== otp) {
-    return res.status(400).json({ success: false, message: 'Código incorrecto.' });
-  }
-
-  // OTP Correcto -> Limpiar y retornar sesión
-  const finalData = stored.userData;
-  otpStore.delete(email);
-
-  return res.status(200).json({
-    success: true,
-    message: 'Verificación exitosa.',
-    ...finalData
-  });
 };
 
 const getFullProfile = async (req, res) => {

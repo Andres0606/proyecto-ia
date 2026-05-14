@@ -76,48 +76,12 @@ export default function LoginPage() {
         throw new Error(data.message || 'Error al iniciar sesión');
       }
 
-      if (data.otpRequired) {
-        setOtpMode(true);
-        setTimer(120);
-        setCanResend(false);
-        setSuccessMsg("Código enviado. Revisa tu correo.");
-        setLoading(false);
-        return;
-      }
-
-      // Login directo (Si OTP no estuviera activo, aunque ahora lo está)
+      // Login directo sin esperas
       completeLogin(data);
 
     } catch (err: any) {
       console.error("Error en login:", err);
       setErrorMsg(err.message || "Credenciales incorrectas.");
-      setLoading(false);
-    }
-  };
-
-  const handleVerifyOTP = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setErrorMsg("");
-
-    try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://proyecto-ia-production-b7d6.up.railway.app';
-      const res = await fetch(`${backendUrl}/api/users/verify-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, otp }),
-      });
-
-      const data = await res.json();
-
-      if (!data.success) {
-        throw new Error(data.message || 'Código incorrecto o expirado');
-      }
-
-      completeLogin(data);
-
-    } catch (err: any) {
-      setErrorMsg(err.message || "Error al verificar código.");
       setLoading(false);
     }
   };
@@ -150,14 +114,12 @@ export default function LoginPage() {
           <span className="auth-card__brand-text">Portal del Egresado</span>
         </div>
 
-        <h1 className="auth-card__title">{otpMode ? "Verificación" : "Bienvenido"}</h1>
+        <h1 className="auth-card__title">Bienvenido</h1>
         <p className="auth-card__subtitle">
-          {otpMode 
-            ? `Hemos enviado un código a ${email.replace(/(.{3})(.*)(@.*)/, "$1***$3")}` 
-            : "Ingresa tus credenciales para acceder a la plataforma"}
+          Ingresa tus credenciales para acceder a la plataforma
         </p>
 
-        <form className="auth-form" onSubmit={otpMode ? handleVerifyOTP : handleLogin}>
+        <form className="auth-form" onSubmit={handleLogin}>
           {successMsg && (
             <div className="auth-message auth-message--success">
               <Icons.Info /> {successMsg}
@@ -170,115 +132,70 @@ export default function LoginPage() {
             </div>
           )}
 
-          {!otpMode ? (
-            <>
-              <div className="auth-field">
-                <label className="auth-field__label" htmlFor="login-email">
-                  Correo electrónico
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}>
-                    <Icons.Mail />
-                  </span>
-                  <input
-                    id="login-email"
-                    className="auth-field__input"
-                    style={{ paddingLeft: '48px' }}
-                    type="email"
-                    placeholder="nombre@ejemplo.com"
-                    autoComplete="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="auth-field">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <label className="auth-field__label" htmlFor="login-password">
-                    Contraseña
-                  </label>
-                  <div className="auth-form__forgot">
-                    <a href="/recuperar">¿Olvidaste tu contraseña?</a>
-                  </div>
-                </div>
-                <div className="auth-field__password-wrap" style={{ position: 'relative' }}>
-                  <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', zIndex: 1 }}>
-                    <Icons.Lock />
-                  </span>
-                  <input
-                    id="login-password"
-                    className="auth-field__input"
-                    style={{ paddingLeft: '48px' }}
-                    type={showPw ? "text" : "password"}
-                    placeholder="••••••••"
-                    autoComplete="current-password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                  <button
-                    type="button"
-                    className="auth-field__toggle-pw"
-                    onClick={() => setShowPw(!showPw)}
-                    aria-label={showPw ? "Ocultar contraseña" : "Mostrar contraseña"}
-                  >
-                    {showPw ? <Icons.EyeOff /> : <Icons.Eye />}
-                  </button>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="auth-field">
-              <label className="auth-field__label" htmlFor="otp-code">
-                Código de seguridad
-              </label>
+          <div className="auth-field">
+            <label className="auth-field__label" htmlFor="login-email">
+              Correo electrónico
+            </label>
+            <div style={{ position: 'relative' }}>
+              <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}>
+                <Icons.Mail />
+              </span>
               <input
-                id="otp-code"
+                id="login-email"
                 className="auth-field__input"
-                style={{ textAlign: 'center', fontSize: '1.5rem', letterSpacing: '8px', fontWeight: 800 }}
-                type="text"
-                maxLength={6}
-                placeholder="000000"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
+                style={{ paddingLeft: '48px' }}
+                type="email"
+                placeholder="nombre@ejemplo.com"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
-              <div style={{ textAlign: 'center', marginTop: '16px', fontSize: '0.85rem', color: '#64748b' }}>
-                {timer > 0 ? (
-                  <span>El código expira en: <strong>{Math.floor(timer / 60)}:{String(timer % 60).padStart(2, '0')}</strong></span>
-                ) : (
-                  <button 
-                    type="button" 
-                    onClick={handleLogin} 
-                    style={{ color: '#3b82f6', border: 'none', background: 'none', cursor: 'pointer', fontWeight: 600 }}
-                  >
-                    Reenviar código
-                  </button>
-                )}
+            </div>
+          </div>
+
+          <div className="auth-field">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <label className="auth-field__label" htmlFor="login-password">
+                Contraseña
+              </label>
+              <div className="auth-form__forgot">
+                <a href="/recuperar">¿Olvidaste tu contraseña?</a>
               </div>
             </div>
-          )}
+            <div className="auth-field__password-wrap" style={{ position: 'relative' }}>
+              <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', zIndex: 1 }}>
+                <Icons.Lock />
+              </span>
+              <input
+                id="login-password"
+                className="auth-field__input"
+                style={{ paddingLeft: '48px' }}
+                type={showPw ? "text" : "password"}
+                placeholder="••••••••"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                className="auth-field__toggle-pw"
+                onClick={() => setShowPw(!showPw)}
+                aria-label={showPw ? "Ocultar contraseña" : "Mostrar contraseña"}
+              >
+                {showPw ? <Icons.EyeOff /> : <Icons.Eye />}
+              </button>
+            </div>
+          </div>
 
           <button type="submit" className="auth-form__submit" disabled={loading}>
-            {loading ? (otpMode ? "Verificando..." : "Ingresando...") : (
+            {loading ? "Ingresando..." : (
               <>
-                {otpMode ? "Verificar Código" : "Ingresar"} <Icons.ArrowRight />
+                Ingresar <Icons.ArrowRight />
               </>
             )}
           </button>
-          
-          {otpMode && (
-            <button 
-              type="button" 
-              className="auth-card__link" 
-              onClick={() => setOtpMode(false)}
-              style={{ width: '100%', marginTop: '10px', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}
-            >
-              Volver al login
-            </button>
-          )}
         </form>
 
         <div className="auth-divider">
