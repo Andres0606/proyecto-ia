@@ -79,8 +79,10 @@ const registerUser = async (req, res) => {
 
     let userMessage = 'No se pudo completar el registro.';
     if (error.message?.includes('users_correo_key')) userMessage = 'El correo electrónico ya está registrado.';
+    if (error.message?.includes('users_cedula_key')) userMessage = 'Este número de cédula ya está registrado.';
+    if (error.message?.includes('users_telefono_key')) userMessage = 'Este número de teléfono ya está registrado.';
     if (error.message?.includes('empresas_nit_key')) userMessage = 'El NIT ingresado ya pertenece a otra empresa.';
-    if (error.code === '23505') userMessage = 'Ya existe un registro con esos datos únicos (Email o NIT).';
+    if (error.code === '23505') userMessage = 'Ya existe un registro con esos datos únicos (Email, Cédula o Teléfono).';
 
     return res.status(500).json({
       success: false,
@@ -88,6 +90,38 @@ const registerUser = async (req, res) => {
       error: error.message,
       detail: error.details || error.hint || null
     });
+  }
+};
+
+const checkDuplicates = async (req, res) => {
+  const { email, telefono, cedula } = req.query;
+
+  try {
+    const results = {
+      emailExists: false,
+      telefonoExists: false,
+      cedulaExists: false
+    };
+
+    if (email) {
+      const { data } = await supabase.from('users').select('id').eq('correo', email).maybeSingle();
+      if (data) results.emailExists = true;
+    }
+
+    if (telefono) {
+      const { data } = await supabase.from('users').select('id').eq('telefono', telefono).maybeSingle();
+      if (data) results.telefonoExists = true;
+    }
+
+    if (cedula) {
+      const { data } = await supabase.from('users').select('id').eq('cedula', cedula).maybeSingle();
+      if (data) results.cedulaExists = true;
+    }
+
+    return res.status(200).json({ success: true, ...results });
+  } catch (error) {
+    console.error('❌ Error en checkDuplicates:', error.message);
+    return res.status(500).json({ success: false, message: 'Error al verificar duplicados' });
   }
 };
 
@@ -399,4 +433,4 @@ const updatePlan = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, getFullProfile, updateProfile, subscribe, updatePlan, healthCheck };
+module.exports = { registerUser, loginUser, getFullProfile, updateProfile, subscribe, updatePlan, checkDuplicates, healthCheck };

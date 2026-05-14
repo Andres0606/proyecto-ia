@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Header from '../Components/header';
 import Footer from '../Components/footer';
 import '../css/Dashboard/dashboard.css';
+import Toast, { ToastType } from '../Components/Toast';
 
 const Icons = {
   Home: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>,
@@ -29,13 +30,15 @@ export default function Dashboard() {
   const [greeting, setGreeting] = useState('Buenos días');
   const [userName, setUserName] = useState('Egresado');
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
+  const [userCv, setUserCv] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [myApplications, setMyApplications] = useState<any[]>([]);
   const [activeSection, setActiveSection] = useState<'none' | 'personal' | 'professional' | 'apps' | 'cv'>('none');
   const [isEditingProf, setIsEditingProf] = useState(false);
   const [isEditingPersonal, setIsEditingPersonal] = useState(false);
   const [completionPct, setCompletionPct] = useState(0);
-  const [toast, setToast] = useState<{ msg: string, type: 'info' | 'success' | 'error' | 'none' }>({ msg: '', type: 'none' });
+  const [toast, setToast] = useState<{ msg: string, type: ToastType | 'none' }>({ msg: '', type: 'none' });
+  const [isVisible, setIsVisible] = useState(false);
 
   const [formData, setFormData] = useState({
     nombre_completo: '', correo: '', telefono: '', cedula: '', fecha_nacimiento: '', genero: '',
@@ -49,6 +52,7 @@ export default function Dashboard() {
   const base = () => (process.env.NEXT_PUBLIC_BACKEND_URL || 'https://proyecto-ia-production-b7d6.up.railway.app').replace(/\/$/, '');
 
   useEffect(() => {
+    setIsVisible(true);
     const h = new Date().getHours();
     if (h >= 12 && h < 18) setGreeting('Buenas tardes');
     else if (h >= 18 || h < 5) setGreeting('Buenas noches');
@@ -56,20 +60,21 @@ export default function Dashboard() {
     if (saved) {
       try {
         const u = JSON.parse(saved);
-        // El login guarda: { id: uuid, ...authFields, profile: { id: uuid, rol_id, ... } }
         const id = u.id || u.profile?.id;
         if (!id) {
-          console.error('❌ No se encontró id en la sesión. Estructura recibida:', Object.keys(u));
+          window.location.href = "/login";
           return;
         }
         const cleanId = String(id).trim();
-        console.log('✅ Dashboard Egresado - userId:', cleanId);
         setUserId(cleanId);
         fetchProfile(cleanId);
         fetchMyApplications(cleanId);
-      } catch (e) { console.error('❌ Error leyendo sesión:', e); }
+      } catch (e) { 
+        sessionStorage.clear();
+        window.location.href = "/login";
+      }
     } else {
-      console.warn('⚠️ No hay sesión guardada en sessionStorage');
+      window.location.href = "/login";
     }
   }, []);
 
@@ -93,6 +98,7 @@ export default function Dashboard() {
         const p = u.perfiles_usuarios?.[0] || {};
         setUserName(u.nombre_completo?.split(' ')[0] || 'Egresado');
         if (u.foto_url) setUserPhoto(u.foto_url);
+        if (u.cv_url) setUserCv(u.cv_url);
         const val = (v: any) => (v !== null && v !== undefined && v !== '') ? String(v) : '';
         setFormData({
           nombre_completo: u.nombre_completo || '', correo: u.correo || '', telefono: u.telefono || '',
@@ -109,6 +115,19 @@ export default function Dashboard() {
         const filled = fields.filter(f => f && String(f).trim() !== '').length;
         pct += (filled / fields.length) * 70;
         setCompletionPct(Math.round(pct));
+
+        // Mantener la sesión sincronizada con los últimos datos de la DB
+        const saved = sessionStorage.getItem('ucc_user');
+        if (saved) {
+          const sessionUser = JSON.parse(saved);
+          sessionUser.cv_url = u.cv_url;
+          sessionUser.foto_url = u.foto_url;
+          if (sessionUser.profile) {
+            sessionUser.profile.cv_url = u.cv_url;
+            sessionUser.profile.foto_url = u.foto_url;
+          }
+          sessionStorage.setItem('ucc_user', JSON.stringify(sessionUser));
+        }
       }
     } catch (err) { console.error(err); }
   };
@@ -120,7 +139,32 @@ export default function Dashboard() {
     try {
       const r = await fetch(`${base()}/api/users/profile/${userId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userData: payload, profileData: payload }) });
       const d = await r.json();
-      if (d.success) { setToast({ msg: '¡Éxito!', type: 'success' }); setIsEditingProf(false); setIsEditingPersonal(false); fetchProfile(userId); }
+      if (d.success) { 
+        setToast({ msg: '¡Éxito!', type: 'success' }); 
+        setIsEditingProf(false); 
+        setIsEditingPersonal(false); 
+        
+        // Sincronizar con sessionStorage para que el Header se actualice
+        const saved = sessionStorage.getItem('ucc_user');
+        if (saved) {
+          const u = JSON.parse(saved);
+          
+          // Actualizar en todas las ubicaciones posibles para asegurar que el Header lo vea
+          u.nombre_completo = payload.nombre_completo;
+          if (u.profile) u.profile.nombre_completo = payload.nombre_completo;
+          if (u.user_metadata) u.user_metadata.full_name = payload.nombre_completo;
+          
+          sessionStorage.setItem('ucc_user', JSON.stringify(u));
+          
+          // Actualizar el saludo local inmediatamente
+          setUserName(payload.nombre_completo.split(' ')[0]);
+          
+          // Notificar al Header
+          window.dispatchEvent(new Event('userUpdate'));
+        }
+        
+        fetchProfile(userId); 
+      }
     } catch { setToast({ msg: 'Error', type: 'error' }); } finally { setTimeout(() => setToast({ msg: '', type: 'none' }), 3000); }
   };
 
@@ -157,18 +201,17 @@ export default function Dashboard() {
   return (
     <div className="db-page" style={{ background: '#f4f7fa', minHeight: '100vh' }}>
       <Header />
+      
+      {toast.type !== 'none' && (
+        <Toast msg={toast.msg} type={toast.type as ToastType} onClose={() => setToast({ ...toast, type: 'none' })} />
+      )}
+
       <input type="file" ref={avatarInputRef} hidden accept="image/*" onChange={e => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'avatar')} />
       <input type="file" ref={cvInputRef} hidden accept=".pdf" onChange={e => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'cv')} />
 
-      {toast.type !== 'none' && (
-        <div style={{ position: 'fixed', bottom: '32px', right: '32px', zIndex: 9999, padding: '16px 24px', borderRadius: '16px', color: 'white', fontWeight: 600, background: toast.type === 'success' ? '#059669' : toast.type === 'error' ? '#dc2626' : '#1e3a5f', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
-          {toast.msg}
-        </div>
-      )}
-
       <main style={{ paddingTop: '110px', maxWidth: '1120px', margin: '0 auto', paddingBottom: '60px' }}>
 
-        <div style={{ background: 'white', borderRadius: '32px', padding: '40px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', gap: '40px', marginBottom: '32px', position: 'relative', overflow: 'hidden', border: '1px solid rgba(226, 232, 240, 0.5)' }}>
+        <div className={`reveal ${isVisible ? 'reveal--visible' : ''}`} style={{ background: 'white', borderRadius: '32px', padding: '40px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', gap: '40px', marginBottom: '32px', position: 'relative', overflow: 'hidden', border: '1px solid rgba(226, 232, 240, 0.5)' }}>
           <div style={{ position: 'absolute', top: '-100px', right: '-100px', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%)', zIndex: 0 }} />
           <div style={{ position: 'relative', width: '130px', height: '130px', flexShrink: 0 }}>
             <svg viewBox="0 0 36 36" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)', position: 'absolute', zIndex: 1 }}>
@@ -185,7 +228,7 @@ export default function Dashboard() {
               <span style={{ background: '#fee2e2', color: '#b91c1c', padding: '8px 18px', borderRadius: '30px', fontSize: '0.75rem', fontWeight: 800, border: '1px solid #fecaca' }}>EGRESADO</span>
             </div>
             <p style={{ color: '#64748b', margin: 0, fontSize: '1.05rem', fontWeight: 500 }}>Tu perfil profesional está al <span style={{ color: '#3b82f6', fontWeight: 800 }}>{completionPct}%</span></p>
-            <button onClick={() => avatarInputRef.current?.click()} style={{ background: '#f8fafc', color: '#1e3a5f', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '12px 24px', fontWeight: 700, cursor: 'pointer', marginTop: '15px' }}>📁 Cambiar Foto</button>
+            <button onClick={() => avatarInputRef.current?.click()} className="btn-shimmer" style={{ background: '#f8fafc', color: '#1e3a5f', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '12px 24px', fontWeight: 700, cursor: 'pointer', marginTop: '15px' }}>📁 Cambiar Foto</button>
           </div>
         </div>
 
@@ -193,7 +236,21 @@ export default function Dashboard() {
           {ACTIONS.map(a => {
             const Icon = a.icon;
             return (
-              <div key={a.id} onClick={() => handleSectionChange(a.id)} style={{ background: activeSection === a.id ? 'white' : 'rgba(255, 255, 255, 0.7)', backdropFilter: 'blur(10px)', borderRadius: '28px', padding: '32px 20px', textAlign: 'center', boxShadow: activeSection === a.id ? '0 15px 35px rgba(59, 130, 246, 0.15)' : '0 4px 15px rgba(0,0,0,0.03)', cursor: 'pointer', border: activeSection === a.id ? `2px solid ${a.color}` : '1px solid rgba(255,255,255,0.4)', transition: 'all 0.3s' }}>
+              <div 
+                key={a.id} 
+                onClick={() => handleSectionChange(a.id)} 
+                className={`reveal dashboard-action-card ${isVisible ? 'reveal--visible' : ''} ${activeSection === a.id ? 'active-card' : ''}`} 
+                style={{ 
+                  background: activeSection === a.id ? 'white' : 'rgba(255, 255, 255, 0.7)', 
+                  backdropFilter: 'blur(10px)', 
+                  borderRadius: '28px', 
+                  padding: '32px 20px', 
+                  textAlign: 'center', 
+                  boxShadow: activeSection === a.id ? '0 15px 35px rgba(59, 130, 246, 0.15)' : '0 4px 15px rgba(0,0,0,0.03)', 
+                  cursor: 'pointer', 
+                  border: `1px solid ${activeSection === a.id ? a.color : 'rgba(255,255,255,0.4)'}`,
+                }}
+              >
                 <div style={{ width: '60px', height: '60px', borderRadius: '18px', background: `${a.color}15`, color: a.color, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}><Icon /></div>
                 <h3 style={{ margin: 0, color: '#1e3a5f', fontWeight: 800, fontSize: '0.95rem' }}>{a.title}</h3>
               </div>
@@ -203,9 +260,67 @@ export default function Dashboard() {
 
         <div style={{ background: 'white', borderRadius: '32px', padding: '45px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)' }}>
           {activeSection === 'none' && (
-            <div style={{ textAlign: 'center', padding: '40px' }}>
-              <h2 style={{ fontSize: '2rem', color: '#1e3a5f', fontWeight: 900 }}>¡Bienvenido a tu panel de control!</h2>
-              <p style={{ color: '#64748b', fontSize: '1.1rem' }}>Desde aquí puedes gestionar tu perfil profesional y revisar tus postulaciones.</p>
+            <div style={{ textAlign: 'center' }}>
+              <div className={`reveal ${isVisible ? 'reveal--visible' : ''}`} style={{ marginBottom: '40px' }}>
+                <h2 style={{ fontSize: '2.2rem', color: '#1e3a5f', fontWeight: 900, marginBottom: '10px' }}>¡Bienvenido a tu panel de control!</h2>
+                <p style={{ color: '#64748b', fontSize: '1.1rem', margin: 0 }}>Desde aquí puedes gestionar tu perfil profesional y revisar tus postulaciones.</p>
+              </div>
+
+              {myApplications.length > 0 ? (
+                <div className={`reveal ${isVisible ? 'reveal--visible' : ''}`} style={{ textAlign: 'left' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                    <h3 style={{ margin: 0, color: '#1e3a5f', fontSize: '1.2rem', fontWeight: 800 }}>Últimas Postulaciones</h3>
+                    <button onClick={() => setActiveSection('apps')} style={{ background: 'none', border: 'none', color: '#3b82f6', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem' }}>Ver todas →</button>
+                  </div>
+                  <div style={{ display: 'grid', gap: '12px' }}>
+                    {myApplications.slice(0, 3).map((app, idx) => (
+                      <div 
+                        key={app.id} 
+                        className="reveal reveal--visible dashboard-action-card"
+                        style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'space-between', 
+                          padding: '18px 24px', 
+                          borderRadius: '20px', 
+                          background: '#f8fafc',
+                          border: '1px solid #e2e8f0',
+                          transition: 'all 0.4s'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                          <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, color: '#3b82f6', border: '1px solid #e2e8f0' }}>
+                            {app.empresa_nombre?.[0] || 'V'}
+                          </div>
+                          <div>
+                            <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: '#1e3a5f' }}>{app.vacante_nombre}</h4>
+                            <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>{app.empresa_nombre}</p>
+                          </div>
+                        </div>
+                        <span style={{ 
+                          padding: '6px 12px', 
+                          borderRadius: '8px', 
+                          fontSize: '0.7rem', 
+                          fontWeight: 800, 
+                          textTransform: 'uppercase',
+                          background: app.estado === 'postulado' ? '#eff6ff' : '#ecfdf5',
+                          color: app.estado === 'postulado' ? '#3b82f6' : '#059669',
+                          border: app.estado === 'postulado' ? '1px solid #dbeafe' : '1px solid #d1fae5'
+                        }}>
+                          {app.estado}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className={`reveal ${isVisible ? 'reveal--visible' : ''}`} style={{ marginTop: '40px', padding: '40px', background: '#f8fafc', borderRadius: '24px', border: '2px dashed #e2e8f0' }}>
+                  <div style={{ fontSize: '2rem', marginBottom: '15px' }}>🚀</div>
+                  <h4 style={{ margin: 0, color: '#1e3a5f', fontWeight: 800 }}>¿Listo para tu próximo reto?</h4>
+                  <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '20px' }}>Aún no tienes postulaciones activas. Explora la bolsa de empleo para comenzar.</p>
+                  <button onClick={() => window.location.href='/Bolsa_Empleo'} style={{ padding: '12px 24px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 700, cursor: 'pointer' }}>Explorar Vacantes</button>
+                </div>
+              )}
             </div>
           )}
 
@@ -226,12 +341,18 @@ export default function Dashboard() {
                 ].map(f => (
                   <div key={f.k}>
                     <label style={lblS}>{f.l}</label>
-                    <input
-                      value={(formData as any)[f.k]}
-                      onChange={e => !f.gray && setFormData({ ...formData, [f.k]: e.target.value })}
-                      disabled={f.gray || !isEditingPersonal}
-                      style={f.gray ? disS : (!isEditingPersonal ? { ...inpS, background: '#f8fafc' } : inpS)}
-                    />
+                      <input
+                        value={(formData as any)[f.k]}
+                        onChange={e => !f.gray && setFormData({ ...formData, [f.k]: e.target.value })}
+                        disabled={f.gray || !isEditingPersonal}
+                        maxLength={
+                          f.k === 'nombre_completo' ? 40 : 
+                          f.k === 'cedula' ? 15 : 
+                          f.k === 'correo' ? 50 : 
+                          f.k === 'telefono' ? 10 : undefined
+                        }
+                        style={f.gray ? disS : (!isEditingPersonal ? { ...inpS, background: '#f8fafc' } : inpS)}
+                      />
                   </div>
                 ))}
               </div>
@@ -368,7 +489,30 @@ export default function Dashboard() {
               <div style={{ width: '80px', height: '80px', borderRadius: '20px', background: '#fee2e2', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}><Icons.File /></div>
               <h2 style={{ color: '#1e3a5f', fontWeight: 900, fontSize: '1.8rem' }}>Gestión de Hoja de Vida</h2>
               <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', marginTop: '30px' }}>
-                <button onClick={() => { if (!userId) return; fetch(`${base()}/api/users/get-cv-url/${userId}`).then(r => r.json()).then(d => d.success ? window.open(d.url, '_blank') : setToast({ msg: 'No tienes CV subido', type: 'info' })) }} style={{ padding: '15px 30px', background: '#1e3a5f', color: 'white', border: 'none', borderRadius: '14px', fontWeight: 700, cursor: 'pointer' }}>Ver CV Actual</button>
+                {userCv && (
+                  <button 
+                    onClick={async () => { 
+                      if (!userId) return;
+                      setToast({ msg: 'Generando enlace...', type: 'info' });
+                      try {
+                        const r = await fetch(`${base()}/api/users/get-cv-url/${userId}`);
+                        const d = await r.json();
+                        if (d.success) {
+                          window.open(d.url, '_blank');
+                        } else {
+                          setToast({ msg: 'No se pudo encontrar el archivo', type: 'error' });
+                        }
+                      } catch (e) {
+                        setToast({ msg: 'Error de conexión', type: 'error' });
+                      } finally {
+                        setTimeout(() => setToast({ msg: '', type: 'none' }), 2000);
+                      }
+                    }} 
+                    style={{ padding: '15px 30px', background: '#1e3a5f', color: 'white', border: 'none', borderRadius: '14px', fontWeight: 700, cursor: 'pointer' }}
+                  >
+                    Ver CV Actual
+                  </button>
+                )}
                 <button onClick={() => cvInputRef.current?.click()} style={{ padding: '15px 30px', background: '#f8fafc', color: '#1e3a5f', border: '2px solid #1e3a5f', borderRadius: '14px', fontWeight: 700, cursor: 'pointer' }}>Subir Nuevo CV (.pdf)</button>
               </div>
             </div>

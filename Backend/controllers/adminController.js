@@ -4,7 +4,7 @@ const getStats = async (req, res) => {
   try {
     const { count: totalUsers } = await supabase.from('users').select('*', { count: 'exact', head: true });
     const { count: totalCompanies } = await supabase.from('empresas').select('*', { count: 'exact', head: true });
-    const { count: totalJobs } = await supabase.from('vacantes').select('*', { count: 'exact', head: true });
+    const { count: totalJobs } = await supabase.from('vacantes').select('*', { count: 'exact', head: true }).eq('estado', 'activa');
     const { count: activePlans } = await supabase.from('suscripciones').select('*', { count: 'exact', head: true }).eq('estado', 'activo');
 
     return res.status(200).json({
@@ -13,7 +13,12 @@ const getStats = async (req, res) => {
         total_users: totalUsers || 0,
         total_companies: totalCompanies || 0,
         total_jobs: totalJobs || 0,
-        active_plans: activePlans || 0
+        active_plans: activePlans || 0,
+        apps_status: {
+          aceptados: (await supabase.from('postulaciones').select('*', { count: 'exact', head: true }).eq('estado', 'aceptado')).count || 0,
+          rechazados: (await supabase.from('postulaciones').select('*', { count: 'exact', head: true }).eq('estado', 'rechazado')).count || 0,
+          pendientes: (await supabase.from('postulaciones').select('*', { count: 'exact', head: true }).eq('estado', 'postulado')).count || 0
+        }
       }
     });
   } catch (error) {
@@ -41,7 +46,7 @@ const getAllVacancies = async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('vacantes')
-      .select('*, empresas(razon_social)')
+      .select('*, empresas(razon_social), postulaciones(count)')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -85,4 +90,51 @@ const getUserDistributions = async (req, res) => {
   }
 };
 
-module.exports = { getStats, getAllUsers, getAllVacancies, getUserDistributions };
+const updateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nombre_completo, correo, rol_id } = req.body;
+
+    const { data, error } = await supabase
+      .from('users')
+      .update({ nombre_completo, correo, rol_id })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return res.status(200).json({ success: true, user: data });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+const updateVacancy = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { cargo, salario, estado, ubicacion } = req.body;
+    const { data, error } = await supabase
+      .from('vacantes')
+      .update({ cargo, salario, estado, ubicacion })
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+    return res.status(200).json({ success: true, vacancy: data });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+const deleteVacancy = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { error } = await supabase.from('vacantes').delete().eq('id', id);
+    if (error) throw error;
+    return res.status(200).json({ success: true, message: 'Vacante eliminada' });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+module.exports = { getStats, getAllUsers, getAllVacancies, getUserDistributions, updateUser, updateVacancy, deleteVacancy };

@@ -75,24 +75,37 @@ export default function DashboardExterno() {
     const h = new Date().getHours();
     if (h >= 12 && h < 18) setGreeting('Buenas tardes');
     else if (h >= 18 || h < 5) setGreeting('Buenas noches');
+
     const saved = sessionStorage.getItem('ucc_user');
-    if (saved) {
-      try {
-        const u = JSON.parse(saved);
-        // El login guarda: { id: uuid, ...authFields, profile: { id: uuid, rol_id, ... } }
-        const id = u.id || u.profile?.id;
-        if (!id) {
-          console.error('❌ No se encontró id en la sesión externo. Keys:', Object.keys(u));
-          return;
-        }
-        const cleanId = String(id).trim();
-        console.log('✅ Dashboard Externo - userId:', cleanId);
-        setUserId(cleanId);
-        fetchProfile(cleanId);
-        fetchMyApplications(cleanId);
-      } catch (e) { console.error('❌ Error sesión externo:', e); }
-    } else {
-      console.warn('⚠️ No hay sesión (externo)');
+    if (!saved) {
+      window.location.href = '/login';
+      return;
+    }
+
+    try {
+      const u = JSON.parse(saved);
+      const rolId = Number(u.profile?.rol_id);
+
+      if (rolId !== 2) {
+        // Redirigir según el rol si no es externo
+        if (rolId === 4) window.location.href = '/dashboard-admin';
+        else if (rolId === 3) window.location.href = '/dashboard-empresa';
+        else window.location.href = '/dashboard';
+        return;
+      }
+
+      const id = u.id || u.profile?.id;
+      if (!id) {
+        window.location.href = '/login';
+        return;
+      }
+      const cleanId = String(id).trim();
+      setUserId(cleanId);
+      fetchProfile(cleanId);
+      fetchMyApplications(cleanId);
+    } catch (e) {
+      sessionStorage.clear();
+      window.location.href = '/login';
     }
   }, []);
 

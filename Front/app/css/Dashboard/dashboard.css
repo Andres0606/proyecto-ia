@@ -317,3 +317,59 @@
     grid-template-columns: 1fr !important;
   }
 }
+/* ── Animations ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  20% { left: 150%; }
+  100% { left: 150%; }
+}
+
+.btn-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-shimmer::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -100%;
+  width: 50%;
+  height: 200%;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transform: rotate(35deg);
+  animation: shimmer 3s infinite cubic-bezier(0.19, 1, 0.22, 1);
+}
+.dashboard-action-card {
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.dashboard-action-card:hover {
+  transform: translateY(-12px) scale(1.02) !important;
+  background: white !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08) !important;
+}
+
+.dashboard-action-card:active {
+  transform: translateY(-4px) scale(0.98) !important;
+}
+
+.dashboard-action-card.active-card {
+  border-width: 2px !important;
+}

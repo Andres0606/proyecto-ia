@@ -12,6 +12,9 @@ router.post('/register', userController.registerUser);
 // Ruta para iniciar sesión
 router.post('/login', userController.loginUser);
 
+// Ruta para verificar duplicados (email, telefono, cedula)
+router.get('/check-duplicates', userController.checkDuplicates);
+
 // Rutas para subida de archivos
 router.post('/upload-avatar', upload.single('image'), fileController.uploadProfileImage);
 router.post('/upload-cv', upload.single('cv'), fileController.uploadResume);

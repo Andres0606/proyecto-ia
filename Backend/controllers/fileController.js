@@ -11,6 +11,18 @@ const uploadProfileImage = async (req, res) => {
       return res.status(400).json({ success: false, message: 'No se recibió ningún archivo en la petición.' });
     }
 
+    // Validación de tipo de archivo (Imagen)
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.mimetype)) {
+      return res.status(400).json({ success: false, message: 'Formato de imagen no válido. Solo se permiten JPG, PNG o WEBP.' });
+    }
+
+    // Validación de tamaño (Máximo 5MB)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      return res.status(400).json({ success: false, message: 'El archivo es demasiado grande. El límite es 5MB.' });
+    }
+
     const fileName = `${userId}/${Date.now()}-${file.originalname}`;
     console.log(`📤 Subiendo archivo a Storage: ${fileName}`);
 
@@ -68,6 +80,17 @@ const uploadResume = async (req, res) => {
 
     if (!userId || userId === 'null' || userId === 'undefined') {
       return res.status(400).json({ success: false, message: 'ID de usuario no válido.' });
+    }
+
+    // Validación de tipo de archivo (Solo PDF)
+    if (file.mimetype !== 'application/pdf') {
+      return res.status(400).json({ success: false, message: 'Formato no permitido. La hoja de vida debe ser un archivo PDF.' });
+    }
+
+    // Validación de tamaño (Máximo 10MB)
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      return res.status(400).json({ success: false, message: 'El archivo es demasiado grande. El límite para el CV es 10MB.' });
     }
 
     const fileName = `cv-${userId}-${Date.now()}.pdf`;

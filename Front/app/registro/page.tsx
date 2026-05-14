@@ -1,21 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "../css/Auth/auth.css";
 
 // ── Icons ──────────────────────────────────────────────────────────────────
 const Icons = {
-  User: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
-  Mail: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>,
-  Phone: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>,
-  Id: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 21v-4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v4"/><circle cx="12" cy="11" r="3"/><path d="M7 3h10"/></svg>,
-  Lock: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
-  Check: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>,
-  ArrowRight: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>,
-  ArrowLeft: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>,
-  GraduationCap: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>,
-  Briefcase: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>,
-  Building: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M8 10h.01M16 10h.01M12 10h.01M8 14h.01M16 14h.01M12 14h.01"/></svg>,
+  User: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>,
+  Mail: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>,
+  Phone: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" /></svg>,
+  Id: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" /><path d="M7 21v-4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v4" /><circle cx="12" cy="11" r="3" /><path d="M7 3h10" /></svg>,
+  Lock: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>,
+  Check: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>,
+  ArrowRight: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>,
+  ArrowLeft: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5" /><path d="m12 19-7-7 7-7" /></svg>,
+  GraduationCap: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c3 3 9 3 12 0v-5" /></svg>,
+  Briefcase: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /></svg>,
+  Building: () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M8 10h.01M16 10h.01M12 10h.01M8 14h.01M16 14h.01M12 14h.01" /></svg>,
 };
 
 // ── Tipos ────────────────────────────────────────────────────────────────────
@@ -28,7 +28,7 @@ const ROLES = [
     iconClass: "auth-role-card__icon--egresado",
     title: "Egresado UCC",
     desc: "Accede a beneficios exclusivos para graduados de nuestra red UCC.",
-    badge: "Gratuito",
+    badge: null,
   },
   {
     id: "externo" as RolType,
@@ -75,14 +75,14 @@ function Stepper({ step, rol }: { step: number; rol: RolType }) {
   const steps =
     rol === "empresa"
       ? [
-          { num: 1, label: "Cuenta" },
-          { num: 2, label: "Perfil" },
-          { num: 3, label: "Empresa" },
-        ]
+        { num: 1, label: "Cuenta" },
+        { num: 2, label: "Perfil" },
+        { num: 3, label: "Empresa" },
+      ]
       : [
-          { num: 1, label: "Cuenta" },
-          { num: 2, label: "Perfil" },
-        ];
+        { num: 1, label: "Cuenta" },
+        { num: 2, label: "Perfil" },
+      ];
 
   return (
     <div className="auth-stepper">
@@ -90,29 +90,26 @@ function Stepper({ step, rol }: { step: number; rol: RolType }) {
         <div key={s.num} style={{ display: "flex", alignItems: "center" }}>
           <div className="auth-stepper__step">
             <span
-              className={`auth-stepper__circle ${
-                step === s.num
+              className={`auth-stepper__circle ${step === s.num
                   ? "auth-stepper__circle--active"
                   : step > s.num
-                  ? "auth-stepper__circle--done"
-                  : ""
-              }`}
+                    ? "auth-stepper__circle--done"
+                    : ""
+                }`}
             >
               {step > s.num ? <Icons.Check /> : s.num}
             </span>
             <span
-              className={`auth-stepper__label ${
-                step >= s.num ? "auth-stepper__label--active" : ""
-              }`}
+              className={`auth-stepper__label ${step >= s.num ? "auth-stepper__label--active" : ""
+                }`}
             >
               {s.label}
             </span>
           </div>
           {i < steps.length - 1 && (
             <div
-              className={`auth-stepper__connector ${
-                step > s.num ? "auth-stepper__connector--done" : ""
-              }`}
+              className={`auth-stepper__connector ${step > s.num ? "auth-stepper__connector--done" : ""
+                }`}
             />
           )}
         </div>
@@ -126,10 +123,12 @@ function StepRol({
   rol,
   onSelect,
   onNext,
+  loading,
 }: {
   rol: RolType;
   onSelect: (r: RolType) => void;
   onNext: () => void;
+  loading: boolean;
 }) {
   return (
     <div className="auth-step">
@@ -137,9 +136,8 @@ function StepRol({
         {ROLES.map((r) => (
           <div
             key={r.id}
-            className={`auth-role-card ${
-              rol === r.id ? "auth-role-card--selected" : ""
-            }`}
+            className={`auth-role-card ${rol === r.id ? "auth-role-card--selected" : ""
+              }`}
             onClick={() => onSelect(r.id)}
           >
             {r.badge && (
@@ -160,10 +158,10 @@ function StepRol({
       <button
         className="auth-form__submit"
         style={{ marginTop: "2rem" }}
-        disabled={!rol}
+        disabled={!rol || loading}
         onClick={onNext}
       >
-        Continuar <Icons.ArrowRight />
+        {loading ? "Cargando..." : "Continuar"} <Icons.ArrowRight />
       </button>
     </div>
   );
@@ -177,6 +175,8 @@ function StepDatosPersonales({
   formData,
   setFormData,
   loading,
+  fieldErrors,
+  onBlurCheck
 }: {
   onBack: () => void;
   onNext: () => void;
@@ -184,6 +184,8 @@ function StepDatosPersonales({
   formData: any;
   setFormData: (d: any) => void;
   loading: boolean;
+  fieldErrors: { email: string; telefono: string; cedula: string };
+  onBlurCheck: (field: string, value: string) => void;
 }) {
   const { password: pw1, confirmPassword: pw2 } = formData;
   const isMatch = pw1.length >= 8 && pw1 === pw2;
@@ -200,8 +202,12 @@ function StepDatosPersonales({
               style={{ paddingLeft: '48px' }}
               type="text"
               placeholder="Juan Pérez"
+              maxLength={50}
               value={formData.nombre}
-              onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+              onChange={(e) => {
+                const val = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, "");
+                setFormData({ ...formData, nombre: val });
+              }}
               required
             />
           </div>
@@ -217,44 +223,73 @@ function StepDatosPersonales({
                 style={{ paddingLeft: '48px' }}
                 type="email"
                 placeholder="juan@ejemplo.com"
+                maxLength={50}
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onBlur={(e) => onBlurCheck('email', e.target.value)}
                 required
               />
             </div>
+            {fieldErrors.email && (
+              <span style={{ color: '#ef4444', fontSize: '10px', fontWeight: '700', marginTop: '2px' }}>{fieldErrors.email}</span>
+            )}
           </div>
           <div className="auth-field">
             <label className="auth-field__label">Teléfono</label>
             <div style={{ position: 'relative' }}>
-              <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}><Icons.Phone /></span>
+              <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: formData.telefono && !/^\d+$/.test(formData.telefono) ? '#ef4444' : '#94a3b8' }}><Icons.Phone /></span>
               <input
                 className="auth-field__input"
-                style={{ paddingLeft: '48px' }}
-                type="tel"
-                placeholder="300 123 4567"
+                style={{
+                  paddingLeft: '48px',
+                  borderColor: formData.telefono && !/^\d+$/.test(formData.telefono) ? '#ef4444' : ''
+                }}
+                type="text"
+                placeholder="10 dígitos"
+                maxLength={10}
                 value={formData.telefono}
                 onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
+                onBlur={(e) => onBlurCheck('telefono', e.target.value)}
                 required
               />
             </div>
+            {fieldErrors.telefono ? (
+              <span style={{ color: '#ef4444', fontSize: '10px', fontWeight: '700', marginTop: '2px' }}>{fieldErrors.telefono}</span>
+            ) : (
+              formData.telefono && (!/^\d+$/.test(formData.telefono) || formData.telefono.length !== 10) && (
+                <span style={{ color: '#ef4444', fontSize: '10px', fontWeight: '700', marginTop: '2px' }}>Debe tener exactamente 10 dígitos</span>
+              )
+            )}
           </div>
         </div>
 
         <div className="auth-form__row">
           <div className="auth-field">
-            <label className="auth-field__label">Identificación</label>
+            <label className="auth-field__label">Identificación (C.C.)</label>
             <div style={{ position: 'relative' }}>
-              <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}><Icons.Id /></span>
+              <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: formData.cedula && !/^\d+$/.test(formData.cedula) ? '#ef4444' : '#94a3b8' }}><Icons.Id /></span>
               <input
                 className="auth-field__input"
-                style={{ paddingLeft: '48px' }}
+                style={{
+                  paddingLeft: '48px',
+                  borderColor: formData.cedula && !/^\d+$/.test(formData.cedula) ? '#ef4444' : ''
+                }}
                 type="text"
-                placeholder="C.C. o NIT"
+                placeholder="Número de cédula"
+                maxLength={15}
                 value={formData.cedula}
                 onChange={(e) => setFormData({ ...formData, cedula: e.target.value })}
+                onBlur={(e) => onBlurCheck('cedula', e.target.value)}
                 required
               />
             </div>
+            {fieldErrors.cedula ? (
+              <span style={{ color: '#ef4444', fontSize: '10px', fontWeight: '700', marginTop: '2px' }}>{fieldErrors.cedula}</span>
+            ) : (
+              formData.cedula && !/^\d+$/.test(formData.cedula) && (
+                <span style={{ color: '#ef4444', fontSize: '10px', fontWeight: '700', marginTop: '2px' }}>Formato inválido (solo números)</span>
+              )
+            )}
           </div>
           <div className="auth-field">
             <label className="auth-field__label">Nacimiento</label>
@@ -275,14 +310,20 @@ function StepDatosPersonales({
               <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}><Icons.Lock /></span>
               <input
                 className="auth-field__input"
-                style={{ paddingLeft: '48px' }}
+                style={{
+                  paddingLeft: '48px',
+                  borderColor: formData.password && !/^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/.test(formData.password) ? '#ef4444' : (formData.password ? '#10b981' : '')
+                }}
                 type="password"
-                placeholder="Min. 8 caracteres"
+                placeholder="Mayús, núm, especial"
                 value={pw1}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
               />
             </div>
+            {formData.password && !/^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/.test(formData.password) && (
+              <span style={{ color: '#ef4444', fontSize: '9px', fontWeight: '700', marginTop: '2px' }}>Requiere: Mayús, Núm y Especial (@$!...)</span>
+            )}
           </div>
           <div className="auth-field">
             <label className="auth-field__label">Confirmar</label>
@@ -290,7 +331,10 @@ function StepDatosPersonales({
               <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}><Icons.Lock /></span>
               <input
                 className="auth-field__input"
-                style={{ paddingLeft: '48px', borderColor: isMatch ? '#10b981' : '' }}
+                style={{
+                  paddingLeft: '48px',
+                  borderColor: pw2 ? (isMatch ? '#10b981' : '#ef4444') : ''
+                }}
                 type="password"
                 placeholder="Repite contraseña"
                 value={pw2}
@@ -298,6 +342,9 @@ function StepDatosPersonales({
                 required
               />
             </div>
+            {pw2 && !isMatch && (
+              <span style={{ color: '#ef4444', fontSize: '10px', fontWeight: '700', marginTop: '2px' }}>Las contraseñas no coinciden</span>
+            )}
           </div>
         </div>
 
@@ -389,15 +436,103 @@ export default function RegistroPage() {
   const [rol, setRol] = useState<RolType>(null);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({ email: "", telefono: "", cedula: "" });
+
+  useEffect(() => {
+    const saved = sessionStorage.getItem('ucc_user');
+    if (saved) {
+      try {
+        const user = JSON.parse(saved);
+        const rolId = Number(user.profile?.rol_id);
+        if (rolId === 4) window.location.href = "/dashboard-admin";
+        else if (rolId === 2) window.location.href = "/dashboard-externo";
+        else if (rolId === 3) window.location.href = "/dashboard-empresa";
+        else window.location.href = "/dashboard";
+      } catch (e) {
+        sessionStorage.clear();
+      }
+    }
+  }, []);
 
   const [formData, setFormData] = useState({
     email: "", password: "", confirmPassword: "", nombre: "", telefono: "", cedula: "", fecha_nacimiento: "", genero: "masculino",
     razon_social: "", nit: "", sector_economico: "", tamano_empresa: "", tipo_empresa: "privada", ciudad: "",
   });
 
+  const validateFields = () => {
+    if (formData.telefono.length !== 10 || !/^\d+$/.test(formData.telefono)) {
+      setErrorMsg("El teléfono debe tener exactamente 10 dígitos numéricos.");
+      return false;
+    }
+    if (formData.cedula.length < 5) {
+      setErrorMsg("La identificación (C.C.) debe tener al menos 5 dígitos numéricos.");
+      return false;
+    }
+
+    // Contraseña robusta: Mayúscula, Número, Carácter especial
+    const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/;
+    if (!passwordRegex.test(formData.password)) {
+      setErrorMsg("La contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un carácter especial.");
+      return false;
+    }
+    return true;
+  };
+
+  const checkDuplicates = async () => {
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
+      const params = new URLSearchParams({
+        email: formData.email,
+        telefono: formData.telefono,
+        cedula: formData.cedula
+      });
+      const res = await fetch(`${backendUrl}/api/users/check-duplicates?${params}`);
+      const data = await res.json();
+
+      if (data.success) {
+        if (data.emailExists) return "Este correo electrónico ya está registrado.";
+        if (data.telefonoExists) return "Este número de teléfono ya está registrado.";
+        if (data.cedulaExists) return "Este número de cédula ya está registrado.";
+      }
+      return null;
+    } catch (err) {
+      console.error("Error checking duplicates:", err);
+      return null;
+    }
+  };
+
+  const checkFieldDuplicate = async (field: string, value: string) => {
+    if (!value || (field === 'telefono' && value.length < 7) || (field === 'cedula' && value.length < 5)) return;
+
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
+      const res = await fetch(`${backendUrl}/api/users/check-duplicates?${field}=${value}`);
+      const data = await res.json();
+
+      if (data.success) {
+        if (field === 'email' && data.emailExists) setFieldErrors(p => ({ ...p, email: "Este correo ya está registrado" }));
+        else if (field === 'telefono' && data.telefonoExists) setFieldErrors(p => ({ ...p, telefono: "Este teléfono ya está registrado" }));
+        else if (field === 'cedula' && data.cedulaExists) setFieldErrors(p => ({ ...p, cedula: "Esta cédula ya está registrada" }));
+        else setFieldErrors(p => ({ ...p, [field]: "" }));
+      }
+    } catch (err) {
+      console.error("Error checking field duplicate:", err);
+    }
+  };
+
   const handleRegister = async () => {
+    if (!validateFields()) return;
+
     setLoading(true);
     setErrorMsg("");
+
+    const duplicateError = await checkDuplicates();
+    if (duplicateError) {
+      setErrorMsg(duplicateError);
+      setLoading(false);
+      return;
+    }
+
     try {
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
       const res = await fetch(`${backendUrl}/api/users/register`, {
@@ -425,6 +560,27 @@ export default function RegistroPage() {
     }
   };
 
+  const handleNextStep2 = async () => {
+    if (!validateFields()) return;
+
+    setLoading(true);
+    setErrorMsg("");
+
+    const duplicateError = await checkDuplicates();
+    if (duplicateError) {
+      setErrorMsg(duplicateError);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(false);
+    if (isLastPersonalStep) {
+      handleRegister();
+    } else {
+      setStep(3);
+    }
+  };
+
   const totalSteps = rol === "empresa" ? 3 : 2;
   const isLastPersonalStep = rol !== "empresa";
 
@@ -439,7 +595,6 @@ export default function RegistroPage() {
 
       <div className="auth-card auth-card--wide">
         <div className="auth-card__brand">
-          <span className="auth-card__logo">UCC</span>
           <span className="auth-card__brand-text">Portal del Egresado</span>
         </div>
 
@@ -450,15 +605,17 @@ export default function RegistroPage() {
 
         <Stepper step={step} rol={rol} />
 
-        {step === 1 && <StepRol rol={rol} onSelect={setRol} onNext={() => setStep(2)} />}
+        {step === 1 && <StepRol rol={rol} onSelect={setRol} onNext={() => setStep(2)} loading={loading} />}
         {step === 2 && (
           <StepDatosPersonales
             onBack={() => setStep(1)}
-            onNext={isLastPersonalStep ? handleRegister : () => setStep(3)}
+            onNext={handleNextStep2}
             isLastStep={isLastPersonalStep}
             formData={formData}
             setFormData={setFormData}
             loading={loading}
+            fieldErrors={fieldErrors}
+            onBlurCheck={checkFieldDuplicate}
           />
         )}
         {step === 3 && rol === "empresa" && (
