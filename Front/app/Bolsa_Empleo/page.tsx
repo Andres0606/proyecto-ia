@@ -46,12 +46,30 @@ function Chip({ label, active, onClick }: { label: string; active: boolean; onCl
   return <button className={`be-chip${active ? " be-chip--on" : ""}`} onClick={onClick}>{label}</button>;
 }
 
-function Filters({ area, setArea, mode, setMode, nivel, setNivel, onClear }: {
+function Filters({ area, setArea, mode, setMode, nivel, setNivel, onClear, userProfile }: {
   area: string; setArea: (v: string) => void;
   mode: string; setMode: (v: string) => void;
   nivel: string; setNivel: (v: string) => void;
   onClear: () => void;
+  userProfile: any;
 }) {
+  const sortedAreas = useMemo(() => {
+    if (!userProfile?.area_desempeno) return AREAS;
+    const uArea = userProfile.area_desempeno;
+    const filtered = AREAS.filter(a => a !== uArea && a !== "Todas");
+    if (AREAS.includes(uArea)) return ["Todas", uArea, ...filtered];
+    return AREAS;
+  }, [userProfile]);
+
+  const handleIdeal = () => {
+    if (!userProfile) {
+      alert("Inicia sesión para usar esta función.");
+      return;
+    }
+    if (userProfile.area_desempeno && AREAS.includes(userProfile.area_desempeno)) setArea(userProfile.area_desempeno);
+    if (userProfile.nivel_formacion && NIVELES.includes(userProfile.nivel_formacion)) setNivel(userProfile.nivel_formacion);
+  };
+
   return (
     <aside className="be-filters">
       <div className="be-filters__head">
@@ -62,7 +80,14 @@ function Filters({ area, setArea, mode, setMode, nivel, setNivel, onClear }: {
       <div className="be-filter-group">
         <span className="be-filter-group__label">Área de Trabajo</span>
         <div className="be-chips">
-          {AREAS.map(a => <Chip key={a} label={a} active={area === a} onClick={() => setArea(a)} />)}
+          {sortedAreas.map(a => (
+            <Chip 
+              key={a} 
+              label={a} 
+              active={area === a} 
+              onClick={() => setArea(a)} 
+            />
+          ))}
         </div>
       </div>
 
@@ -82,6 +107,35 @@ function Filters({ area, setArea, mode, setMode, nivel, setNivel, onClear }: {
         <div className="be-chips">
           {NIVELES.map(n => <Chip key={n} label={n} active={nivel === n} onClick={() => setNivel(n)} />)}
         </div>
+      </div>
+
+      <div className="be-filter-divider" />
+
+      <div className="be-filter-group">
+        <span className="be-filter-group__label">Recomendaciones</span>
+        <button 
+          className={`be-ideal-btn ${area === userProfile?.area_desempeno ? 'be-ideal-btn--active' : ''}`}
+          onClick={handleIdeal}
+          style={{
+            width: '100%',
+            padding: '12px',
+            borderRadius: '12px',
+            border: 'none',
+            background: '#1e3a5f',
+            color: 'white',
+            fontWeight: 800,
+            fontSize: '0.85rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            marginTop: '10px',
+            transition: 'all 0.3s'
+          }}
+        >
+          <span style={{ fontSize: '1.1rem' }}>✨</span> Lo ideal para mi perfil
+        </button>
       </div>
     </aside>
   );
@@ -201,10 +255,24 @@ export default function BolsaPage() {
   const [mode, setMode] = useState("Todas");
   const [nivel, setNivel] = useState("Todas");
   const [sort, setSort] = useState("recent");
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   const base = () => (process.env.NEXT_PUBLIC_BACKEND_URL || 'https://proyecto-ia-production-b7d6.up.railway.app').replace(/\/$/, '');
 
-  useEffect(() => { fetchJobs(); }, []);
+  useEffect(() => { 
+    fetchJobs(); 
+    const saved = sessionStorage.getItem('ucc_user');
+    if (saved) {
+      try {
+        const user = JSON.parse(saved);
+        if (user.profile?.perfiles_usuarios?.[0]) {
+          setUserProfile(user.profile.perfiles_usuarios[0]);
+        }
+      } catch (e) {
+        console.error("Error al parsear usuario:", e);
+      }
+    }
+  }, []);
 
   const fetchJobs = async () => {
     try {
@@ -325,6 +393,7 @@ export default function BolsaPage() {
             mode={mode} setMode={setMode}
             nivel={nivel} setNivel={setNivel}
             onClear={clearAll}
+            userProfile={userProfile}
           />
 
           <main className="be-main">

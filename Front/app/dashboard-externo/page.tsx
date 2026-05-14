@@ -188,7 +188,7 @@ export default function DashboardExterno() {
   const ACTIONS = [
     { title: 'Inicio', icon: Icons.Home, id: 'none', color: '#3b82f6' },
     { title: 'Datos Personales', icon: Icons.User, id: 'personal', color: '#8b5cf6' },
-    { title: 'Perfil Profesional', icon: Icons.Briefcase, id: 'professional', color: '#10b981' },
+    { title: 'Información Socioprofesional', icon: Icons.Briefcase, id: 'professional', color: '#10b981' },
     { title: 'Mis Postulaciones', icon: Icons.File, id: 'apps', color: '#00A9E0' },
     { title: 'Planes', icon: Icons.Card, id: 'plans', color: '#f59e0b' },
     { title: 'Mi Hoja de Vida', icon: Icons.File, id: 'cv', color: '#ef4444' },
@@ -362,34 +362,82 @@ export default function DashboardExterno() {
           {activeSection === 'professional' && (
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '35px' }}>
-                <h2 style={{ margin: 0 }}>Perfil Profesional</h2>
+                <h2 style={{ margin: 0 }}>Información Socioprofesional</h2>
                 <button onClick={() => setIsEditingProf(!isEditingProf)} style={{ background: '#00A9E0', color: 'white', border: 'none', borderRadius: '12px', padding: '10px 20px', cursor: 'pointer' }}>{isEditingProf ? 'Cancelar' : 'Actualizar'}</button>
               </div>
-              <div className="responsive-grid-2" style={{ gap: '25px' }}>
-                {[
-                  { l: 'Programa Académico', k: 'programa_academico', o: DIAG_OPTIONS.Programa },
-                  { l: 'Nivel de Formación', k: 'nivel_formacion', o: DIAG_OPTIONS.Formacion },
-                  { l: 'Estrato', k: 'estrato', o: DIAG_OPTIONS.Estrato },
-                  { l: 'Estado Civil', k: 'estado_civil', o: DIAG_OPTIONS.EstadoCivil },
-                  { l: 'Número de Hijos', k: 'numero_hijos', o: DIAG_OPTIONS.Hijos },
-                  { l: 'Ingreso Mensual', k: 'ingreso_mensual', o: DIAG_OPTIONS.Ingreso },
-                  { l: 'Sector Económico', k: 'sector_economico', o: DIAG_OPTIONS.Sector },
-                  { l: 'Área de Desempeño', k: 'area_desempeno', o: DIAG_OPTIONS.Area },
-                  { l: 'Emprendimiento', k: 'emprendimiento', o: DIAG_OPTIONS.Emprendimiento },
-                ].map(f => (
-                  <div key={f.k}>
-                    <label style={lblS}>{f.l}</label>
-                    {isEditingProf ? (
-                      <select value={(formData as any)[f.k]} onChange={e => setFormData({ ...formData, [f.k]: e.target.value })} style={inpS}>
-                        <option value="">Seleccionar...</option>
-                        {f.o.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                      </select>
-                    ) : (
-                      <input value={(formData as any)[f.k] || 'No registrado'} disabled style={{ ...inpS, background: '#f8fafc' }} />
-                    )}
-                  </div>
-                ))}
+
+              {/* ── Grupo 1: Formación Académica ── */}
+              <div style={{ marginBottom: '30px' }}>
+                <h3 style={{ fontSize: '0.9rem', color: '#3b82f6', marginBottom: '15px', borderBottom: '1px solid #eff6ff', paddingBottom: '8px' }}>FORMACIÓN ACADÉMICA</h3>
+                <div className="responsive-grid-2" style={{ gap: '25px' }}>
+                  {[
+                    { l: 'Programa Académico', k: 'programa_academico', o: DIAG_OPTIONS.Programa },
+                    { l: 'Nivel de Formación', k: 'nivel_formacion', o: DIAG_OPTIONS.Formacion },
+                  ].map(f => (
+                    <div key={f.k}>
+                      <label style={lblS}>{f.l}</label>
+                      {isEditingProf ? (
+                        <select value={(formData as any)[f.k]} onChange={e => setFormData({ ...formData, [f.k]: e.target.value })} style={inpS}>
+                          <option value="">Seleccionar...</option>
+                          {f.o.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                        </select>
+                      ) : (
+                        <input value={(formData as any)[f.k] || 'No registrado'} disabled style={{ ...inpS, background: '#f8fafc' }} />
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
+
+              {/* ── Grupo 2: Entorno Socioeconómico ── */}
+              <div style={{ marginBottom: '30px' }}>
+                <h3 style={{ fontSize: '0.9rem', color: '#3b82f6', marginBottom: '15px', borderBottom: '1px solid #eff6ff', paddingBottom: '8px' }}>ENTORNO SOCIOECONÓMICO</h3>
+                <div className="responsive-grid-2" style={{ gap: '25px' }}>
+                  {[
+                    { l: 'Estrato', k: 'estrato', o: DIAG_OPTIONS.Estrato },
+                    { l: 'Ingreso Mensual', k: 'ingreso_mensual', o: DIAG_OPTIONS.Ingreso },
+                    { l: 'Sector Económico', k: 'sector_economico', o: DIAG_OPTIONS.Sector },
+                    { l: 'Área de Desempeño', k: 'area_desempeno', o: DIAG_OPTIONS.Area },
+                  ].map(f => (
+                    <div key={f.k}>
+                      <label style={lblS}>{f.l}</label>
+                      {isEditingProf ? (
+                        <select value={(formData as any)[f.k]} onChange={e => setFormData({ ...formData, [f.k]: e.target.value })} style={inpS}>
+                          <option value="">Seleccionar...</option>
+                          {f.o.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                        </select>
+                      ) : (
+                        <input value={(formData as any)[f.k] || 'No registrado'} disabled style={{ ...inpS, background: '#f8fafc' }} />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* ── Grupo 3: Datos Personales & Proyectos ── */}
+              <div>
+                <h3 style={{ fontSize: '0.9rem', color: '#3b82f6', marginBottom: '15px', borderBottom: '1px solid #eff6ff', paddingBottom: '8px' }}>DATOS COMPLEMENTARIOS</h3>
+                <div className="responsive-grid-2" style={{ gap: '25px' }}>
+                  {[
+                    { l: 'Estado Civil', k: 'estado_civil', o: DIAG_OPTIONS.EstadoCivil },
+                    { l: 'Número de Hijos', k: 'numero_hijos', o: DIAG_OPTIONS.Hijos },
+                    { l: '¿Tienes Emprendimiento?', k: 'emprendimiento', o: DIAG_OPTIONS.Emprendimiento },
+                  ].map(f => (
+                    <div key={f.k}>
+                      <label style={lblS}>{f.l}</label>
+                      {isEditingProf ? (
+                        <select value={(formData as any)[f.k]} onChange={e => setFormData({ ...formData, [f.k]: e.target.value })} style={inpS}>
+                          <option value="">Seleccionar...</option>
+                          {f.o.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                        </select>
+                      ) : (
+                        <input value={(formData as any)[f.k] || 'No registrado'} disabled style={{ ...inpS, background: '#f8fafc' }} />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               {isEditingProf && <button onClick={handleSave} style={{ width: '100%', marginTop: '30px', padding: '15px', background: '#00A9E0', color: 'white', borderRadius: '14px', border: 'none', fontWeight: 800, cursor: 'pointer' }}>Guardar Perfil</button>}
             </div>
           )}
