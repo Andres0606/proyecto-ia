@@ -145,6 +145,17 @@ export default function DashboardExterno() {
         const fields = [p.nivel_formacion, p.programa_academico, p.estrato, p.estado_civil, p.numero_hijos, p.ingreso_mensual, p.sector_economico, p.area_desempeno];
         const filled = fields.filter(f => f && String(f).trim() !== '').length;
         pct += (filled / fields.length) * 70;
+
+        // Sincronizar con sessionStorage para que el Header se entere del cambio
+        const saved = sessionStorage.getItem('ucc_user');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          parsed.profile = { ...parsed.profile, ...u };
+          if (u.suscripcion) parsed.profile.suscripcion = u.suscripcion;
+          sessionStorage.setItem('ucc_user', JSON.stringify(parsed));
+          window.dispatchEvent(new Event('userUpdate'));
+        }
+
         setCompletionPct(Math.round(pct));
       }
     } catch (err) { console.error(err); }
