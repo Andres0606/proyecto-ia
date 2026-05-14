@@ -11,7 +11,6 @@ router.post('/register', userController.registerUser);
 
 // Ruta para iniciar sesión
 router.post('/login', userController.loginUser);
-router.post('/verify-otp', userController.verifyOTP);
 
 // Ruta para verificar duplicados (email, telefono, cedula)
 router.get('/check-duplicates', userController.checkDuplicates);

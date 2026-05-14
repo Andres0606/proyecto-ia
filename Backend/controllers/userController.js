@@ -434,4 +434,4 @@ const updatePlan = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, verifyOTP, getFullProfile, updateProfile, subscribe, updatePlan, checkDuplicates, healthCheck };
+module.exports = { registerUser, loginUser, getFullProfile, updateProfile, subscribe, updatePlan, checkDuplicates, healthCheck };
