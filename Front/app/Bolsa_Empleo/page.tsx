@@ -38,7 +38,7 @@ interface Job {
 
 const AREAS = ["Todas","Administrativa","Salud","Financiera","Industrial","Educacion","Sistemas","Juridica","Ventas","Marketing","Contable","Gestion Humana","Comercial"];
 const MODOS = ["Todas","Presencial","Remoto","Hibrido"];
-const NIVELES = ["Todas","Profesional","Especialista","Magister","Doctorado","Tecnico"];
+const NIVELES = ["Todas","Profesional","Especialista","Magister","Doctorado","Tecnico","RECOMENDADO"];
 
 const MODE_BADGE: Record<string, string> = {
   Presencial: "be-badge--presencial",
@@ -50,12 +50,13 @@ function Chip({ label, active, onClick }: { label: string; active: boolean; onCl
   return <button className={`be-chip${active ? " be-chip--on" : ""}`} onClick={onClick}>{label}</button>;
 }
 
-function Filters({ area, setArea, mode, setMode, nivel, setNivel, onClear, userProfile }: {
+function Filters({ area, setArea, mode, setMode, nivel, setNivel, onClear, userProfile, showToast }: {
   area: string; setArea: (v: string) => void;
   mode: string; setMode: (v: string) => void;
   nivel: string; setNivel: (v: string) => void;
   onClear: () => void;
   userProfile: any;
+  showToast: (m: string, t: any) => void;
 }) {
   const sortedAreas = useMemo(() => {
     if (!userProfile?.area_desempeno) return AREAS;
@@ -67,11 +68,11 @@ function Filters({ area, setArea, mode, setMode, nivel, setNivel, onClear, userP
 
   const handleIdeal = () => {
     if (!userProfile) {
-      alert("Inicia sesión para usar esta función.");
+      showToast("Inicia sesión para ver tus recomendaciones.", "info");
       return;
     }
-    if (userProfile.area_desempeno && AREAS.includes(userProfile.area_desempeno)) setArea(userProfile.area_desempeno);
-    if (userProfile.nivel_formacion && NIVELES.includes(userProfile.nivel_formacion)) setNivel(userProfile.nivel_formacion);
+    setNivel("RECOMENDADO");
+    showToast("Aplicando motor de búsqueda por perfil...", "success");
   };
 
   return (
@@ -109,8 +110,40 @@ function Filters({ area, setArea, mode, setMode, nivel, setNivel, onClear, userP
       <div className="be-filter-group">
         <span className="be-filter-group__label">Nivel de Formación</span>
         <div className="be-chips">
-          {NIVELES.map(n => <Chip key={n} label={n} active={nivel === n} onClick={() => setNivel(n)} />)}
+          {NIVELES.map(n => {
+            if (n === "RECOMENDADO") return null;
+            return <Chip key={n} label={n} active={nivel === n} onClick={() => setNivel(n)} />;
+          })}
         </div>
+      </div>
+
+      <div className="be-filter-divider" />
+
+      <div className="be-filter-group">
+        <span className="be-filter-group__label">Recomendaciones</span>
+        <button 
+          className={`be-ideal-btn ${nivel === 'RECOMENDADO' ? 'be-ideal-btn--active' : ''}`}
+          onClick={handleIdeal}
+          style={{
+            width: '100%',
+            padding: '12px',
+            borderRadius: '12px',
+            border: 'none',
+            background: nivel === 'RECOMENDADO' ? '#3b82f6' : '#1e3a5f',
+            color: 'white',
+            fontWeight: 800,
+            fontSize: '0.85rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            marginTop: '10px',
+            transition: 'all 0.3s'
+          }}
+        >
+          <Icons.Magic /> Lo ideal para mi perfil
+        </button>
       </div>
     </aside>
   );
@@ -278,11 +311,25 @@ export default function BolsaPage() {
   const [nivel, setNivel] = useState("Todas");
   const [userProfile, setUserProfile] = useState<any>(null);
   const [sort, setSort] = useState("recent");
-  const [userProfile, setUserProfile] = useState<any>(null);
 
   const base = () => (process.env.NEXT_PUBLIC_BACKEND_URL || 'https://proyecto-ia-production-b7d6.up.railway.app').replace(/\/$/, '');
 
-  useEffect(() => { fetchJobs(); }, []);
+  useEffect(() => { 
+    fetchJobs(); 
+    const saved = sessionStorage.getItem('ucc_user');
+    if (saved) {
+      try {
+        const user = JSON.parse(saved);
+        if (user.profile?.perfiles_usuarios?.[0]) {
+          setUserProfile(user.profile.perfiles_usuarios[0]);
+        } else if (user.perfil?.perfiles_usuarios?.[0]) {
+          setUserProfile(user.perfil.perfiles_usuarios[0]);
+        }
+      } catch (e) {
+        console.error("Error al parsear usuario:", e);
+      }
+    }
+  }, []);
 
   const fetchJobs = async () => {
     try {
@@ -465,6 +512,7 @@ export default function BolsaPage() {
             nivel={nivel} setNivel={setNivel}
             onClear={clearAll}
             userProfile={userProfile}
+            showToast={showToast}
           />
 
           <main className="be-main">
