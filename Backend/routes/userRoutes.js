@@ -23,7 +23,7 @@ router.get('/get-cv-url/:userId', fileController.getResumeUrl);
 // Rutas de gestión de perfil completo
 router.get('/profile/:userId', userController.getFullProfile);
 router.put('/profile/:userId', userController.updateProfile);
-router.post('/update-plan', userController.updatePlan);
-router.post('/subscribe', userController.subscribe);
+router.put('/update-plan', userController.updatePlan);
+router.put('/subscribe', userController.subscribe);
 
 module.exports = router;
